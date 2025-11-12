@@ -15,7 +15,13 @@ type FilterObjForEntity<T> = Record<string, FilterForEntity<T>>;
 export type FilterForEntity<T> =
     | EqualsFilterDef<T>
     | ContainsFilterDef<T>
-    | InArrayFilterDef<T>;
+    | InArrayFilterDef<T>
+    | IsNullFilterDef<T>
+    | IsNotNullFilterDef<T>
+    | GTFilterDef<T>
+    | GTEFilterDef<T>
+    | LTFilterDef<T>
+    | LTEFilterDef<T>;
 
 export interface CommonFilterOptions<T> {
     field: keyof T;
@@ -29,7 +35,8 @@ export interface EqualsFilterDef<T> extends CommonFilterOptions<T> {
 }
 
 /**
- * A `contains` filter passes when the value contains the filter value.
+ * A `contains` filter passes when the string representation of the value
+ * contains the string representation of the filter value.
  */
 export interface ContainsFilterDef<T> extends CommonFilterOptions<T> {
     kind: "contains";
@@ -40,6 +47,48 @@ export interface ContainsFilterDef<T> extends CommonFilterOptions<T> {
  */
 export interface InArrayFilterDef<T> extends CommonFilterOptions<T> {
     kind: "inArray";
+}
+
+/**
+ * An `isNull` filter passes when the value is null or undefined.
+ */
+export interface IsNullFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "isNull";
+}
+
+/**
+ * An `isNotNull` filter passes when the value is not null and not undefined.
+ */
+export interface IsNotNullFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "isNotNull";
+}
+
+/**
+ * A `gt` (greater than) filter passes when the value is greater than the filter value.
+ */
+export interface GTFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "gt";
+}
+
+/**
+ * A `gte` (greater than or equal) filter passes when the value is greater than or equal to the filter value.
+ */
+export interface GTEFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "gte";
+}
+
+/**
+ * An `lt` (less than) filter passes when the value is less than the filter value.
+ */
+export interface LTFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "lt";
+}
+
+/**
+ * An `lte` (less than or equal) filter passes when the value is less than or equal to the filter value.
+ */
+export interface LTEFilterDef<T> extends CommonFilterOptions<T> {
+    kind: "lte";
 }
 
 // ----------------------------------------------------------------
@@ -60,7 +109,19 @@ type InputForFilterShape<Entity, Filter extends FilterForEntity<any>> =
           ? string | undefined
           : Filter extends InArrayFilterDef<Entity>
             ? Entity[Filter["field"]][] | undefined
-            : never;
+            : Filter extends IsNullFilterDef<Entity>
+              ? boolean | undefined
+              : Filter extends IsNotNullFilterDef<Entity>
+                ? boolean | undefined
+                : Filter extends GTFilterDef<Entity>
+                  ? number | undefined
+                  : Filter extends GTEFilterDef<Entity>
+                    ? number | undefined
+                    : Filter extends LTFilterDef<Entity>
+                      ? number | undefined
+                      : Filter extends LTEFilterDef<Entity>
+                        ? number | undefined
+                        : never;
 
 // ----------------------------------------------------------------
 // Filtering
@@ -101,10 +162,34 @@ const filterFn =
                 switch (filterDef.kind) {
                     case "equals":
                         return fieldValue === filterValue;
+
                     case "contains":
                         return String(fieldValue).includes(String(filterValue));
+
                     case "inArray":
                         return (filterValue as any[]).includes(fieldValue);
+
+                    case "isNull":
+                        return filterValue
+                            ? fieldValue == null
+                            : fieldValue != null;
+
+                    case "isNotNull":
+                        return filterValue
+                            ? fieldValue != null
+                            : fieldValue == null;
+
+                    case "gt":
+                        return Number(fieldValue) > (filterValue as number);
+
+                    case "gte":
+                        return Number(fieldValue) >= (filterValue as number);
+
+                    case "lt":
+                        return Number(fieldValue) < (filterValue as number);
+
+                    case "lte":
+                        return Number(fieldValue) <= (filterValue as number);
                 }
 
                 return true;
