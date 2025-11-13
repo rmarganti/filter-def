@@ -1,10 +1,12 @@
-# Philter
+# filter-def
 
-Easily define and execute data filters for your data.
+A TypeScript library for defining and executing type-safe data filters. Define your filters once, get full type inference for filter inputs and results.
+
+## Quick Start
 
 ```typescript
-import { entity } from "philter";
-import type { InputForFilter } from "philter";
+import { entity } from "filter-def";
+import type { InputForFilterDef } from "filter-def";
 
 interface User {
     name: string;
@@ -12,17 +14,192 @@ interface User {
     age: number;
 }
 
-const filterUsers = entity<User>().philter({
-    name: { kind: "eq" },
-    emailContains: { kind: "eq", field: "email" },
+const filterUsers = entity<User>().filterDef({
+    name: { kind: "equals", field: "name" },
+    emailContains: { kind: "contains", field: "email" },
     olderThan: { kind: "gt", field: "age" },
 });
 
-type UserFilterInput = InputForFilter<typeof filterUsers>;
+type UserFilterInput = InputForFilterDef<typeof filterUsers>;
 
-const filteredUser = filterUsers(users, {
+const filteredUsers = filterUsers(users, {
     name: "John",
     emailContains: "@example.com",
     olderThan: 25,
 });
 ```
+
+## Features
+
+- **Type-safe filters**: Full TypeScript inference for filter inputs and entity fields
+- **Composable**: Combine multiple filters with AND/OR logic
+- **Simple API**: Define filters once, reuse everywhere
+- **Zero dependencies**: Lightweight and framework-agnostic
+
+## Filter Types
+
+### Primitive Filters
+
+#### `equals`
+
+Checks if a field value is referentially equal to the filter value.
+
+```typescript
+{ kind: "equals", field: "name" }
+```
+
+#### `contains`
+
+Checks if the string representation of a field contains the filter value substring.
+
+```typescript
+{ kind: "contains", field: "email" }
+```
+
+#### `inArray`
+
+Checks if a field value is contained within an array provided as the filter value.
+
+```typescript
+{ kind: "inArray", field: "status" }
+// Input: ["active", "pending"]
+```
+
+#### `gt` (Greater Than)
+
+Checks if a field value is greater than the filter value. Works with any comparable data type (numbers, strings, dates, etc.).
+
+```typescript
+{ kind: "gt", field: "age" }
+// Input: 25
+```
+
+#### `gte` (Greater Than or Equal)
+
+Checks if a field value is greater than or equal to the filter value. Works with any comparable data type (numbers, strings, dates, etc.).
+
+```typescript
+{ kind: "gte", field: "score" }
+// Input: 100
+```
+
+#### `lt` (Less Than)
+
+Checks if a field value is less than the filter value. Works with any comparable data type (numbers, strings, dates, etc.).
+
+```typescript
+{ kind: "lt", field: "price" }
+// Input: 50
+```
+
+#### `lte` (Less Than or Equal)
+
+Checks if a field value is less than or equal to the filter value. Works with any comparable data type (numbers, strings, dates, etc.).
+
+```typescript
+{ kind: "lte", field: "rating" }
+// Input: 4.5
+```
+
+#### `isNull`
+
+Checks if a field is null or undefined.
+
+```typescript
+{ kind: "isNull", field: "phone" }
+// Input: true (to find null values) or false (to find non-null values)
+```
+
+#### `isNotNull`
+
+Checks if a field is not null and not undefined.
+
+```typescript
+{ kind: "isNotNull", field: "phone" }
+// Input: true (to find non-null values) or false (to find null values)
+```
+
+### Boolean Filters
+
+Combine multiple primitive filters with logical operators.
+
+#### `and`
+
+All conditions must be true for the filter to pass.
+
+```typescript
+{
+  kind: "and",
+  conditions: [
+    { kind: "equals", field: "status" },
+    { kind: "gt", field: "age" }
+  ]
+}
+```
+
+#### `or`
+
+At least one condition must be true for the filter to pass.
+
+```typescript
+{
+  kind: "or",
+  conditions: [
+    { kind: "contains", field: "email" },
+    { kind: "equals", field: "name" }
+  ]
+}
+```
+
+## Complete Example
+
+```typescript
+import { entity } from "filter-def";
+import type { InputForFilterDef } from "filter-def";
+
+interface Product {
+    name: string;
+    price: number;
+    category: string;
+    inStock: boolean;
+    rating: number;
+}
+
+const filterProducts = entity<Product>().filterDef({
+    // Primitive filters
+    nameContains: { kind: "contains", field: "name" },
+    priceRange: {
+        kind: "and",
+        conditions: [
+            { kind: "gte", field: "price" },
+            { kind: "lte", field: "price" },
+        ],
+    },
+    inCategory: { kind: "inArray", field: "category" },
+    inStock: { kind: "equals", field: "inStock" },
+
+    // Boolean filter
+    popularOrHighRated: {
+        kind: "or",
+        conditions: [{ kind: "gte", field: "rating" }],
+    },
+});
+
+type ProductFilterInput = InputForFilterDef<typeof filterProducts>;
+
+const results = filterProducts(products, {
+    nameContains: "phone",
+    priceRange: undefined, // Optional filters
+    inCategory: ["electronics", "gadgets"],
+    inStock: true,
+    popularOrHighRated: 4.5,
+});
+```
+
+## Notes
+
+- All filter inputs are optional
+- Omitting a filter input automatically passes that filter
+- Filters are combined with AND logic at the top level
+- Boolean filters (and/or) work with primitive filters and their inputs
+- Type inference works seamlessly with TypeScript strict mode

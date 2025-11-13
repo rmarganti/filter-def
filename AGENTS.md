@@ -1,10 +1,10 @@
-# Agent Guidelines for philter
+# Agent Guidelines for filter-def
 
 ## Build/Test Commands
 
 - Build: `pnpm run build`
 - Test all: `pnpm test`
-- Test single file: `pnpm test src/lib/philter.spec.ts`
+- Test single file: `pnpm test src/lib/filter-def.spec.ts`
 - Test pattern: `pnpm test -- --run --reporter=verbose "*equals*"`
 - Type check: `pnpm run typecheck`
 

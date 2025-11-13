@@ -75,6 +75,7 @@ export interface IsNotNullFilterDef<TEntity>
 
 /**
  * A `gt` (greater than) filter passes when the value is greater than the filter value.
+ * Works with any comparable data type (numbers, strings, dates, etc.).
  */
 export interface GTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
     kind: "gt";
@@ -82,6 +83,7 @@ export interface GTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
 
 /**
  * A `gte` (greater than or equal) filter passes when the value is greater than or equal to the filter value.
+ * Works with any comparable data type (numbers, strings, dates, etc.).
  */
 export interface GTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
     kind: "gte";
@@ -89,6 +91,7 @@ export interface GTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
 
 /**
  * An `lt` (less than) filter passes when the value is less than the filter value.
+ * Works with any comparable data type (numbers, strings, dates, etc.).
  */
 export interface LTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
     kind: "lt";
@@ -96,6 +99,7 @@ export interface LTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
 
 /**
  * An `lte` (less than or equal) filter passes when the value is less than or equal to the filter value.
+ * Works with any comparable data type (numbers, strings, dates, etc.).
  */
 export interface LTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
     kind: "lte";
