@@ -1,1 +1,20 @@
-export { entity } from './lib/philter';
+export { entity } from "./lib/filter-def";
+export type {
+    AndFilterDef,
+    BooleanFilterDef,
+    CommonFilterOptions,
+    ContainsFilterDef,
+    EqualsFilterDef,
+    FilterDef,
+    FilterFn,
+    GTEFilterDef,
+    GTFilterDef,
+    InArrayFilterDef,
+    InputForFilterDef,
+    IsNotNullFilterDef,
+    IsNullFilterDef,
+    LTEFilterDef,
+    LTFilterDef,
+    OrFilterDef,
+    PrimitiveFilterDef,
+} from "./lib/filter-def";
