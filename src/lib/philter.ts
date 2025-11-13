@@ -1,7 +1,7 @@
 export const entity = <EntityShape>() => {
-    const philter = <FilterObj extends FilterObjForEntity<EntityShape>>(
-        filterObj: FilterObj,
-    ): FilterFn<EntityShape, FilterObj> => filterFn(filterObj);
+    const philter = <FiltersDef extends FiltersDefForEntity<EntityShape>>(
+        FiltersDef: FiltersDef,
+    ): FilterFn<EntityShape, FiltersDef> => filterFn(FiltersDef);
 
     return { philter };
 };
@@ -10,9 +10,14 @@ export const entity = <EntityShape>() => {
 // Filter definitions
 // ----------------------------------------------------------------
 
-type FilterObjForEntity<T> = Record<string, FilterForEntity<T>>;
+type FiltersDefForEntity<T> = Record<string, FilterForEntity<T>>;
 
-export type FilterForEntity<T> =
+/**
+ * A single filter definition, ie. `{ kind: 'equals', field: 'email' }`
+ */
+export type FilterForEntity<T> = PrimitiveFilterDef<T> | BooleanFilterDef<T>;
+
+export type PrimitiveFilterDef<T> =
     | EqualsFilterDef<T>
     | ContainsFilterDef<T>
     | InArrayFilterDef<T>
@@ -22,6 +27,8 @@ export type FilterForEntity<T> =
     | GTEFilterDef<T>
     | LTFilterDef<T>
     | LTEFilterDef<T>;
+
+// -[ Primitive Filters ]----------------------------------------
 
 export interface CommonFilterOptions<T> {
     field: keyof T;
@@ -91,18 +98,35 @@ export interface LTEFilterDef<T> extends CommonFilterOptions<T> {
     kind: "lte";
 }
 
+// -[ Boolean Filters ]------------------------------------------
+
+export type BooleanFilterDef<T> = AndFilterDef<T> | OrFilterDef<T>;
+
+export interface AndFilterDef<T> {
+    kind: "and";
+    conditions: [PrimitiveFilterDef<T>, ...PrimitiveFilterDef<T>[]];
+}
+
+export interface OrFilterDef<T> {
+    kind: "or";
+    conditions: [PrimitiveFilterDef<T>, ...PrimitiveFilterDef<T>[]];
+}
+
 // ----------------------------------------------------------------
 // Filter input
 // ----------------------------------------------------------------
 
-type InputForFilterObj<
+/**
+ * Given an EntityShape and a FiltersDef, create
+ */
+type InputForFiltersDef<
     EntityShape,
-    FilterObj extends FilterObjForEntity<EntityShape>,
+    FiltersDef extends FiltersDefForEntity<EntityShape>,
 > = {
-    [K in keyof FilterObj]?: InputForFilterShape<EntityShape, FilterObj[K]>;
+    [K in keyof FiltersDef]?: InputForFilterShape<EntityShape, FiltersDef[K]>;
 };
 
-type InputForFilterShape<Entity, Filter extends FilterForEntity<any>> =
+type InputForFilterShape<Entity, Filter extends FilterForEntity<never>> =
     Filter extends EqualsFilterDef<Entity>
         ? Entity[Filter["field"]] | undefined
         : Filter extends ContainsFilterDef<Entity>
@@ -121,78 +145,140 @@ type InputForFilterShape<Entity, Filter extends FilterForEntity<any>> =
                       ? number | undefined
                       : Filter extends LTEFilterDef<Entity>
                         ? number | undefined
-                        : never;
-
+                        : Filter extends AndFilterDef<Entity>
+                          ?
+                                | InputForFilterShape<
+                                      Entity,
+                                      Filter["conditions"][number]
+                                  >
+                                | undefined
+                          : Filter extends OrFilterDef<Entity>
+                            ?
+                                  | InputForFilterShape<
+                                        Entity,
+                                        Filter["conditions"][number]
+                                    >
+                                  | undefined
+                            : never;
 // ----------------------------------------------------------------
 // Filtering
 // ----------------------------------------------------------------
 
 export type FilterFn<
     EntityShape,
-    FilterObj extends FilterObjForEntity<EntityShape>,
+    FiltersDef extends FiltersDefForEntity<EntityShape>,
 > = (
     entities: EntityShape[],
-    filterInput: InputForFilterObj<EntityShape, FilterObj>,
+    filterInput: InputForFiltersDef<EntityShape, FiltersDef>,
 ) => EntityShape[];
 
 /**
  * Creates a function that filters entities based on the provided filter object.
  */
 const filterFn =
-    <EntityShape, FilterObj extends FilterObjForEntity<EntityShape>>(
-        filterObj: FilterObj,
-    ): FilterFn<EntityShape, FilterObj> =>
+    <EntityShape, FiltersDef extends FiltersDefForEntity<EntityShape>>(
+        FiltersDef: FiltersDef,
+    ): FilterFn<EntityShape, FiltersDef> =>
     (
         entities: EntityShape[],
-        filterInput: InputForFilterObj<EntityShape, FilterObj>,
+        filterInput: InputForFiltersDef<EntityShape, FiltersDef>,
     ) => {
         return entities.filter((entity) => {
             // Check if entity passes ALL filters
-            return Object.entries(filterObj).every(([filterKey, filterDef]) => {
-                const filterValue =
-                    filterInput[filterKey as keyof typeof filterInput];
+            return Object.entries(FiltersDef).every(
+                ([filterKey, filterDef]) => {
+                    const filterValue =
+                        filterInput[filterKey as keyof typeof filterInput];
 
-                // If no filter value provided, skip this filter (it passes)
-                if (filterValue === undefined) {
-                    return true;
-                }
+                    // If no filter value provided, skip this filter (it passes)
+                    if (filterValue === undefined) {
+                        return true;
+                    }
 
-                const fieldValue = entity[filterDef.field];
+                    switch (filterDef.kind) {
+                        case "and":
+                        case "or":
+                            return booleanFilterPasses(
+                                entity,
+                                filterDef,
+                                filterValue,
+                            );
 
-                switch (filterDef.kind) {
-                    case "equals":
-                        return fieldValue === filterValue;
-
-                    case "contains":
-                        return String(fieldValue).includes(String(filterValue));
-
-                    case "inArray":
-                        return (filterValue as any[]).includes(fieldValue);
-
-                    case "isNull":
-                        return filterValue
-                            ? fieldValue == null
-                            : fieldValue != null;
-
-                    case "isNotNull":
-                        return filterValue
-                            ? fieldValue != null
-                            : fieldValue == null;
-
-                    case "gt":
-                        return Number(fieldValue) > (filterValue as number);
-
-                    case "gte":
-                        return Number(fieldValue) >= (filterValue as number);
-
-                    case "lt":
-                        return Number(fieldValue) < (filterValue as number);
-
-                    case "lte":
-                        return Number(fieldValue) <= (filterValue as number);
-                }
-
-                return true;
-            });
+                        default:
+                            return primitiveFilterPasses(
+                                entity,
+                                filterDef,
+                                filterValue,
+                            );
+                    }
+                },
+            );
         });
     };
+
+const booleanFilterPasses = <EntityShape>(
+    entity: EntityShape,
+    filterDef: BooleanFilterDef<EntityShape>,
+    filterValue: any, // We've already narrowed the type in calling functions
+): boolean => {
+    switch (filterDef.kind) {
+        case "and":
+            return filterDef.conditions.every((condition) =>
+                primitiveFilterPasses(entity, condition, filterValue),
+            );
+
+        case "or":
+            return filterDef.conditions.some((condition) =>
+                primitiveFilterPasses(entity, condition, filterValue),
+            );
+    }
+};
+
+/**
+ * Checks if an entity passes a primitive filter.
+ */
+const primitiveFilterPasses = <EntityShape>(
+    entity: EntityShape,
+    filterDef: PrimitiveFilterDef<EntityShape>,
+    filterValue: any, // We've already narrowed the type in calling functions
+): boolean => {
+    // If no filter value provided, skip this filter (it passes)
+    if (filterValue === undefined) {
+        return true;
+    }
+
+    const fieldValue = entity[filterDef.field];
+
+    switch (filterDef.kind) {
+        case "equals":
+            return fieldValue === filterValue;
+
+        case "contains":
+            return String(fieldValue).includes(String(filterValue));
+
+        case "inArray":
+            return (filterValue as any[]).includes(fieldValue);
+
+        case "isNull":
+            return filterValue ? fieldValue == null : fieldValue != null;
+
+        case "isNotNull":
+            return filterValue ? fieldValue != null : fieldValue == null;
+
+        case "gt":
+            return Number(fieldValue) > (filterValue as number);
+
+        case "gte":
+            return Number(fieldValue) >= (filterValue as number);
+
+        case "lt":
+            return Number(fieldValue) < (filterValue as number);
+
+        case "lte":
+            return Number(fieldValue) <= (filterValue as number);
+
+        default:
+            filterDef satisfies never;
+            return false;
+    }
+};
