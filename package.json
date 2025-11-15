@@ -27,11 +27,13 @@
         "build": "tsdown",
         "dev": "tsdown --watch",
         "test": "vitest",
+        "bench": "vitest bench --run",
         "format": "prettier --write .",
         "typecheck": "tsc --noEmit",
         "prepublishOnly": "pnpm run build"
     },
     "devDependencies": {
+        "@faker-js/faker": "^10.1.0",
         "@types/node": "^24.10.0",
         "bumpp": "^10.3.1",
         "prettier": "^3.6.2",
