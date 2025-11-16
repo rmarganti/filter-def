@@ -1,48 +1,48 @@
 {
-    "name": "filter-def",
-    "version": "0.0.0",
-    "description": "A starter for creating a TypeScript package.",
-    "type": "module",
-    "license": "MIT",
-    "homepage": "https://github.com/rmarganti/filter-def#readme",
-    "bugs": {
-        "url": "https://github.com/rmarganti/filter-def/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/rmarganti/filter-def.git"
-    },
-    "author": "Ryan Marganti <ryan.marganti@mail.com>",
-    "files": [
-        "dist"
-    ],
-    "main": "./dist/index.mjs",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.mts",
-    "exports": {
-        ".": "./dist/index.mjs",
-        "./package.json": "./package.json"
-    },
-    "scripts": {
-        "build": "tsdown",
-        "dev": "tsdown --watch",
-        "test": "vitest",
-        "bench": "vitest bench --run",
-        "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "typecheck": "tsc --noEmit",
-        "prepublishOnly": "pnpm run build"
-    },
-    "devDependencies": {
-        "@faker-js/faker": "^10.1.0",
-        "@semantic-release/git": "^10.0.1",
-        "@types/node": "^24.10.0",
-        "bumpp": "^10.3.1",
-        "conventional-changelog-conventionalcommits": "^8.0.0",
-        "prettier": "^3.6.2",
-        "semantic-release": "^24.2.0",
-        "tsdown": "^0.16.0",
-        "typescript": "^5.9.3",
-        "vitest": "^4.0.7"
-    }
+  "name": "filter-def",
+  "version": "0.0.0",
+  "description": "A starter for creating a TypeScript package.",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/rmarganti/filter-def#readme",
+  "bugs": {
+    "url": "https://github.com/rmarganti/filter-def/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmarganti/filter-def.git"
+  },
+  "author": "Ryan Marganti <ryan.marganti@mail.com>",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest",
+    "bench": "vitest bench --run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@types/node": "^24.10.0",
+    "bumpp": "^10.3.1",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "prettier": "^3.6.2",
+    "semantic-release": "^24.2.0",
+    "tsdown": "^0.16.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
+  }
 }
