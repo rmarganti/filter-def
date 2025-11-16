@@ -85,7 +85,6 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             pnpm exec semantic-release --dry-run
