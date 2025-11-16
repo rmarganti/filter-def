@@ -180,112 +180,144 @@ export type FilterFn<Entity, TFiltersDef extends FiltersDef<Entity>> = (
 ) => Entity[];
 
 /**
- * Creates a function that filters entities based on the provided filter object.
+ * A compiled filter checker function that tests if an entity passes a filter.
  */
-const filterFn =
-    <Entity, TFiltersDef extends FiltersDef<Entity>>(
-        filtersDef: TFiltersDef,
-    ): FilterFn<Entity, TFiltersDef> =>
-    (
+type CompiledFilterChecker<Entity> = (
+    entity: Entity,
+    filterValue: unknown,
+) => boolean;
+
+/**
+ * Pre-compiles a primitive filter definition into an optimized checker function.
+ */
+const compilePrimitiveFilter = <Entity>(
+    filterDef: PrimitiveFilterDef<Entity>,
+): CompiledFilterChecker<Entity> => {
+    const field = filterDef.field;
+
+    switch (filterDef.kind) {
+        case "equals":
+            return (entity, filterValue) => entity[field] === filterValue;
+
+        case "contains":
+            return (entity, filterValue) =>
+                String(entity[field]).includes(String(filterValue));
+
+        case "inArray":
+            return (entity, filterValue) =>
+                (filterValue as unknown[]).includes(entity[field]);
+
+        case "isNull":
+            return (entity, filterValue) =>
+                filterValue ? entity[field] == null : entity[field] != null;
+
+        case "isNotNull":
+            return (entity, filterValue) =>
+                filterValue ? entity[field] != null : entity[field] == null;
+
+        case "gt":
+            return (entity, filterValue) =>
+                Number(entity[field]) > (filterValue as number);
+
+        case "gte":
+            return (entity, filterValue) =>
+                Number(entity[field]) >= (filterValue as number);
+
+        case "lt":
+            return (entity, filterValue) =>
+                Number(entity[field]) < (filterValue as number);
+
+        case "lte":
+            return (entity, filterValue) =>
+                Number(entity[field]) <= (filterValue as number);
+
+        default:
+            filterDef satisfies never;
+            return () => false;
+    }
+};
+
+/**
+ * Pre-compiles a boolean filter definition into an optimized checker function.
+ */
+const compileBooleanFilter = <Entity>(
+    filterDef: BooleanFilterDef<Entity>,
+): CompiledFilterChecker<Entity> => {
+    const compiledConditions = filterDef.conditions.map((condition) =>
+        compilePrimitiveFilter(condition),
+    );
+
+    switch (filterDef.kind) {
+        case "and":
+            return (entity, filterValue) =>
+                compiledConditions.every((checker) =>
+                    checker(entity, filterValue),
+                );
+
+        case "or":
+            return (entity, filterValue) =>
+                compiledConditions.some((checker) =>
+                    checker(entity, filterValue),
+                );
+    }
+};
+
+/**
+ * Pre-compiles a filter definition into an optimized checker function.
+ */
+const compileFilter = <Entity>(
+    filterDef: FilterDef<Entity>,
+): CompiledFilterChecker<Entity> => {
+    switch (filterDef.kind) {
+        case "and":
+        case "or":
+            return compileBooleanFilter(filterDef);
+
+        default:
+            return compilePrimitiveFilter(filterDef);
+    }
+};
+
+/**
+ * Creates a function that filters entities based on the provided filter object.
+ * This v2 implementation pre-compiles all filters for optimal performance.
+ */
+const filterFn = <Entity, TFiltersDef extends FiltersDef<Entity>>(
+    filtersDef: TFiltersDef,
+): FilterFn<Entity, TFiltersDef> => {
+    // Pre-compile all filters at definition time
+    const compiledFilters: Array<{
+        key: string;
+        checker: CompiledFilterChecker<Entity>;
+    }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
+        key,
+        checker: compileFilter(filterDef),
+    }));
+
+    // Return the optimized filter function
+    return (
         entities: Entity[],
         filterInput: InputForFiltersDef<Entity, TFiltersDef>,
     ) => {
         return entities.filter((entity) => {
             // Check if entity passes ALL filters
-            return Object.entries(filtersDef).every(
-                ([filterKey, filterDef]) => {
-                    const filterValue =
-                        filterInput[filterKey as keyof typeof filterInput];
+            for (let i = 0; i < compiledFilters.length; i++) {
+                const { key, checker } = compiledFilters[i];
+                const filterValue =
+                    filterInput[key as keyof typeof filterInput];
 
-                    // If no filter value provided, skip this filter (it passes)
-                    if (filterValue === undefined) {
-                        return true;
-                    }
+                // If no filter value provided, skip this filter (it passes)
+                if (filterValue === undefined) {
+                    continue;
+                }
 
-                    switch (filterDef.kind) {
-                        case "and":
-                        case "or":
-                            return booleanFilterPasses(
-                                entity,
-                                filterDef,
-                                filterValue,
-                            );
+                // Use the pre-compiled checker
+                if (!checker(entity, filterValue)) {
+                    return false;
+                }
+            }
 
-                        default:
-                            return primitiveFilterPasses(
-                                entity,
-                                filterDef,
-                                filterValue,
-                            );
-                    }
-                },
-            );
+            return true;
         });
     };
-
-const booleanFilterPasses = <Entity>(
-    entity: Entity,
-    filterDef: BooleanFilterDef<Entity>,
-    filterValue: unknown, // We've already narrowed the type in calling functions
-): boolean => {
-    switch (filterDef.kind) {
-        case "and":
-            return filterDef.conditions.every((condition) =>
-                primitiveFilterPasses(entity, condition, filterValue),
-            );
-
-        case "or":
-            return filterDef.conditions.some((condition) =>
-                primitiveFilterPasses(entity, condition, filterValue),
-            );
-    }
-};
-
-/**
- * Checks if an entity passes a primitive filter.
- */
-const primitiveFilterPasses = <Entity>(
-    entity: Entity,
-    filterDef: PrimitiveFilterDef<Entity>,
-    filterValue: unknown, // We've already narrowed the type in calling functions
-): boolean => {
-    // If no filter value provided, skip this filter (it passes)
-    if (filterValue === undefined) {
-        return true;
-    }
-
-    const fieldValue = entity[filterDef.field];
-
-    switch (filterDef.kind) {
-        case "equals":
-            return fieldValue === filterValue;
-
-        case "contains":
-            return String(fieldValue).includes(String(filterValue));
-
-        case "inArray":
-            return (filterValue as unknown[]).includes(fieldValue);
-
-        case "isNull":
-            return filterValue ? fieldValue == null : fieldValue != null;
-
-        case "isNotNull":
-            return filterValue ? fieldValue != null : fieldValue == null;
-
-        case "gt":
-            return Number(fieldValue) > (filterValue as number);
-
-        case "gte":
-            return Number(fieldValue) >= (filterValue as number);
-
-        case "lt":
-            return Number(fieldValue) < (filterValue as number);
-
-        case "lte":
-            return Number(fieldValue) <= (filterValue as number);
-
-        default:
-            filterDef satisfies never;
-            return false;
-    }
 };
