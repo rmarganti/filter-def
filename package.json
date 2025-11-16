@@ -29,6 +29,7 @@
         "test": "vitest",
         "bench": "vitest bench --run",
         "format": "prettier --write .",
+        "format:check": "prettier --check .",
         "typecheck": "tsc --noEmit",
         "prepublishOnly": "pnpm run build"
     },
