@@ -162,26 +162,23 @@ interface Product {
     price: number;
     category: string;
     inStock: boolean;
-    rating: number;
+    criticRating: number;
+    userRating: number;
 }
 
 const filterProducts = entity<Product>().filterDef({
     // Primitive filters
     nameContains: { kind: "contains", field: "name" },
-    priceRange: {
-        kind: "and",
-        conditions: [
-            { kind: "gte", field: "price" },
-            { kind: "lte", field: "price" },
-        ],
-    },
     inCategory: { kind: "inArray", field: "category" },
     inStock: { kind: "equals", field: "inStock" },
 
     // Boolean filter
-    popularOrHighRated: {
+    ratingAtLeast: {
         kind: "or",
-        conditions: [{ kind: "gte", field: "rating" }],
+        conditions: [
+            { kind: "gte", field: "criticRating" },
+            { kind: "gte", field: "userRating" },
+        ],
     },
 });
 
@@ -192,7 +189,7 @@ const results = filterProducts(products, {
     priceRange: undefined, // Optional filters
     inCategory: ["electronics", "gadgets"],
     inStock: true,
-    popularOrHighRated: 4.5,
+    ratingAtLeast: 4.0,
 });
 ```
 

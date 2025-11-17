@@ -385,38 +385,9 @@ describe("Combined Filters", () => {
 });
 
 describe("Boolean AND Filter", () => {
-    const userFilter = userEntity.filterDef({
-        activeWithPhone: {
-            kind: "and",
-            conditions: [
-                { kind: "equals", field: "isActive" },
-                { kind: "isNotNull", field: "phone" },
-            ],
-        },
-    });
-
-    it("should pass when all AND conditions are met", () => {
-        const result = userFilter(exampleUsers, {
-            activeWithPhone: true,
-        });
-
-        // John and Alice are active with phones
-        expect(result).toEqual([exampleUsers[0], exampleUsers[3]]);
-    });
-
-    it("should fail when any AND condition is not met", () => {
-        // With false: isActive === false AND phone isNotNull === false (phone IS null)
-        // This means: inactive AND no phone = no one matches
-        const result = userFilter(exampleUsers, {
-            activeWithPhone: false,
-        });
-
-        expect(result).toEqual([]);
-    });
-
-    it("should work with age range AND conditions", () => {
-        const ageRangeFilter = userEntity.filterDef({
-            ageRange: {
+    it("should work with age exact match using range conditions", () => {
+        const ageExactFilter = userEntity.filterDef({
+            ageExact: {
                 kind: "and",
                 conditions: [
                     { kind: "gte", field: "age" },
@@ -425,80 +396,138 @@ describe("Boolean AND Filter", () => {
             },
         });
 
-        const result = ageRangeFilter(exampleUsers, {
-            ageRange: 30, // Using 30 for both conditions
+        const result = ageExactFilter(exampleUsers, {
+            ageExact: 30, // >= 30 AND <= 30 means exactly 30
         });
 
-        // Only John is exactly 30 (>= 30 AND <= 30)
+        // Only John is exactly 30
         expect(result).toEqual([exampleUsers[0]]);
     });
 
-    it("should work with multiple fields in AND", () => {
-        const multiFieldFilter = userEntity.filterDef({
-            highScoreAndActive: {
+    it("should work with score range conditions", () => {
+        const scoreRangeFilter = userEntity.filterDef({
+            scoreRange: {
                 kind: "and",
                 conditions: [
-                    { kind: "gt", field: "score" },
-                    { kind: "equals", field: "isActive" },
+                    { kind: "gte", field: "score" },
+                    { kind: "lte", field: "score" },
                 ],
             },
         });
 
-        const result = multiFieldFilter(exampleUsers, {
-            highScoreAndActive: true,
+        const result = scoreRangeFilter(exampleUsers, {
+            scoreRange: 85,
         });
 
-        // With true: score > true (treated as 1) AND isActive === true
-        // All active users have scores > 1
-        expect(result).toEqual([
-            exampleUsers[0],
-            exampleUsers[1],
-            exampleUsers[3],
-        ]);
+        // Only John has score exactly 85
+        expect(result).toEqual([exampleUsers[0]]);
+    });
+
+    it("should work with multiple numeric comparisons on same field", () => {
+        const ageFilter = userEntity.filterDef({
+            ageNotInRange: {
+                kind: "and",
+                conditions: [
+                    { kind: "gt", field: "age" },
+                    { kind: "lt", field: "age" },
+                ],
+            },
+        });
+
+        const result = ageFilter(exampleUsers, {
+            ageNotInRange: 30,
+        });
+
+        // Nobody can be both > 30 AND < 30 simultaneously
+        expect(result).toEqual([]);
     });
 
     it("should return all when filter value is undefined", () => {
-        const result = userFilter(exampleUsers, {});
+        const ageFilter = userEntity.filterDef({
+            ageExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+        });
+
+        const result = ageFilter(exampleUsers, {});
 
         expect(result).toEqual(exampleUsers);
     });
 });
 
 describe("Boolean OR Filter", () => {
-    const userFilter = userEntity.filterDef({
-        activeOrHasPhone: {
-            kind: "or",
-            conditions: [
-                { kind: "equals", field: "isActive" },
-                { kind: "isNotNull", field: "phone" },
-            ],
-        },
-    });
-
-    it("should pass when any OR condition is met", () => {
-        const result = userFilter(exampleUsers, {
-            activeOrHasPhone: true,
+    it("should find values outside a range", () => {
+        const ageOutsideRangeFilter = userEntity.filterDef({
+            youngOrOld: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "age" },
+                    { kind: "gt", field: "age" },
+                ],
+            },
         });
 
-        // Everyone except Bob meets at least one condition:
-        // John: active AND has phone
-        // Jane: active but no phone
-        // Bob: not active but has phone
-        // Alice: active AND has phone
-        expect(result).toEqual(exampleUsers);
-    });
-
-    it("should fail when no OR conditions are met", () => {
-        const result = userFilter(exampleUsers, {
-            activeOrHasPhone: false,
+        const result = ageOutsideRangeFilter(exampleUsers, {
+            youngOrOld: 28,
         });
 
-        // With false: isActive === false OR phone isNotNull === false (phone IS null)
-        // Bob (inactive) OR Jane (no phone)
-        expect(result).toEqual([exampleUsers[1], exampleUsers[2]]);
+        // Jane (25 < 28), John (30 > 28), and Bob (40 > 28)
+        // Alice is exactly 28, so excluded
+        expect(result).toEqual([
+            exampleUsers[0],
+            exampleUsers[1],
+            exampleUsers[2],
+        ]);
     });
 
-    it("should work with age OR conditions", () => {
+    it("should work with score threshold OR conditions", () => {
+        const scoreFilter = userEntity.filterDef({
+            extremeScores: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "score" },
+                    { kind: "gt", field: "score" },
+                ],
+            },
+        });
+
+        const result = scoreFilter(exampleUsers, {
+            extremeScores: 85,
+        });
+
+        // Bob (78 < 85), Jane (92 > 85), Alice (88 > 85)
+        // John is exactly 85, so excluded
+        expect(result).toEqual([
+            exampleUsers[1],
+            exampleUsers[2],
+            exampleUsers[3],
+        ]);
+    });
+
+    it("should work with string contains on multiple fields", () => {
+        const stringFilter = userEntity.filterDef({
+            containsInNameOrEmail: {
+                kind: "or",
+                conditions: [
+                    { kind: "contains", field: "name" },
+                    { kind: "contains", field: "email" },
+                ],
+            },
+        });
+
+        const result = stringFilter(exampleUsers, {
+            containsInNameOrEmail: "Doe",
+        });
+
+        // John and Jane have "Doe" in name
+        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
+    });
+
+    it("should return all when filter value is undefined", () => {
         const ageFilter = userEntity.filterDef({
             youngOrOld: {
                 kind: "or",
@@ -509,39 +538,7 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {
-            youngOrOld: 28,
-        });
-
-        // Jane (25 < 28) and John (30 > 28) and Bob (40 > 28)
-        expect(result).toEqual([
-            exampleUsers[0],
-            exampleUsers[1],
-            exampleUsers[2],
-        ]);
-    });
-
-    it("should work with contains OR equals", () => {
-        const nameFilter = userEntity.filterDef({
-            doeOrSmith: {
-                kind: "or",
-                conditions: [
-                    { kind: "contains", field: "name" },
-                    { kind: "contains", field: "email" },
-                ],
-            },
-        });
-
-        const result = nameFilter(exampleUsers, {
-            doeOrSmith: "Doe",
-        });
-
-        // John and Jane have "Doe" in name
-        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
-    });
-
-    it("should return all when filter value is undefined", () => {
-        const result = userFilter(exampleUsers, {});
+        const result = ageFilter(exampleUsers, {});
 
         expect(result).toEqual(exampleUsers);
     });
@@ -550,14 +547,116 @@ describe("Boolean OR Filter", () => {
 describe("Complex Boolean Filters", () => {
     it("should support multiple boolean filters together", () => {
         const complexFilter = userEntity.filterDef({
-            activeAndHasPhone: {
+            ageExact: {
                 kind: "and",
                 conditions: [
-                    { kind: "equals", field: "isActive" },
-                    { kind: "isNotNull", field: "phone" },
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
                 ],
             },
-            ageRange: {
+            scoreExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "score" },
+                    { kind: "lte", field: "score" },
+                ],
+            },
+        });
+
+        const result = complexFilter(exampleUsers, {
+            ageExact: 30,
+            scoreExact: 85,
+        });
+
+        // Only John is 30 years old with score of 85
+        expect(result).toEqual([exampleUsers[0]]);
+    });
+
+    it("should combine boolean filter with primitive filters", () => {
+        const mixedFilter = userEntity.filterDef({
+            nameContains: { kind: "contains", field: "name" },
+            ageOutsideRange: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "age" },
+                    { kind: "gt", field: "age" },
+                ],
+            },
+        });
+
+        const result = mixedFilter(exampleUsers, {
+            nameContains: "Doe",
+            ageOutsideRange: 27,
+        });
+
+        // Jane Doe is 25 (< 27) and John Doe is 30 (> 27)
+        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
+    });
+
+    it("should handle three numeric conditions in AND on same field", () => {
+        const tripleAndFilter = userEntity.filterDef({
+            scoreInRange: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "score" },
+                    { kind: "lte", field: "score" },
+                    { kind: "equals", field: "score" },
+                ],
+            },
+        });
+
+        const result = tripleAndFilter(exampleUsers, {
+            scoreInRange: 85,
+        });
+
+        // Only John has score exactly 85
+        expect(result).toEqual([exampleUsers[0]]);
+    });
+
+    it("should handle three conditions in OR on same field", () => {
+        const tripleOrFilter = userEntity.filterDef({
+            ageMatch: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "age" },
+                    { kind: "equals", field: "age" },
+                    { kind: "gt", field: "age" },
+                ],
+            },
+        });
+
+        const result = tripleOrFilter(exampleUsers, {
+            ageMatch: 30,
+        });
+
+        // Everyone matches: Jane & Alice (< 30), John (== 30), Bob (> 30)
+        expect(result).toEqual(exampleUsers);
+    });
+
+    it("should work with string matching across multiple fields", () => {
+        const stringFilter = userEntity.filterDef({
+            matchInNameOrEmail: {
+                kind: "or",
+                conditions: [
+                    { kind: "contains", field: "name" },
+                    { kind: "contains", field: "email" },
+                ],
+            },
+        });
+
+        const result = stringFilter(exampleUsers, {
+            matchInNameOrEmail: "smith",
+        });
+
+        // Bob Smith has "smith" in name and email
+        expect(result).toEqual([exampleUsers[2]]);
+    });
+});
+
+describe("Boolean Filter Edge Cases", () => {
+    it("should handle empty array with boolean filters", () => {
+        const ageFilter = userEntity.filterDef({
+            ageExact: {
                 kind: "and",
                 conditions: [
                     { kind: "gte", field: "age" },
@@ -566,189 +665,93 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = complexFilter(exampleUsers, {
-            activeAndHasPhone: true,
-            ageRange: 30,
-        });
-
-        // Only John meets both criteria
-        expect(result).toEqual([exampleUsers[0]]);
-    });
-
-    it("should combine boolean filter with primitive filters", () => {
-        const mixedFilter = userEntity.filterDef({
-            nameContains: { kind: "contains", field: "name" },
-            activeOrHighScore: {
-                kind: "or",
-                conditions: [
-                    { kind: "equals", field: "isActive" },
-                    { kind: "gt", field: "score" },
-                ],
-            },
-        });
-
-        const result = mixedFilter(exampleUsers, {
-            nameContains: "Doe",
-            activeOrHighScore: true,
-        });
-
-        // Both Does are active
-        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
-    });
-
-    it("should handle three conditions in AND", () => {
-        const tripleAndFilter = userEntity.filterDef({
-            perfectMatch: {
-                kind: "and",
-                conditions: [
-                    { kind: "equals", field: "isActive" },
-                    { kind: "isNotNull", field: "phone" },
-                    { kind: "gte", field: "score" },
-                ],
-            },
-        });
-
-        const result = tripleAndFilter(exampleUsers, {
-            perfectMatch: true,
-        });
-
-        // With true: isActive === true AND phone isNotNull === true AND score >= true (1)
-        // John and Alice are active with phones and scores >= 1
-        expect(result).toEqual([exampleUsers[0], exampleUsers[3]]);
-    });
-
-    it("should handle three conditions in OR", () => {
-        const tripleOrFilter = userEntity.filterDef({
-            anyMatch: {
-                kind: "or",
-                conditions: [
-                    { kind: "lt", field: "age" },
-                    { kind: "gt", field: "age" },
-                    { kind: "equals", field: "name" },
-                ],
-            },
-        });
-
-        const result = tripleOrFilter(exampleUsers, {
-            anyMatch: 30,
-        });
-
-        // Jane (25 < 30), Bob (40 > 30), Alice (28 < 30)
-        // John (30 == 30) fails lt and gt, but name != 30
-        expect(result).toEqual([
-            exampleUsers[1],
-            exampleUsers[2],
-            exampleUsers[3],
-        ]);
-    });
-
-    it("should work with email domain filtering using OR", () => {
-        const domainFilter = userEntity.filterDef({
-            exampleOrSmithDomain: {
-                kind: "or",
-                conditions: [
-                    { kind: "contains", field: "email" },
-                    { kind: "contains", field: "email" },
-                ],
-            },
-        });
-
-        const result = domainFilter(exampleUsers, {
-            exampleOrSmithDomain: "example.com",
-        });
-
-        // John, Jane, and Alice have example.com emails
-        expect(result).toEqual([
-            exampleUsers[0],
-            exampleUsers[1],
-            exampleUsers[3],
-        ]);
-    });
-});
-
-describe("Boolean Filter Edge Cases", () => {
-    const userFilter = userEntity.filterDef({
-        andFilter: {
-            kind: "and",
-            conditions: [
-                { kind: "equals", field: "isActive" },
-                { kind: "isNotNull", field: "phone" },
-            ],
-        },
-        orFilter: {
-            kind: "or",
-            conditions: [
-                { kind: "equals", field: "isActive" },
-                { kind: "isNotNull", field: "phone" },
-            ],
-        },
-    });
-
-    it("should handle empty array with boolean filters", () => {
-        const result = userFilter([], {
-            andFilter: true,
+        const result = ageFilter([], {
+            ageExact: 30,
         });
 
         expect(result).toEqual([]);
     });
 
     it("should handle undefined filter values for boolean filters", () => {
-        const result = userFilter(exampleUsers, {});
+        const ageFilter = userEntity.filterDef({
+            ageExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+        });
+
+        const result = ageFilter(exampleUsers, {});
 
         expect(result).toEqual(exampleUsers);
     });
 
     it("should apply both AND and OR filters together", () => {
-        const result = userFilter(exampleUsers, {
-            andFilter: true,
-            orFilter: false,
-        });
-
-        // andFilter: true means active AND has phone (John, Alice)
-        // orFilter: false means NOT (active OR has phone) = not active AND no phone (none)
-        // Intersection of these is empty
-        expect(result).toEqual([]);
-    });
-
-    it("should work with isNull in boolean filters", () => {
-        const nullCheckFilter = userEntity.filterDef({
-            inactiveWithoutPhone: {
+        const combinedFilter = userEntity.filterDef({
+            ageExact: {
                 kind: "and",
                 conditions: [
-                    { kind: "equals", field: "isActive" },
-                    { kind: "isNull", field: "phone" },
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+            scoreOutsideRange: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "score" },
+                    { kind: "gt", field: "score" },
                 ],
             },
         });
 
-        const result = nullCheckFilter(exampleUsers, {
-            inactiveWithoutPhone: true,
+        const result = combinedFilter(exampleUsers, {
+            ageExact: 30,
+            scoreOutsideRange: 85,
         });
 
-        // With true: isActive === true AND phone isNull === true (phone IS null)
-        // Active without phone = only Jane
-        expect(result).toEqual([exampleUsers[1]]);
+        // John is 30 but score is exactly 85, so excluded by scoreOutsideRange
+        expect(result).toEqual([]);
     });
 
-    it("should work with inArray in boolean filters", () => {
+    it("should work with multiple OR conditions on same field", () => {
+        const ageFilter = userEntity.filterDef({
+            ageMatch: {
+                kind: "or",
+                conditions: [
+                    { kind: "equals", field: "age" },
+                    { kind: "equals", field: "age" },
+                ],
+            },
+        });
+
+        const result = ageFilter(exampleUsers, {
+            ageMatch: 30,
+        });
+
+        // Duplicate conditions still work - finds John with age 30
+        expect(result).toEqual([exampleUsers[0]]);
+    });
+
+    it("should work with inArray in OR boolean filters", () => {
         const arrayFilter = userEntity.filterDef({
-            specificAgesAndActive: {
-                kind: "and",
+            ageInArrays: {
+                kind: "or",
                 conditions: [
                     { kind: "inArray", field: "age" },
-                    { kind: "equals", field: "isActive" },
+                    { kind: "inArray", field: "score" },
                 ],
             },
         });
 
         const result = arrayFilter(exampleUsers, {
-            specificAgesAndActive: [25, 30],
+            ageInArrays: [25, 30],
         });
 
-        // With [25, 30]: age inArray [25, 30] AND isActive === [25, 30]
-        // Age matches for John (30) and Jane (25), but isActive === [25, 30] is false for both
-        // This demonstrates that boolean filters work best when all conditions use the same value type
-        expect(result).toEqual([]);
+        // Age matches for John (30) and Jane (25)
+        // Score doesn't match anyone (no one has score of 25 or 30)
+        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
     });
 });
 
