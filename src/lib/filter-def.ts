@@ -1,3 +1,32 @@
+/**
+ * Signify what kind of data we will be filtering.
+ *
+ * ```typescript
+ * interface User {
+ *     id: string;
+ *     name: string;
+ *     email: string;
+ * }
+ *
+ * const user = entity<User>();
+ * ```
+ *
+ * You can then use the entity definition to define our filters.
+ *
+ * ```typescript
+ * const filterDef = user.filterDef({
+ *     name: { kind: 'equals', field: 'name' },
+ *     email: { kind: 'equals', field: 'email' },
+ * });
+ * ```
+ *
+ * You can also do this all at once, instead of defining the entity and then the
+ * filter definition separately.
+ *
+ * ```typescript
+ * const user = entity<User>().filterDef({ ... })
+ * ```
+ */
 export const entity = <TEntity>() => {
     const filterDef = <TFiltersDef extends FiltersDef<TEntity>>(
         FiltersDef: TFiltersDef,
