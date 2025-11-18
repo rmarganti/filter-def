@@ -6,7 +6,6 @@ export type {
     ContainsFilterDef,
     EqualsFilterDef,
     FilterDef,
-    FilterFn,
     GTEFilterDef,
     GTFilterDef,
     InArrayFilterDef,
@@ -16,5 +15,6 @@ export type {
     LTEFilterDef,
     LTFilterDef,
     OrFilterDef,
+    PredicateCreator,
     PrimitiveFilterDef,
 } from "./lib/filter-def";
