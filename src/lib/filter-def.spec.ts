@@ -8,6 +8,13 @@ interface User {
     phone?: string;
     isActive: boolean;
     score: number;
+    posts?: Array<Post>;
+}
+
+interface Post {
+    id: string;
+    title: string;
+    content: string;
 }
 
 const userEntity = entity<User>();
@@ -752,6 +759,58 @@ describe("Boolean Filter Edge Cases", () => {
         // Age matches for John (30) and Jane (25)
         // Score doesn't match anyone (no one has score of 25 or 30)
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
+    });
+});
+
+describe("Custom Filters", () => {
+    const userFilter = userEntity.filterDef({
+        wrotePostId: (user: User, val: string) =>
+            user.posts?.some((post) => post.id === val) ?? false,
+        hasPosts: (user: User, val: boolean) => {
+            const postCount = user.posts?.length ?? 0;
+            return val ? postCount > 0 : postCount === 0;
+        },
+    });
+
+    const usersWithPosts: Array<User> = [
+        {
+            ...exampleUsers[0],
+            posts: [
+                { id: "1", title: "Post 1", content: "Content 1" },
+                { id: "2", title: "Post 2", content: "Content 2" },
+            ],
+        },
+        {
+            ...exampleUsers[1],
+            posts: [
+                { id: "3", title: "Post 3", content: "Content 3" },
+                { id: "4", title: "Post 4", content: "Content 4" },
+            ],
+        },
+    ];
+
+    it("should filter values matching a custom filter", () => {
+        const result = userFilter(usersWithPosts, {
+            wrotePostId: "1",
+        });
+
+        expect(result).toEqual([usersWithPosts[0]]);
+    });
+
+    it("should return an empty array if no values match", () => {
+        const result = userFilter(usersWithPosts, {
+            wrotePostId: "5",
+        });
+
+        expect(result).toEqual([]);
+    });
+
+    it("should return all when all values match", () => {
+        const result = userFilter(usersWithPosts, {
+            hasPosts: true,
+        });
+
+        expect(result).toEqual(usersWithPosts);
     });
 });
 
