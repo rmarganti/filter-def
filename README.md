@@ -22,11 +22,17 @@ const filterUsers = entity<User>().filterDef({
 
 type UserFilterInput = InputForFilterDef<typeof filterUsers>;
 
-const filteredUsers = filterUsers(users, {
+// Create a predicate function
+const predicate = filterUsers({
     name: "John",
     emailContains: "@example.com",
     olderThan: 25,
 });
+
+// Use with native array methods
+const filteredUsers = users.filter(predicate);
+const firstMatch = users.find(predicate);
+const hasMatch = users.some(predicate);
 ```
 
 ## Features
@@ -34,6 +40,7 @@ const filteredUsers = filterUsers(users, {
 - **Type-safe filters**: Full TypeScript inference for filter inputs and entity fields
 - **Composable**: Combine multiple filters with AND/OR logic
 - **Simple API**: Define filters once, reuse everywhere
+- **Native integration**: Returns predicates that work with `filter()`, `find()`, `some()`, and `every()`
 - **Zero dependencies**: Lightweight and framework-agnostic
 
 ## Filter Types
@@ -184,17 +191,25 @@ const filterProducts = entity<Product>().filterDef({
 
 type ProductFilterInput = InputForFilterDef<typeof filterProducts>;
 
-const results = filterProducts(products, {
+// Create a predicate with your filter criteria
+const predicate = filterProducts({
     nameContains: "phone",
-    priceRange: undefined, // Optional filters
     inCategory: ["electronics", "gadgets"],
     inStock: true,
     ratingAtLeast: 4.0,
 });
+
+// Use the predicate with native array methods
+const results = products.filter(predicate);
+const firstProduct = products.find(predicate);
+const hasProducts = products.some(predicate);
 ```
 
 ## Notes
 
+- `filterDef()` returns a predicate creator function
+- Call the predicate creator with filter values to get a predicate function
+- Use the predicate with native array methods: `filter()`, `find()`, `some()`, `every()`
 - All filter inputs are optional
 - Omitting a filter input automatically passes that filter
 - Filters are combined with AND logic at the top level

@@ -8,7 +8,7 @@ interface User {
     phone?: string;
     isActive: boolean;
     score: number;
-    posts?: Array<Post>;
+    posts: Array<Post>;
 }
 
 interface Post {
@@ -18,6 +18,7 @@ interface Post {
 }
 
 const userEntity = entity<User>();
+const postEntity = entity<Post>();
 
 const exampleUsers: Array<User> = [
     {
@@ -27,6 +28,10 @@ const exampleUsers: Array<User> = [
         phone: "555-1234",
         isActive: true,
         score: 85,
+        posts: [
+            { id: "1", title: "Post 1", content: "Content 1" },
+            { id: "2", title: "Post 2", content: "Content 2" },
+        ],
     },
     {
         name: "Jane Doe",
@@ -35,6 +40,10 @@ const exampleUsers: Array<User> = [
         phone: undefined,
         isActive: true,
         score: 92,
+        posts: [
+            { id: "3", title: "Post 3", content: "Content 3" },
+            { id: "4", title: "Post 4", content: "Content 4" },
+        ],
     },
     {
         name: "Bob Smith",
@@ -43,6 +52,7 @@ const exampleUsers: Array<User> = [
         phone: "555-5678",
         isActive: false,
         score: 78,
+        posts: [],
     },
     {
         name: "Alice Johnson",
@@ -51,6 +61,7 @@ const exampleUsers: Array<User> = [
         phone: "555-9012",
         isActive: true,
         score: 88,
+        posts: [],
     },
 ];
 
@@ -61,40 +72,36 @@ describe("Equals Filter", () => {
     });
 
     it("should filter by exact string match", () => {
-        const result = userFilter(exampleUsers, {
-            nameEquals: "John Doe",
-        });
+        const predicate = userFilter({ nameEquals: "John Doe" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should filter by exact number match", () => {
-        const result = userFilter(exampleUsers, {
-            ageEquals: 30,
-        });
+        const predicate = userFilter({ ageEquals: 30 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should return empty array when no matches", () => {
-        const result = userFilter(exampleUsers, {
-            nameEquals: "Nonexistent User",
-        });
+        const predicate = userFilter({ nameEquals: "Nonexistent User" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
 
     it("should support combining multiple equals filters", () => {
-        const result = userFilter(exampleUsers, {
-            nameEquals: "John Doe",
-            ageEquals: 30,
-        });
+        const predicate = userFilter({ nameEquals: "John Doe", ageEquals: 30 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should return all when no filter value provided", () => {
-        const result = userFilter(exampleUsers, {});
+        const predicate = userFilter({});
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -107,9 +114,8 @@ describe("Contains Filter", () => {
     });
 
     it("should filter by substring match", () => {
-        const result = userFilter(exampleUsers, {
-            emailContains: "example.com",
-        });
+        const predicate = userFilter({ emailContains: "example.com" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([
             exampleUsers[0],
@@ -119,9 +125,8 @@ describe("Contains Filter", () => {
     });
 
     it("should be case-sensitive", () => {
-        const result = userFilter(exampleUsers, {
-            nameContains: "john",
-        });
+        const predicate = userFilter({ nameContains: "john" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
@@ -134,25 +139,22 @@ describe("InArray Filter", () => {
     });
 
     it("should filter when value is in array", () => {
-        const result = userFilter(exampleUsers, {
-            ageInArray: [25, 30],
-        });
+        const predicate = userFilter({ ageInArray: [25, 30] });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
     });
 
     it("should filter with single-element array", () => {
-        const result = userFilter(exampleUsers, {
-            ageInArray: [40],
-        });
+        const predicate = userFilter({ ageInArray: [40] });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
     });
 
     it("should return empty array when value not in array", () => {
-        const result = userFilter(exampleUsers, {
-            ageInArray: [100, 200],
-        });
+        const predicate = userFilter({ ageInArray: [100, 200] });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
@@ -164,17 +166,15 @@ describe("IsNull Filter", () => {
     });
 
     it("should find null/undefined values when filter is true", () => {
-        const result = userFilter(exampleUsers, {
-            phoneIsNull: true,
-        });
+        const predicate = userFilter({ phoneIsNull: true });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1]]);
     });
 
     it("should find non-null values when filter is false", () => {
-        const result = userFilter(exampleUsers, {
-            phoneIsNull: false,
-        });
+        const predicate = userFilter({ phoneIsNull: false });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([
             exampleUsers[0],
@@ -190,9 +190,8 @@ describe("IsNotNull Filter", () => {
     });
 
     it("should find non-null values when filter is true", () => {
-        const result = userFilter(exampleUsers, {
-            phoneIsNotNull: true,
-        });
+        const predicate = userFilter({ phoneIsNotNull: true });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([
             exampleUsers[0],
@@ -202,9 +201,8 @@ describe("IsNotNull Filter", () => {
     });
 
     it("should find null/undefined values when filter is false", () => {
-        const result = userFilter(exampleUsers, {
-            phoneIsNotNull: false,
-        });
+        const predicate = userFilter({ phoneIsNotNull: false });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1]]);
     });
@@ -217,25 +215,22 @@ describe("Greater Than (GT) Filter", () => {
     });
 
     it("should filter values greater than threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThan: 28,
-        });
+        const predicate = userFilter({ ageGreaterThan: 28 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0], exampleUsers[2]]);
     });
 
     it("should not include values equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThan: 30,
-        });
+        const predicate = userFilter({ ageGreaterThan: 30 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
     });
 
     it("should return empty when no values exceed threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThan: 100,
-        });
+        const predicate = userFilter({ ageGreaterThan: 100 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
@@ -248,25 +243,22 @@ describe("Greater Than or Equal (GTE) Filter", () => {
     });
 
     it("should filter values greater than or equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThanOrEqual: 30,
-        });
+        const predicate = userFilter({ ageGreaterThanOrEqual: 30 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0], exampleUsers[2]]);
     });
 
     it("should include values equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            scoreGreaterThanOrEqual: 88,
-        });
+        const predicate = userFilter({ scoreGreaterThanOrEqual: 88 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1], exampleUsers[3]]);
     });
 
     it("should return all when threshold is lowest value", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThanOrEqual: 25,
-        });
+        const predicate = userFilter({ ageGreaterThanOrEqual: 25 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -279,33 +271,29 @@ describe("Less Than (LT) Filter", () => {
     });
 
     it("should filter values less than threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageLessThan: 30,
-        });
+        const predicate = userFilter({ ageLessThan: 30 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1], exampleUsers[3]]);
     });
 
     it("should not include values equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageLessThan: 28,
-        });
+        const predicate = userFilter({ ageLessThan: 28 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1]]);
     });
 
     it("should work with scores", () => {
-        const result = userFilter(exampleUsers, {
-            scoreLessThan: 80,
-        });
+        const predicate = userFilter({ scoreLessThan: 80 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
     });
 
     it("should return empty when no values below threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageLessThan: 20,
-        });
+        const predicate = userFilter({ ageLessThan: 20 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
@@ -318,25 +306,22 @@ describe("Less Than or Equal (LTE) Filter", () => {
     });
 
     it("should filter values less than or equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            ageLessThanOrEqual: 28,
-        });
+        const predicate = userFilter({ ageLessThanOrEqual: 28 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1], exampleUsers[3]]);
     });
 
     it("should include values equal to threshold", () => {
-        const result = userFilter(exampleUsers, {
-            scoreLessThanOrEqual: 78,
-        });
+        const predicate = userFilter({ scoreLessThanOrEqual: 78 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
     });
 
     it("should return all when threshold is highest value", () => {
-        const result = userFilter(exampleUsers, {
-            ageLessThanOrEqual: 40,
-        });
+        const predicate = userFilter({ ageLessThanOrEqual: 40 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -352,40 +337,44 @@ describe("Combined Filters", () => {
     });
 
     it("should apply all filters in AND logic", () => {
-        const result = userFilter(exampleUsers, {
+        const predicate = userFilter({
             nameContains: "Doe",
             ageGreaterThan: 24,
             ageLessThan: 31,
             isActive: true,
             phoneIsNotNull: true,
         });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should filter by age range", () => {
-        const result = userFilter(exampleUsers, {
+        const predicate = userFilter({
             ageGreaterThan: 27,
             ageLessThan: 40,
         });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0], exampleUsers[3]]);
     });
 
     it("should find active users without phone numbers", () => {
-        const result = userFilter(exampleUsers, {
+        const predicate = userFilter({
             isActive: true,
             phoneIsNotNull: false,
         });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1]]);
     });
 
     it("should support partial filtering", () => {
-        const result = userFilter(exampleUsers, {
+        const predicate = userFilter({
             nameContains: "Smith",
             isActive: false,
         });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
     });
@@ -403,30 +392,11 @@ describe("Boolean AND Filter", () => {
             },
         });
 
-        const result = ageExactFilter(exampleUsers, {
+        const predicate = ageExactFilter({
             ageExact: 30, // >= 30 AND <= 30 means exactly 30
         });
+        const result = exampleUsers.filter(predicate);
 
-        // Only John is exactly 30
-        expect(result).toEqual([exampleUsers[0]]);
-    });
-
-    it("should work with score range conditions", () => {
-        const scoreRangeFilter = userEntity.filterDef({
-            scoreRange: {
-                kind: "and",
-                conditions: [
-                    { kind: "gte", field: "score" },
-                    { kind: "lte", field: "score" },
-                ],
-            },
-        });
-
-        const result = scoreRangeFilter(exampleUsers, {
-            scoreRange: 85,
-        });
-
-        // Only John has score exactly 85
         expect(result).toEqual([exampleUsers[0]]);
     });
 
@@ -441,9 +411,8 @@ describe("Boolean AND Filter", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {
-            ageNotInRange: 30,
-        });
+        const predicate = ageFilter({ ageNotInRange: 30 });
+        const result = exampleUsers.filter(predicate);
 
         // Nobody can be both > 30 AND < 30 simultaneously
         expect(result).toEqual([]);
@@ -460,7 +429,8 @@ describe("Boolean AND Filter", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {});
+        const predicate = ageFilter({});
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -478,9 +448,10 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        const result = ageOutsideRangeFilter(exampleUsers, {
+        const predicate = ageOutsideRangeFilter({
             youngOrOld: 28,
         });
+        const result = exampleUsers.filter(predicate);
 
         // Jane (25 < 28), John (30 > 28), and Bob (40 > 28)
         // Alice is exactly 28, so excluded
@@ -502,9 +473,8 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        const result = scoreFilter(exampleUsers, {
-            extremeScores: 85,
-        });
+        const predicate = scoreFilter({ extremeScores: 85 });
+        const result = exampleUsers.filter(predicate);
 
         // Bob (78 < 85), Jane (92 > 85), Alice (88 > 85)
         // John is exactly 85, so excluded
@@ -526,9 +496,8 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        const result = stringFilter(exampleUsers, {
-            containsInNameOrEmail: "Doe",
-        });
+        const predicate = stringFilter({ containsInNameOrEmail: "Doe" });
+        const result = exampleUsers.filter(predicate);
 
         // John and Jane have "Doe" in name
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
@@ -545,7 +514,8 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {});
+        const predicate = ageFilter({});
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -570,10 +540,8 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = complexFilter(exampleUsers, {
-            ageExact: 30,
-            scoreExact: 85,
-        });
+        const predicate = complexFilter({ ageExact: 30, scoreExact: 85 });
+        const result = exampleUsers.filter(predicate);
 
         // Only John is 30 years old with score of 85
         expect(result).toEqual([exampleUsers[0]]);
@@ -591,10 +559,11 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = mixedFilter(exampleUsers, {
+        const predicate = mixedFilter({
             nameContains: "Doe",
             ageOutsideRange: 27,
         });
+        const result = exampleUsers.filter(predicate);
 
         // Jane Doe is 25 (< 27) and John Doe is 30 (> 27)
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
@@ -612,9 +581,8 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = tripleAndFilter(exampleUsers, {
-            scoreInRange: 85,
-        });
+        const predicate = tripleAndFilter({ scoreInRange: 85 });
+        const result = exampleUsers.filter(predicate);
 
         // Only John has score exactly 85
         expect(result).toEqual([exampleUsers[0]]);
@@ -632,9 +600,8 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = tripleOrFilter(exampleUsers, {
-            ageMatch: 30,
-        });
+        const predicate = tripleOrFilter({ ageMatch: 30 });
+        const result = exampleUsers.filter(predicate);
 
         // Everyone matches: Jane & Alice (< 30), John (== 30), Bob (> 30)
         expect(result).toEqual(exampleUsers);
@@ -651,9 +618,8 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        const result = stringFilter(exampleUsers, {
-            matchInNameOrEmail: "smith",
-        });
+        const predicate = stringFilter({ matchInNameOrEmail: "smith" });
+        const result = exampleUsers.filter(predicate);
 
         // Bob Smith has "smith" in name and email
         expect(result).toEqual([exampleUsers[2]]);
@@ -672,9 +638,8 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        const result = ageFilter([], {
-            ageExact: 30,
-        });
+        const predicate = ageFilter({ ageExact: 30 });
+        const result = [].filter(predicate);
 
         expect(result).toEqual([]);
     });
@@ -690,7 +655,8 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {});
+        const predicate = ageFilter({});
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
@@ -713,10 +679,11 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        const result = combinedFilter(exampleUsers, {
+        const predicate = combinedFilter({
             ageExact: 30,
             scoreOutsideRange: 85,
         });
+        const result = exampleUsers.filter(predicate);
 
         // John is 30 but score is exactly 85, so excluded by scoreOutsideRange
         expect(result).toEqual([]);
@@ -733,9 +700,8 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        const result = ageFilter(exampleUsers, {
-            ageMatch: 30,
-        });
+        const predicate = ageFilter({ ageMatch: 30 });
+        const result = exampleUsers.filter(predicate);
 
         // Duplicate conditions still work - finds John with age 30
         expect(result).toEqual([exampleUsers[0]]);
@@ -752,9 +718,8 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        const result = arrayFilter(exampleUsers, {
-            ageInArrays: [25, 30],
-        });
+        const predicate = arrayFilter({ ageInArrays: [25, 30] });
+        const result = exampleUsers.filter(predicate);
 
         // Age matches for John (30) and Jane (25)
         // Score doesn't match anyone (no one has score of 25 or 30)
@@ -763,54 +728,40 @@ describe("Boolean Filter Edge Cases", () => {
 });
 
 describe("Custom Filters", () => {
+    const postFilter = postEntity.filterDef({
+        id: { kind: "equals", field: "id" },
+    });
+
     const userFilter = userEntity.filterDef({
-        wrotePostId: (user: User, val: string) =>
-            user.posts?.some((post) => post.id === val) ?? false,
+        wrotePostId: (user: User, postId: string) => {
+            return user.posts.some(postFilter({ id: postId }));
+        },
+
         hasPosts: (user: User, val: boolean) => {
-            const postCount = user.posts?.length ?? 0;
+            const postCount = user.posts.length ?? 0;
             return val ? postCount > 0 : postCount === 0;
         },
     });
 
-    const usersWithPosts: Array<User> = [
-        {
-            ...exampleUsers[0],
-            posts: [
-                { id: "1", title: "Post 1", content: "Content 1" },
-                { id: "2", title: "Post 2", content: "Content 2" },
-            ],
-        },
-        {
-            ...exampleUsers[1],
-            posts: [
-                { id: "3", title: "Post 3", content: "Content 3" },
-                { id: "4", title: "Post 4", content: "Content 4" },
-            ],
-        },
-    ];
-
     it("should filter values matching a custom filter", () => {
-        const result = userFilter(usersWithPosts, {
-            wrotePostId: "1",
-        });
+        const predicate = userFilter({ wrotePostId: "1" });
+        const result = exampleUsers.filter(predicate);
 
-        expect(result).toEqual([usersWithPosts[0]]);
+        expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should return an empty array if no values match", () => {
-        const result = userFilter(usersWithPosts, {
-            wrotePostId: "5",
-        });
+        const predicate = userFilter({ wrotePostId: "5" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
 
     it("should return all when all values match", () => {
-        const result = userFilter(usersWithPosts, {
-            hasPosts: true,
-        });
+        const predicate = userFilter({ hasPosts: true });
+        const result = exampleUsers.filter(predicate);
 
-        expect(result).toEqual(usersWithPosts);
+        expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
     });
 });
 
@@ -822,39 +773,36 @@ describe("Edge Cases", () => {
     });
 
     it("should handle empty entities array", () => {
-        const result = userFilter([], {
-            nameEquals: "John Doe",
-        });
+        const predicate = userFilter({ nameEquals: "John Doe" });
+        const result = [].filter(predicate);
 
         expect(result).toEqual([]);
     });
 
     it("should handle empty filter input", () => {
-        const result = userFilter(exampleUsers, {});
+        const predicate = userFilter({});
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
 
     it("should handle partial filter input", () => {
-        const result = userFilter(exampleUsers, {
-            nameEquals: "John Doe",
-        });
+        const predicate = userFilter({ nameEquals: "John Doe" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should handle zero in numeric comparisons", () => {
-        const result = userFilter(exampleUsers, {
-            ageGreaterThan: 0,
-        });
+        const predicate = userFilter({ ageGreaterThan: 0 });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });
 
     it("should handle empty string in contains filter", () => {
-        const result = userFilter(exampleUsers, {
-            emailContains: "",
-        });
+        const predicate = userFilter({ emailContains: "" });
+        const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
     });

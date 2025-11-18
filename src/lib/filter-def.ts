@@ -14,7 +14,7 @@
  * You can then use the entity definition to define our filters.
  *
  * ```typescript
- * const filterDef = user.filterDef({
+ * const userFilter = user.filterDef({
  *     name: { kind: 'equals', field: 'name' },
  *     email: { kind: 'equals', field: 'email' },
  * });
@@ -24,13 +24,25 @@
  * filter definition separately.
  *
  * ```typescript
- * const user = entity<User>().filterDef({ ... })
+ * const userFilter = entity<User>().filterDef({ ... })
+ * ```
+ *
+ * This resulting filter definition accepts a set of filter values, which
+ * creates a predicate that can be passed to Array `filter()`, `find()`,
+ * `some()`, and `every()` methods.
+ *
+ * ```typescript
+ * const where = userFilter({
+ *     email: 'john.doe@example.com',
+ * });
+ *
+ * const johnUser = myUserArray.find(where);
  * ```
  */
 export const entity = <TEntity>() => {
     const filterDef = <TFiltersDef extends FiltersDef<TEntity>>(
         FiltersDef: TFiltersDef,
-    ): FilterFn<TEntity, TFiltersDef> => filterFn(FiltersDef);
+    ): PredicateCreator<TEntity, TFiltersDef> => filterFn(FiltersDef);
 
     return { filterDef };
 };
@@ -215,10 +227,9 @@ export type InputForFilterDef<Entity, TFilterDef extends FilterDef<Entity>> =
 // Filtering
 // ----------------------------------------------------------------
 
-export type FilterFn<Entity, TFiltersDef extends FiltersDef<Entity>> = (
-    entities: Entity[],
+export type PredicateCreator<Entity, TFiltersDef extends FiltersDef<Entity>> = (
     filterInput: InputForFiltersDef<Entity, TFiltersDef>,
-) => Entity[];
+) => (entity: Entity) => boolean;
 
 /**
  * A compiled filter checker function that tests if an entity passes a filter.
@@ -327,24 +338,21 @@ const compileFilter = <Entity>(
  * Creates a function that filters entities based on the provided filter object.
  * This v2 implementation pre-compiles all filters for optimal performance.
  */
-const filterFn = <Entity, TFiltersDef extends FiltersDef<Entity>>(
+const filterFn = <TEntity, TFiltersDef extends FiltersDef<TEntity>>(
     filtersDef: TFiltersDef,
-): FilterFn<Entity, TFiltersDef> => {
+): PredicateCreator<TEntity, TFiltersDef> => {
     // Pre-compile all filters at definition time
     const compiledFilters: Array<{
         key: string;
-        checker: CompiledFilterChecker<Entity>;
+        checker: CompiledFilterChecker<TEntity>;
     }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
         key,
         checker: compileFilter(filterDef),
     }));
 
     // Return the optimized filter function
-    return (
-        entities: Entity[],
-        filterInput: InputForFiltersDef<Entity, TFiltersDef>,
-    ) => {
-        return entities.filter((entity) => {
+    return (filterInput: InputForFiltersDef<TEntity, TFiltersDef>) =>
+        (entity: TEntity) => {
             // Check if entity passes ALL filters
             for (let i = 0; i < compiledFilters.length; i++) {
                 const { key, checker } = compiledFilters[i];
@@ -363,6 +371,5 @@ const filterFn = <Entity, TFiltersDef extends FiltersDef<Entity>>(
             }
 
             return true;
-        });
-    };
+        };
 };
