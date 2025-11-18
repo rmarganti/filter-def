@@ -158,6 +158,104 @@ At least one condition must be true for the filter to pass.
 }
 ```
 
+### Custom Filters
+
+Define custom filter logic by providing a function instead of a filter definition object. Custom filters receive the entity and the input value, and return a boolean.
+
+```typescript
+interface User {
+    name: string;
+    email: string;
+    posts: Array<Post>;
+}
+
+interface Post {
+    id: string;
+    title: string;
+}
+
+const userEntity = entity<User>();
+
+const filterUsers = userEntity.filterDef({
+    name: { kind: "equals", field: "name" },
+
+    // Custom filter: check if user has written a specific number of posts
+    postCount: (user: User, count: number) => {
+        return user.posts.length === count;
+    },
+
+    // Custom filter: check if user has any posts
+    hasPosts: (user: User, hasPosts: boolean) => {
+        return hasPosts ? user.posts.length > 0 : user.posts.length === 0;
+    },
+});
+
+const predicate = filterUsers({
+    postCount: 5,
+    hasPosts: true,
+});
+
+const results = users.filter(predicate);
+```
+
+Custom filters provide full flexibility for complex filtering logic that doesn't fit into the standard filter types.
+
+### Nested Filters
+
+You can compose filters to work with nested arrays and related entities. This is especially useful when filtering parent entities based on child entity properties.
+
+```typescript
+interface User {
+    name: string;
+    email: string;
+    posts: Array<Post>;
+}
+
+interface Post {
+    id: string;
+    title: string;
+    content: string;
+}
+
+const userEntity = entity<User>();
+const postEntity = entity<Post>();
+
+// Define a filter for posts
+const filterPosts = postEntity.filterDef({
+    id: { kind: "equals", field: "id" },
+    titleContains: { kind: "contains", field: "title" },
+});
+
+// Use the post filter within a user filter
+const filterUsers = userEntity.filterDef({
+    name: { kind: "equals", field: "name" },
+
+    // Custom filter that uses the post filter on nested posts array
+    wrotePostWithId: (user: User, postId: string) => {
+        return user.posts.some(filterPosts({ id: postId }));
+    },
+
+    // Custom filter to find users with posts matching criteria
+    hasPostWithTitle: (user: User, titleFragment: string) => {
+        return user.posts.some(filterPosts({ titleContains: titleFragment }));
+    },
+});
+
+// Find users who wrote post with ID "123"
+const predicate1 = filterUsers({ wrotePostWithId: "123" });
+const results1 = users.filter(predicate1);
+
+// Find users who have posts with "TypeScript" in the title
+const predicate2 = filterUsers({ hasPostWithTitle: "TypeScript" });
+const results2 = users.filter(predicate2);
+```
+
+This pattern allows you to:
+
+- Reuse filter definitions across different contexts
+- Filter parent entities based on child entity properties
+- Compose complex filtering logic from simpler filter definitions
+
 ## Complete Example
 
 ```typescript
