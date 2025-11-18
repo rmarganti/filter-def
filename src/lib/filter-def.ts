@@ -44,7 +44,12 @@ type FiltersDef<TEntity> = Record<string, FilterDef<TEntity>>;
 /**
  * A single filter definition, ie. `{ kind: 'equals', field: 'email' }`
  */
-export type FilterDef<T> = PrimitiveFilterDef<T> | BooleanFilterDef<T>;
+export type FilterDef<T> =
+    | PrimitiveFilterDef<T>
+    | BooleanFilterDef<T>
+    | CustomFilterDef<T, any>;
+
+// -[ Primitive Filters ]----------------------------------------
 
 export type PrimitiveFilterDef<T> =
     | EqualsFilterDef<T>
@@ -56,8 +61,6 @@ export type PrimitiveFilterDef<T> =
     | GTEFilterDef<T>
     | LTFilterDef<T>
     | LTEFilterDef<T>;
-
-// -[ Primitive Filters ]----------------------------------------
 
 export interface CommonFilterOptions<TEntity> {
     field: keyof TEntity;
@@ -150,6 +153,13 @@ export interface OrFilterDef<TEntity> {
     conditions: [PrimitiveFilterDef<TEntity>, ...PrimitiveFilterDef<TEntity>[]];
 }
 
+// -[ Custom Filters ]-------------------------------------------
+
+export type CustomFilterDef<TEntity, TInput> = (
+    entity: TEntity,
+    input: TInput,
+) => boolean;
+
 // ----------------------------------------------------------------
 // Filter input
 // ----------------------------------------------------------------
@@ -190,14 +200,16 @@ type FilterInputMap<Entity, TFilterDef extends FilterDef<Entity>> = {
     >;
 };
 
-export type InputForFilterDef<
-    Entity,
-    TFilterDef extends FilterDef<Entity>,
-> = TFilterDef extends {
-    kind: infer K extends keyof FilterInputMap<Entity, TFilterDef>;
-}
-    ? FilterInputMap<Entity, TFilterDef>[K] | undefined
-    : never;
+export type InputForFilterDef<Entity, TFilterDef extends FilterDef<Entity>> =
+    // Primitive and Boolean Filters
+    TFilterDef extends {
+        kind: infer K extends keyof FilterInputMap<Entity, TFilterDef>;
+    }
+        ? FilterInputMap<Entity, TFilterDef>[K] | undefined
+        : // Custom Filters
+          TFilterDef extends CustomFilterDef<Entity, infer TArg>
+          ? TArg
+          : never;
 
 // ----------------------------------------------------------------
 // Filtering
@@ -297,6 +309,10 @@ const compileBooleanFilter = <Entity>(
 const compileFilter = <Entity>(
     filterDef: FilterDef<Entity>,
 ): CompiledFilterChecker<Entity> => {
+    if (typeof filterDef === "function") {
+        return filterDef;
+    }
+
     switch (filterDef.kind) {
         case "and":
         case "or":
