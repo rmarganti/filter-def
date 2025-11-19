@@ -14,16 +14,16 @@ interface User {
     age: number;
 }
 
-const filterUsers = entity<User>().filterDef({
-    name: { kind: "equals", field: "name" },
+const userFilter = entity<User>().filterDef({
+    name: { kind: "equals" },
     emailContains: { kind: "contains", field: "email" },
     olderThan: { kind: "gt", field: "age" },
 });
 
-type UserFilterInput = FilterInput<typeof filterUsers>;
+type UserFilterInput = FilterInput<typeof userFilter>;
 
 // Create a predicate function
-const predicate = filterUsers({
+const predicate = userFilter({
     name: "John",
     emailContains: "@example.com",
     olderThan: 25,
@@ -31,7 +31,7 @@ const predicate = filterUsers({
 
 // Use with native array methods
 const filteredUsers = users.filter(predicate);
-const firstMatch = users.find(predicate);
+const firstUser = users.find(predicate);
 const hasMatch = users.some(predicate);
 ```
 
@@ -42,6 +42,36 @@ const hasMatch = users.some(predicate);
 - **Simple API**: Define filters once, reuse everywhere
 - **Native integration**: Returns predicates that work with `filter()`, `find()`, `some()`, and `every()`
 - **Zero dependencies**: Lightweight and framework-agnostic
+
+## Inferred Field Names
+
+When the filter name matches an entity field name, you can omit the `field` property and it will be automatically inferred:
+
+```typescript
+interface User {
+    name: string;
+    email: string;
+    age: number;
+}
+
+const userFilter = entity<User>().filterDef({
+    // Field is inferred from the key name
+    name: { kind: "equals" }, // field: "name" is inferred
+    email: { kind: "contains" }, // field: "email" is inferred
+    age: { kind: "gte" }, // field: "age" is inferred
+
+    // Explicit field when the filter name doesn't match
+    olderThan: { kind: "gt", field: "age" },
+    emailDomain: { kind: "contains", field: "email" },
+});
+
+const predicate = userFilter({
+    name: "John", // filters User.name
+    olderThan: 25, // filters User.age
+});
+```
+
+This makes filter definitions more concise while maintaining full type safety. You can mix inferred and explicit fields in the same filter definition.
 
 ## Filter Types
 
@@ -176,8 +206,8 @@ interface Post {
 
 const userEntity = entity<User>();
 
-const filterUsers = userEntity.filterDef({
-    name: { kind: "equals", field: "name" },
+const userFilter = userEntity.filterDef({
+    name: { kind: "equals" },
 
     // Custom filter: check if user has written a specific number of posts
     postCount: (user: User, count: number) => {
@@ -190,7 +220,7 @@ const filterUsers = userEntity.filterDef({
     },
 });
 
-const predicate = filterUsers({
+const predicate = userFilter({
     postCount: 5,
     hasPosts: true,
 });
@@ -221,32 +251,32 @@ const userEntity = entity<User>();
 const postEntity = entity<Post>();
 
 // Define a filter for posts
-const filterPosts = postEntity.filterDef({
-    id: { kind: "equals", field: "id" },
+const postFilter = postEntity.filterDef({
+    id: { kind: "equals" },
     titleContains: { kind: "contains", field: "title" },
 });
 
 // Use the post filter within a user filter
-const filterUsers = userEntity.filterDef({
-    name: { kind: "equals", field: "name" },
+const userFilter = userEntity.filterDef({
+    name: { kind: "equals" },
 
     // Custom filter that uses the post filter on nested posts array
     wrotePostWithId: (user: User, postId: string) => {
-        return user.posts.some(filterPosts({ id: postId }));
+        return user.posts.some(postFilter({ id: postId }));
     },
 
     // Custom filter to find users with posts matching criteria
     hasPostWithTitle: (user: User, titleFragment: string) => {
-        return user.posts.some(filterPosts({ titleContains: titleFragment }));
+        return user.posts.some(postFilter({ titleContains: titleFragment }));
     },
 });
 
 // Find users who wrote post with ID "123"
-const predicate1 = filterUsers({ wrotePostWithId: "123" });
+const predicate1 = userFilter({ wrotePostWithId: "123" });
 const results1 = users.filter(predicate1);
 
 // Find users who have posts with "TypeScript" in the title
-const predicate2 = filterUsers({ hasPostWithTitle: "TypeScript" });
+const predicate2 = userFilter({ hasPostWithTitle: "TypeScript" });
 const results2 = users.filter(predicate2);
 ```
 
@@ -271,13 +301,16 @@ interface Product {
     userRating: number;
 }
 
-const filterProducts = entity<Product>().filterDef({
-    // Primitive filters
+const productFilter = entity<Product>().filterDef({
+    // Primitive filters with inferred fields
+    name: { kind: "equals"}
+    inStock: { kind: "equals" },
+
+    // Primitive filter with explicit fields
     nameContains: { kind: "contains", field: "name" },
     inCategory: { kind: "inArray", field: "category" },
-    inStock: { kind: "equals", field: "inStock" },
 
-    // Boolean filter
+    // Boolean filter (conditions still require explicit fields)
     ratingAtLeast: {
         kind: "or",
         conditions: [
@@ -287,10 +320,10 @@ const filterProducts = entity<Product>().filterDef({
     },
 });
 
-type ProductFilterInput = FilterInput<typeof filterProducts>;
+type ProductFilterInput = FilterInput<typeof productFilter>;
 
 // Create a predicate with your filter criteria
-const predicate = filterProducts({
+const predicate = productFilter({
     nameContains: "phone",
     inCategory: ["electronics", "gadgets"],
     inStock: true,
