@@ -303,7 +303,7 @@ interface Product {
 
 const productFilter = entity<Product>().filterDef({
     // Primitive filters with inferred fields
-    name: { kind: "equals"}
+    name: { kind: "equals" },
     inStock: { kind: "equals" },
 
     // Primitive filter with explicit fields

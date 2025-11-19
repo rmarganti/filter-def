@@ -72,7 +72,7 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  *     // The `name` field wasn't explicitly defined, but it matches the filter name.
  *     name: { kind: 'equals' },
  *
- *     // Even though `emailContains` doesn't  match the `User.email` field,
+ *     // Even though `emailContains` doesn't match the `User.email` field,
  *     // we provided the `field` property to explicitly.
  *     emailContains: { kind: 'contains', field: 'email' }, // `email` field is explicitly defined
  * });
@@ -83,12 +83,11 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  *     // to explicitly specify a different, invalid field.
  *     id: { kind: 'equals', field: 'invalidField' },
  *
- *     // `firstName` isn't property of `User`.
+ *     // `firstName` isn't a property of `User`.
  *     firstName: { kind: 'equals' },
  *
  *     // Neither `emailContains` nor `invalidEmail` are valid User properties.
- *     // we provided the `field` property to explicitly.
- *     emailContains: { kind: 'contains', field: 'invalidEmail' }, // `email` field is explicitly defined
+ *     emailContains: { kind: 'contains', field: 'invalidEmail' },
  * });
  *
  * ```
@@ -426,6 +425,7 @@ const compileBooleanFilter = <Entity>(
 ): CompiledFilterChecker<Entity> => {
     const compiledConditions = filterDef.conditions.map((condition) =>
         // Boolean filter conditions must have explicit field property
+        // TODO: Implement field property validation for Boolean filters.
         compilePrimitiveFilter(condition.field as string, condition),
     );
 
