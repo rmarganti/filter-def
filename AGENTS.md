@@ -23,6 +23,9 @@
 - Types: PascalCase (e.g., `FilterFn`, `InputForFiltersDef`)
 - Variables: camelCase (e.g., `filterDef`, `filterValue`, `entityShape`)
 - Functions: camelCase (e.g., `filterFn`, `primitiveFilterPasses`)
+- Type generics:
+    - Use `T` prefix when the generic extends a type OR is being inferred (e.g., `TFilterDef extends FilterDef<Entity>`, `infer TEntity`)
+    - Don't use `T` prefix when the generic is manually passed without constraints (e.g., `FilterDef<Entity>`, `CustomFilter<Entity, Input>`)
 
 ### Imports and Exports
 
