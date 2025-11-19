@@ -162,6 +162,9 @@ export interface OrFilter<Entity> {
 
 // -[ Custom Filters ]-------------------------------------------
 
+/**
+ * A function that accepts an entity and determines if a specific, custom filter passes.
+ */
 export type CustomFilter<Entity, Input> = (
     entity: Entity,
     input: Input,
@@ -177,7 +180,7 @@ export type CustomFilter<Entity, Input> = (
  * ```typescript
  * const userFilter = entity<User>().filterDef({ ... });
  * type UserFilterInput = FilterInput<typeof userFilter>;
- * ````
+ * ```
  */
 export type FilterInput<TFilter> =
     TFilter extends Filter<infer TEntity, infer TFilterDef>
@@ -185,7 +188,7 @@ export type FilterInput<TFilter> =
         : never;
 
 /**
- * Given an Entity and a FiltersDef, create
+ * The expected input for a FilterDef.
  */
 export type FilterDefInput<Entity, TFilterDef extends FilterDef<Entity>> = {
     [K in keyof TFilterDef]?: FilterFieldInput<Entity, TFilterDef[K]>;
@@ -220,6 +223,9 @@ type FilterInputMap<Entity, TFilterField extends FilterField<Entity>> = {
     >;
 };
 
+/**
+ * The expected input shape for a single filter field.
+ */
 export type FilterFieldInput<Entity, TFilterField extends FilterField<Entity>> =
     // Primitive and Boolean Filters
     TFilterField extends {
@@ -235,6 +241,10 @@ export type FilterFieldInput<Entity, TFilterField extends FilterField<Entity>> =
 // Filtering
 // ----------------------------------------------------------------
 
+/**
+ * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
+ * and returns a function that determines if an entity passes the filter.
+ */
 export type Filter<Entity, TFilterDef extends FilterDef<Entity>> = (
     filterInput: FilterDefInput<Entity, TFilterDef>,
 ) => (entity: Entity) => boolean;
