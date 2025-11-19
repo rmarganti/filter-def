@@ -176,10 +176,18 @@ export type CustomFilterDef<TEntity, TInput> = (
 // Filter input
 // ----------------------------------------------------------------
 
+export type InputForPredicateCreator<TPredicateCreator> =
+    TPredicateCreator extends PredicateCreator<infer TEntity, infer TFiltersDef>
+        ? InputForFiltersDef<TEntity, TFiltersDef>
+        : never;
+
 /**
  * Given an Entity and a FiltersDef, create
  */
-type InputForFiltersDef<Entity, TFiltersDef extends FiltersDef<Entity>> = {
+export type InputForFiltersDef<
+    Entity,
+    TFiltersDef extends FiltersDef<Entity>,
+> = {
     [K in keyof TFiltersDef]?: InputForFilterDef<Entity, TFiltersDef[K]>;
 };
 
