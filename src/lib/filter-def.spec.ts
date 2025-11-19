@@ -1034,6 +1034,13 @@ describe("Edge Cases", () => {
         expect(result).toEqual(exampleUsers);
     });
 
+    it("should handle undefined filter input", () => {
+        const predicate = userFilter(undefined);
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual(exampleUsers);
+    });
+
     it("should handle partial filter input", () => {
         const predicate = userFilter({ nameEq: "John Doe" });
         const result = exampleUsers.filter(predicate);

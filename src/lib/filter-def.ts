@@ -357,7 +357,7 @@ export type FilterFieldInput<
  * and returns a function that determines if an entity passes the filter.
  */
 export type Filter<Entity, TFilterDef extends FilterDef<Entity>> = (
-    filterInput: FilterDefInput<Entity, TFilterDef>,
+    filterInput: FilterDefInput<Entity, TFilterDef> | undefined,
 ) => (entity: Entity) => boolean;
 
 /**
@@ -378,8 +378,12 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
     }));
 
     // Return the optimized filter function
-    return (filterInput: FilterDefInput<Entity, TFilterDef>) =>
+    return (filterInput: FilterDefInput<Entity, TFilterDef> | undefined) =>
         (entity: Entity) => {
+            if (!filterInput) {
+                return true;
+            }
+
             // Check if entity passes ALL filters
             for (let i = 0; i < compiledFilters.length; i++) {
                 const { key, checker } = compiledFilters[i];
