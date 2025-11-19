@@ -66,35 +66,35 @@ const exampleUsers: Array<User> = [
     },
 ];
 
-describe("Equals Filter", () => {
+describe("Eq Filter", () => {
     const userFilter = userEntity.filterDef({
-        nameEquals: { kind: "equals", field: "name" },
-        ageEquals: { kind: "equals", field: "age" },
+        nameEq: { kind: "eq", field: "name" },
+        ageEq: { kind: "eq", field: "age" },
     });
 
     it("should filter by exact string match", () => {
-        const predicate = userFilter({ nameEquals: "John Doe" });
+        const predicate = userFilter({ nameEq: "John Doe" });
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should filter by exact number match", () => {
-        const predicate = userFilter({ ageEquals: 30 });
+        const predicate = userFilter({ ageEq: 30 });
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
     });
 
     it("should return empty array when no matches", () => {
-        const predicate = userFilter({ nameEquals: "Nonexistent User" });
+        const predicate = userFilter({ nameEq: "Nonexistent User" });
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
     });
 
-    it("should support combining multiple equals filters", () => {
-        const predicate = userFilter({ nameEquals: "John Doe", ageEquals: 30 });
+    it("should support combining multiple eq filters", () => {
+        const predicate = userFilter({ nameEq: "John Doe", ageEq: 30 });
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
@@ -111,8 +111,67 @@ describe("Equals Filter", () => {
         type Input = FilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
-            nameEquals?: string;
-            ageEquals?: number;
+            nameEq?: string;
+            ageEq?: number;
+        }>();
+    });
+});
+
+describe("Neq Filter", () => {
+    const userFilter = userEntity.filterDef({
+        nameNeq: { kind: "neq", field: "name" },
+        ageNeq: { kind: "neq", field: "age" },
+    });
+
+    it("should filter by not equal string match", () => {
+        const predicate = userFilter({ nameNeq: "John Doe" });
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual([
+            exampleUsers[1],
+            exampleUsers[2],
+            exampleUsers[3],
+        ]);
+    });
+
+    it("should filter by not equal number match", () => {
+        const predicate = userFilter({ ageNeq: 30 });
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual([
+            exampleUsers[1],
+            exampleUsers[2],
+            exampleUsers[3],
+        ]);
+    });
+
+    it("should return all when no matches", () => {
+        const predicate = userFilter({ nameNeq: "Nonexistent User" });
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual(exampleUsers);
+    });
+
+    it("should support combining multiple neq filters", () => {
+        const predicate = userFilter({ nameNeq: "John Doe", ageNeq: 25 });
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual([exampleUsers[2], exampleUsers[3]]);
+    });
+
+    it("should return all when no filter value provided", () => {
+        const predicate = userFilter({});
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            nameNeq?: string;
+            ageNeq?: number;
         }>();
     });
 });
@@ -412,7 +471,7 @@ describe("Combined Filters", () => {
         nameContains: { kind: "contains", field: "name" },
         ageGreaterThan: { kind: "gt", field: "age" },
         ageLessThan: { kind: "lt", field: "age" },
-        isActive: { kind: "equals", field: "isActive" },
+        isActive: { kind: "eq", field: "isActive" },
         phoneIsNotNull: { kind: "isNotNull", field: "phone" },
     });
 
@@ -704,7 +763,7 @@ describe("Complex Boolean Filters", () => {
                 conditions: [
                     { kind: "gte", field: "score" },
                     { kind: "lte", field: "score" },
-                    { kind: "equals", field: "score" },
+                    { kind: "eq", field: "score" },
                 ],
             },
         });
@@ -722,7 +781,7 @@ describe("Complex Boolean Filters", () => {
                 kind: "or",
                 conditions: [
                     { kind: "lt", field: "age" },
-                    { kind: "equals", field: "age" },
+                    { kind: "eq", field: "age" },
                     { kind: "gt", field: "age" },
                 ],
             },
@@ -848,8 +907,8 @@ describe("Boolean Filter Edge Cases", () => {
             ageMatch: {
                 kind: "or",
                 conditions: [
-                    { kind: "equals", field: "age" },
-                    { kind: "equals", field: "age" },
+                    { kind: "eq", field: "age" },
+                    { kind: "eq", field: "age" },
                 ],
             },
         });
@@ -909,7 +968,7 @@ describe("Boolean Filter Edge Cases", () => {
 
 describe("Custom Filters", () => {
     const postFilter = postEntity.filterDef({
-        id: { kind: "equals", field: "id" },
+        id: { kind: "eq", field: "id" },
     });
 
     const userFilter = userEntity.filterDef({
@@ -956,13 +1015,13 @@ describe("Custom Filters", () => {
 
 describe("Edge Cases", () => {
     const userFilter = userEntity.filterDef({
-        nameEquals: { kind: "equals", field: "name" },
+        nameEq: { kind: "eq", field: "name" },
         emailContains: { kind: "contains", field: "email" },
         ageGreaterThan: { kind: "gt", field: "age" },
     });
 
     it("should handle empty entities array", () => {
-        const predicate = userFilter({ nameEquals: "John Doe" });
+        const predicate = userFilter({ nameEq: "John Doe" });
         const result = [].filter(predicate);
 
         expect(result).toEqual([]);
@@ -976,7 +1035,7 @@ describe("Edge Cases", () => {
     });
 
     it("should handle partial filter input", () => {
-        const predicate = userFilter({ nameEquals: "John Doe" });
+        const predicate = userFilter({ nameEq: "John Doe" });
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0]]);
@@ -1000,7 +1059,7 @@ describe("Edge Cases", () => {
         type Input = FilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
-            nameEquals?: string;
+            nameEq?: string;
             emailContains?: string;
             ageGreaterThan?: number;
         }>();

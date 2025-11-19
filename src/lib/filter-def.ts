@@ -15,8 +15,8 @@
  *
  * ```typescript
  * const userFilter = user.filterDef({
- *     name: { kind: 'equals', field: 'name' },
- *     email: { kind: 'equals', field: 'email' },
+ *     name: { kind: 'eq', field: 'name' },
+ *     email: { kind: 'eq', field: 'email' },
  * });
  * ```
  *
@@ -67,10 +67,10 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  * // VALID
  * entity<User>().filterDef({
  *     // `id` field is explicitly defined. It could also be omitted, since it matches the filter name.
- *     id: { kind: 'equals', field: 'id' },
+ *     id: { kind: 'eq', field: 'id' },
  *
  *     // The `name` field wasn't explicitly defined, but it matches the filter name.
- *     name: { kind: 'equals' },
+ *     name: { kind: 'eq' },
  *
  *     // Even though `emailContains` doesn't match the `User.email` field,
  *     // we provided the `field` property to explicitly.
@@ -81,10 +81,10 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  * entity<User>().filterDef({
  *     // Even though `id` matches the `User.id` property, we tried
  *     // to explicitly specify a different, invalid field.
- *     id: { kind: 'equals', field: 'invalidField' },
+ *     id: { kind: 'eq', field: 'invalidField' },
  *
  *     // `firstName` isn't a property of `User`.
- *     firstName: { kind: 'equals' },
+ *     firstName: { kind: 'eq' },
  *
  *     // Neither `emailContains` nor `invalidEmail` are valid User properties.
  *     emailContains: { kind: 'contains', field: 'invalidEmail' },
@@ -105,7 +105,7 @@ type ValidateFilterDef<Entity, TFilterDef> = {
 };
 
 /**
- * A single filter definition, ie. `{ kind: 'equals', field: 'email' }`
+ * A single filter definition, ie. `{ kind: 'eq', field: 'email' }`
  */
 export type FilterField<T> =
     | PrimitiveFilter<T>
@@ -115,7 +115,8 @@ export type FilterField<T> =
 // -[ Primitive Filters ]----------------------------------------
 
 export type PrimitiveFilter<T> =
-    | EqualsFilter<T>
+    | EqFilter<T>
+    | NeqFilter<T>
     | ContainsFilter<T>
     | InArrayFilter<T>
     | IsNullFilter<T>
@@ -130,10 +131,17 @@ export interface CommonFilterOptions<Entity> {
 }
 
 /**
- * An `equals` filter passes only if the value is referentially equal to the filter value.
+ * An `eq` (equals) filter passes only if the value is referentially equal to the filter value.
  */
-export interface EqualsFilter<Entity> extends CommonFilterOptions<Entity> {
-    kind: "equals";
+export interface EqFilter<Entity> extends CommonFilterOptions<Entity> {
+    kind: "eq";
+}
+
+/**
+ * A `neq` (not equals) filter passes only if the value is not referentially equal to the filter value.
+ */
+export interface NeqFilter<Entity> extends CommonFilterOptions<Entity> {
+    kind: "neq";
 }
 
 /**
@@ -262,7 +270,7 @@ type GetFieldForFilter<
  * A map of filter types to their expected input.
  *
  * A note on the Entity[Extract<...>] pattern:
- * - `Extract<TFilterDef, EqualsFilterDef<Entity>>`: narrow the generic TFilterDef type
+ * - `Extract<TFilterDef, EqFilter<Entity>>`: narrow the generic TFilterDef type
  *   to ensure it matches the specific filter def type.
  * - `['field']`: accesses the field name from that definition (or uses the key if field is omitted)
  * - `Entity[...]`: looks up the actual type of that field on the entity
@@ -272,10 +280,15 @@ type FilterInputMap<
     Entity,
     TFilterField extends FilterField<Entity>,
 > = {
-    equals: Entity[GetFieldForFilter<
+    eq: Entity[GetFieldForFilter<
         K,
         Entity,
-        Extract<TFilterField, EqualsFilter<Entity>>
+        Extract<TFilterField, EqFilter<Entity>>
+    >];
+    neq: Entity[GetFieldForFilter<
+        K,
+        Entity,
+        Extract<TFilterField, NeqFilter<Entity>>
     >];
     contains: string;
     inArray: Entity[GetFieldForFilter<
@@ -454,8 +467,11 @@ const compilePrimitiveFilter = <Entity>(
     const field = (filterDef.field ?? key) as keyof Entity;
 
     switch (filterDef.kind) {
-        case "equals":
+        case "eq":
             return (entity, filterValue) => entity[field] === filterValue;
+
+        case "neq":
+            return (entity, filterValue) => entity[field] !== filterValue;
 
         case "contains":
             return (entity, filterValue) =>

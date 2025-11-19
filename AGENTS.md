@@ -5,7 +5,7 @@
 - Build: `pnpm run build`
 - Test all: `pnpm test`
 - Test single file: `pnpm test src/lib/filter-def.spec.ts`
-- Test pattern: `pnpm test -- --run --reporter=verbose "*equals*"`
+- Test pattern: `pnpm test -- --run --reporter=verbose "*eq*"`
 - Type check: `pnpm run typecheck`
 
 ## Code Style Guidelines
@@ -19,7 +19,7 @@
 
 ### Naming Conventions
 
-- Interfaces: PascalCase (e.g., `FilterForEntity`, `EqualsFilterDef`)
+- Interfaces: PascalCase (e.g., `FilterForEntity`, `EqFilterDef`)
 - Types: PascalCase (e.g., `FilterFn`, `InputForFiltersDef`)
 - Variables: camelCase (e.g., `filterDef`, `filterValue`, `entityShape`)
 - Functions: camelCase (e.g., `filterFn`, `primitiveFilterPasses`)
@@ -51,6 +51,8 @@
 - Separate logical sections with comments (e.g., `// ----------------------------------------------------------------`)
 - Use arrow functions for functional programming patterns
 - Prefer const over let, explicit types over inferred
+- YAML (_.yaml, _.yml) files should use two-space tab widths.
+  All other files (_.ts, _.md, \*.json, etc) should use four-space tab widths.
 
 ### Testing
 
