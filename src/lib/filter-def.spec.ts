@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import type { FilterInput } from "./filter-def";
 import { entity } from "./filter-def";
 
 interface User {
@@ -105,6 +106,15 @@ describe("Equals Filter", () => {
 
         expect(result).toEqual(exampleUsers);
     });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            nameEquals?: string;
+            ageEquals?: number;
+        }>();
+    });
 });
 
 describe("Contains Filter", () => {
@@ -129,6 +139,15 @@ describe("Contains Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([]);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            emailContains?: string;
+            nameContains?: string;
+        }>();
     });
 });
 
@@ -158,6 +177,15 @@ describe("InArray Filter", () => {
 
         expect(result).toEqual([]);
     });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageInArray?: number[];
+            nameInArray?: string[];
+        }>();
+    });
 });
 
 describe("IsNull Filter", () => {
@@ -182,6 +210,14 @@ describe("IsNull Filter", () => {
             exampleUsers[3],
         ]);
     });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            phoneIsNull?: boolean;
+        }>();
+    });
 });
 
 describe("IsNotNull Filter", () => {
@@ -205,6 +241,14 @@ describe("IsNotNull Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[1]]);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            phoneIsNotNull?: boolean;
+        }>();
     });
 });
 
@@ -234,6 +278,15 @@ describe("Greater Than (GT) Filter", () => {
 
         expect(result).toEqual([]);
     });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageGreaterThan?: number;
+            scoreGreaterThan?: number;
+        }>();
+    });
 });
 
 describe("Greater Than or Equal (GTE) Filter", () => {
@@ -261,6 +314,15 @@ describe("Greater Than or Equal (GTE) Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageGreaterThanOrEqual?: number;
+            scoreGreaterThanOrEqual?: number;
+        }>();
     });
 });
 
@@ -297,6 +359,15 @@ describe("Less Than (LT) Filter", () => {
 
         expect(result).toEqual([]);
     });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageLessThan?: number;
+            scoreLessThan?: number;
+        }>();
+    });
 });
 
 describe("Less Than or Equal (LTE) Filter", () => {
@@ -324,6 +395,15 @@ describe("Less Than or Equal (LTE) Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageLessThanOrEqual?: number;
+            scoreLessThanOrEqual?: number;
+        }>();
     });
 });
 
@@ -377,6 +457,18 @@ describe("Combined Filters", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[2]]);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            nameContains?: string;
+            ageGreaterThan?: number;
+            ageLessThan?: number;
+            isActive?: boolean;
+            phoneIsNotNull?: boolean;
+        }>();
     });
 });
 
@@ -433,6 +525,24 @@ describe("Boolean AND Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        const ageFilter = userEntity.filterDef({
+            ageExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+        });
+
+        type Input = FilterInput<typeof ageFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageExact?: number;
+        }>();
     });
 });
 
@@ -518,6 +628,24 @@ describe("Boolean OR Filter", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        const ageFilter = userEntity.filterDef({
+            youngOrOld: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "age" },
+                    { kind: "gt", field: "age" },
+                ],
+            },
+        });
+
+        type Input = FilterInput<typeof ageFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            youngOrOld?: number;
+        }>();
     });
 });
 
@@ -624,6 +752,32 @@ describe("Complex Boolean Filters", () => {
         // Bob Smith has "smith" in name and email
         expect(result).toEqual([exampleUsers[2]]);
     });
+
+    it("should infer the correct input type", () => {
+        const complexFilter = userEntity.filterDef({
+            ageExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+            scoreExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "score" },
+                    { kind: "lte", field: "score" },
+                ],
+            },
+        });
+
+        type Input = FilterInput<typeof complexFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageExact?: number;
+            scoreExact?: number;
+        }>();
+    });
 });
 
 describe("Boolean Filter Edge Cases", () => {
@@ -725,6 +879,32 @@ describe("Boolean Filter Edge Cases", () => {
         // Score doesn't match anyone (no one has score of 25 or 30)
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
     });
+
+    it("should infer the correct input type", () => {
+        const combinedFilter = userEntity.filterDef({
+            ageExact: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+            scoreOutsideRange: {
+                kind: "or",
+                conditions: [
+                    { kind: "lt", field: "score" },
+                    { kind: "gt", field: "score" },
+                ],
+            },
+        });
+
+        type Input = FilterInput<typeof combinedFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            ageExact?: number;
+            scoreOutsideRange?: number;
+        }>();
+    });
 });
 
 describe("Custom Filters", () => {
@@ -762,6 +942,15 @@ describe("Custom Filters", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual([exampleUsers[0], exampleUsers[1]]);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            wrotePostId?: string;
+            hasPosts?: boolean;
+        }>();
     });
 });
 
@@ -805,5 +994,15 @@ describe("Edge Cases", () => {
         const result = exampleUsers.filter(predicate);
 
         expect(result).toEqual(exampleUsers);
+    });
+
+    it("should infer the correct input type", () => {
+        type Input = FilterInput<typeof userFilter>;
+
+        expectTypeOf<Input>().toEqualTypeOf<{
+            nameEquals?: string;
+            emailContains?: string;
+            ageGreaterThan?: number;
+        }>();
     });
 });

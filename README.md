@@ -6,7 +6,7 @@ A TypeScript library for defining and executing type-safe data filters. Define y
 
 ```typescript
 import { entity } from "filter-def";
-import type { InputForPredicateCreator } from "filter-def";
+import type { FilterInput } from "filter-def";
 
 interface User {
     name: string;
@@ -20,7 +20,7 @@ const filterUsers = entity<User>().filterDef({
     olderThan: { kind: "gt", field: "age" },
 });
 
-type UserFilterInput = InputForPredicateCreator<typeof filterUsers>;
+type UserFilterInput = FilterInput<typeof filterUsers>;
 
 // Create a predicate function
 const predicate = filterUsers({
@@ -260,7 +260,7 @@ This pattern allows you to:
 
 ```typescript
 import { entity } from "filter-def";
-import type { InputForPredicateCreator } from "filter-def";
+import type { FilterInput } from "filter-def";
 
 interface Product {
     name: string;
@@ -287,7 +287,7 @@ const filterProducts = entity<Product>().filterDef({
     },
 });
 
-type ProductFilterInput = InputForPredicateCreator<typeof filterProducts>;
+type ProductFilterInput = FilterInput<typeof filterProducts>;
 
 // Create a predicate with your filter criteria
 const predicate = filterProducts({

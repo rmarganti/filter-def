@@ -39,10 +39,10 @@
  * const johnUser = myUserArray.find(where);
  * ```
  */
-export const entity = <TEntity>() => {
-    const filterDef = <TFiltersDef extends FiltersDef<TEntity>>(
-        FiltersDef: TFiltersDef,
-    ): PredicateCreator<TEntity, TFiltersDef> => filterFn(FiltersDef);
+export const entity = <Entity>() => {
+    const filterDef = <TFilterDef extends FilterDef<Entity>>(
+        FiltersDef: TFilterDef,
+    ): Filter<Entity, TFilterDef> => filterFn(FiltersDef);
 
     return { filterDef };
 };
@@ -51,37 +51,37 @@ export const entity = <TEntity>() => {
 // Filter definitions
 // ----------------------------------------------------------------
 
-type FiltersDef<TEntity> = Record<string, FilterDef<TEntity>>;
+export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
 
 /**
  * A single filter definition, ie. `{ kind: 'equals', field: 'email' }`
  */
-export type FilterDef<T> =
-    | PrimitiveFilterDef<T>
-    | BooleanFilterDef<T>
-    | CustomFilterDef<T, any>;
+export type FilterField<T> =
+    | PrimitiveFilter<T>
+    | BooleanFilter<T>
+    | CustomFilter<T, any>;
 
 // -[ Primitive Filters ]----------------------------------------
 
-export type PrimitiveFilterDef<T> =
-    | EqualsFilterDef<T>
-    | ContainsFilterDef<T>
-    | InArrayFilterDef<T>
-    | IsNullFilterDef<T>
-    | IsNotNullFilterDef<T>
-    | GTFilterDef<T>
-    | GTEFilterDef<T>
-    | LTFilterDef<T>
-    | LTEFilterDef<T>;
+export type PrimitiveFilter<T> =
+    | EqualsFilter<T>
+    | ContainsFilter<T>
+    | InArrayFilter<T>
+    | IsNullFilter<T>
+    | IsNotNullFilter<T>
+    | GTFilter<T>
+    | GTEFilter<T>
+    | LTFilter<T>
+    | LTEFilter<T>;
 
-export interface CommonFilterOptions<TEntity> {
-    field: keyof TEntity;
+export interface CommonFilterOptions<Entity> {
+    field: keyof Entity;
 }
 
 /**
  * An `equals` filter passes only if the value is referentially equal to the filter value.
  */
-export interface EqualsFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface EqualsFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "equals";
 }
 
@@ -89,31 +89,28 @@ export interface EqualsFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
  * A `contains` filter passes when the string representation of the value
  * contains the string representation of the filter value.
  */
-export interface ContainsFilterDef<TEntity>
-    extends CommonFilterOptions<TEntity> {
+export interface ContainsFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "contains";
 }
 
 /**
  * An `inArray` filter passes when the value is contained within the filter value (which must be an array).
  */
-export interface InArrayFilterDef<TEntity>
-    extends CommonFilterOptions<TEntity> {
+export interface InArrayFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "inArray";
 }
 
 /**
  * An `isNull` filter passes when the value is null or undefined.
  */
-export interface IsNullFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface IsNullFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "isNull";
 }
 
 /**
  * An `isNotNull` filter passes when the value is not null and not undefined.
  */
-export interface IsNotNullFilterDef<TEntity>
-    extends CommonFilterOptions<TEntity> {
+export interface IsNotNullFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "isNotNull";
 }
 
@@ -121,7 +118,7 @@ export interface IsNotNullFilterDef<TEntity>
  * A `gt` (greater than) filter passes when the value is greater than the filter value.
  * Works with any comparable data type (numbers, strings, dates, etc.).
  */
-export interface GTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface GTFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "gt";
 }
 
@@ -129,7 +126,7 @@ export interface GTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
  * A `gte` (greater than or equal) filter passes when the value is greater than or equal to the filter value.
  * Works with any comparable data type (numbers, strings, dates, etc.).
  */
-export interface GTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface GTEFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "gte";
 }
 
@@ -137,7 +134,7 @@ export interface GTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
  * An `lt` (less than) filter passes when the value is less than the filter value.
  * Works with any comparable data type (numbers, strings, dates, etc.).
  */
-export interface LTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface LTFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "lt";
 }
 
@@ -145,50 +142,53 @@ export interface LTFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
  * An `lte` (less than or equal) filter passes when the value is less than or equal to the filter value.
  * Works with any comparable data type (numbers, strings, dates, etc.).
  */
-export interface LTEFilterDef<TEntity> extends CommonFilterOptions<TEntity> {
+export interface LTEFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "lte";
 }
 
 // -[ Boolean Filters ]------------------------------------------
 
-export type BooleanFilterDef<TEntity> =
-    | AndFilterDef<TEntity>
-    | OrFilterDef<TEntity>;
+export type BooleanFilter<Entity> = AndFilter<Entity> | OrFilter<Entity>;
 
-export interface AndFilterDef<TEntity> {
+export interface AndFilter<Entity> {
     kind: "and";
-    conditions: [PrimitiveFilterDef<TEntity>, ...PrimitiveFilterDef<TEntity>[]];
+    conditions: [PrimitiveFilter<Entity>, ...PrimitiveFilter<Entity>[]];
 }
 
-export interface OrFilterDef<TEntity> {
+export interface OrFilter<Entity> {
     kind: "or";
-    conditions: [PrimitiveFilterDef<TEntity>, ...PrimitiveFilterDef<TEntity>[]];
+    conditions: [PrimitiveFilter<Entity>, ...PrimitiveFilter<Entity>[]];
 }
 
 // -[ Custom Filters ]-------------------------------------------
 
-export type CustomFilterDef<TEntity, TInput> = (
-    entity: TEntity,
-    input: TInput,
+export type CustomFilter<Entity, Input> = (
+    entity: Entity,
+    input: Input,
 ) => boolean;
 
 // ----------------------------------------------------------------
 // Filter input
 // ----------------------------------------------------------------
 
-export type InputForPredicateCreator<TPredicateCreator> =
-    TPredicateCreator extends PredicateCreator<infer TEntity, infer TFiltersDef>
-        ? InputForFiltersDef<TEntity, TFiltersDef>
+/**
+ * The expected input for a Filter.
+ *
+ * ```typescript
+ * const userFilter = entity<User>().filterDef({ ... });
+ * type UserFilterInput = FilterInput<typeof userFilter>;
+ * ````
+ */
+export type FilterInput<TFilter> =
+    TFilter extends Filter<infer TEntity, infer TFilterDef>
+        ? FilterDefInput<TEntity, TFilterDef>
         : never;
 
 /**
  * Given an Entity and a FiltersDef, create
  */
-export type InputForFiltersDef<
-    Entity,
-    TFiltersDef extends FiltersDef<Entity>,
-> = {
-    [K in keyof TFiltersDef]?: InputForFilterDef<Entity, TFiltersDef[K]>;
+export type FilterDefInput<Entity, TFilterDef extends FilterDef<Entity>> = {
+    [K in keyof TFilterDef]?: FilterFieldInput<Entity, TFilterDef[K]>;
 };
 
 /**
@@ -200,34 +200,34 @@ export type InputForFiltersDef<
  * - `['field']`: accesses the field name from that definition
  * - `Entity[...]`: looks up the actual type of that field on the entity
  */
-type FilterInputMap<Entity, TFilterDef extends FilterDef<Entity>> = {
-    equals: Entity[Extract<TFilterDef, EqualsFilterDef<Entity>>["field"]];
+type FilterInputMap<Entity, TFilterField extends FilterField<Entity>> = {
+    equals: Entity[Extract<TFilterField, EqualsFilter<Entity>>["field"]];
     contains: string;
-    inArray: Entity[Extract<TFilterDef, InArrayFilterDef<Entity>>["field"]][];
+    inArray: Entity[Extract<TFilterField, InArrayFilter<Entity>>["field"]][];
     isNull: boolean;
     isNotNull: boolean;
-    gt: Entity[Extract<TFilterDef, GTFilterDef<Entity>>["field"]];
-    gte: Entity[Extract<TFilterDef, GTEFilterDef<Entity>>["field"]];
-    lt: Entity[Extract<TFilterDef, LTFilterDef<Entity>>["field"]];
-    lte: Entity[Extract<TFilterDef, LTEFilterDef<Entity>>["field"]];
-    and: InputForFilterDef<
+    gt: Entity[Extract<TFilterField, GTFilter<Entity>>["field"]];
+    gte: Entity[Extract<TFilterField, GTEFilter<Entity>>["field"]];
+    lt: Entity[Extract<TFilterField, LTFilter<Entity>>["field"]];
+    lte: Entity[Extract<TFilterField, LTEFilter<Entity>>["field"]];
+    and: FilterFieldInput<
         Entity,
-        Extract<TFilterDef, AndFilterDef<Entity>>["conditions"][number]
+        Extract<TFilterField, AndFilter<Entity>>["conditions"][number]
     >;
-    or: InputForFilterDef<
+    or: FilterFieldInput<
         Entity,
-        Extract<TFilterDef, OrFilterDef<Entity>>["conditions"][number]
+        Extract<TFilterField, OrFilter<Entity>>["conditions"][number]
     >;
 };
 
-export type InputForFilterDef<Entity, TFilterDef extends FilterDef<Entity>> =
+export type FilterFieldInput<Entity, TFilterField extends FilterField<Entity>> =
     // Primitive and Boolean Filters
-    TFilterDef extends {
-        kind: infer K extends keyof FilterInputMap<Entity, TFilterDef>;
+    TFilterField extends {
+        kind: infer K extends keyof FilterInputMap<Entity, TFilterField>;
     }
-        ? FilterInputMap<Entity, TFilterDef>[K] | undefined
+        ? FilterInputMap<Entity, TFilterField>[K] | undefined
         : // Custom Filters
-          TFilterDef extends CustomFilterDef<Entity, infer TArg>
+          TFilterField extends CustomFilter<Entity, infer TArg>
           ? TArg
           : never;
 
@@ -235,8 +235,8 @@ export type InputForFilterDef<Entity, TFilterDef extends FilterDef<Entity>> =
 // Filtering
 // ----------------------------------------------------------------
 
-export type PredicateCreator<Entity, TFiltersDef extends FiltersDef<Entity>> = (
-    filterInput: InputForFiltersDef<Entity, TFiltersDef>,
+export type Filter<Entity, TFilterDef extends FilterDef<Entity>> = (
+    filterInput: FilterDefInput<Entity, TFilterDef>,
 ) => (entity: Entity) => boolean;
 
 /**
@@ -251,7 +251,7 @@ type CompiledFilterChecker<Entity> = (
  * Pre-compiles a primitive filter definition into an optimized checker function.
  */
 const compilePrimitiveFilter = <Entity>(
-    filterDef: PrimitiveFilterDef<Entity>,
+    filterDef: PrimitiveFilter<Entity>,
 ): CompiledFilterChecker<Entity> => {
     const field = filterDef.field;
 
@@ -301,7 +301,7 @@ const compilePrimitiveFilter = <Entity>(
  * Pre-compiles a boolean filter definition into an optimized checker function.
  */
 const compileBooleanFilter = <Entity>(
-    filterDef: BooleanFilterDef<Entity>,
+    filterDef: BooleanFilter<Entity>,
 ): CompiledFilterChecker<Entity> => {
     const compiledConditions = filterDef.conditions.map((condition) =>
         compilePrimitiveFilter(condition),
@@ -326,7 +326,7 @@ const compileBooleanFilter = <Entity>(
  * Pre-compiles a filter definition into an optimized checker function.
  */
 const compileFilter = <Entity>(
-    filterDef: FilterDef<Entity>,
+    filterDef: FilterField<Entity>,
 ): CompiledFilterChecker<Entity> => {
     if (typeof filterDef === "function") {
         return filterDef;
@@ -346,21 +346,21 @@ const compileFilter = <Entity>(
  * Creates a function that filters entities based on the provided filter object.
  * This v2 implementation pre-compiles all filters for optimal performance.
  */
-const filterFn = <TEntity, TFiltersDef extends FiltersDef<TEntity>>(
-    filtersDef: TFiltersDef,
-): PredicateCreator<TEntity, TFiltersDef> => {
+const filterFn = <Entity, TFilterDef extends FilterDef<Entity>>(
+    filtersDef: TFilterDef,
+): Filter<Entity, TFilterDef> => {
     // Pre-compile all filters at definition time
     const compiledFilters: Array<{
         key: string;
-        checker: CompiledFilterChecker<TEntity>;
+        checker: CompiledFilterChecker<Entity>;
     }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
         key,
         checker: compileFilter(filterDef),
     }));
 
     // Return the optimized filter function
-    return (filterInput: InputForFiltersDef<TEntity, TFiltersDef>) =>
-        (entity: TEntity) => {
+    return (filterInput: FilterDefInput<Entity, TFilterDef>) =>
+        (entity: Entity) => {
             // Check if entity passes ALL filters
             for (let i = 0; i < compiledFilters.length; i++) {
                 const { key, checker } = compiledFilters[i];
