@@ -15,7 +15,7 @@ interface User {
 }
 
 const userFilter = entity<User>().filterDef({
-    name: { kind: "equals" },
+    name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     olderThan: { kind: "gt", field: "age" },
 });
@@ -56,7 +56,7 @@ interface User {
 
 const userFilter = entity<User>().filterDef({
     // Field is inferred from the key name
-    name: { kind: "equals" }, // field: "name" is inferred
+    name: { kind: "eq" }, // field: "name" is inferred
     email: { kind: "contains" }, // field: "email" is inferred
     age: { kind: "gte" }, // field: "age" is inferred
 
@@ -77,12 +77,20 @@ This makes filter definitions more concise while maintaining full type safety. Y
 
 ### Primitive Filters
 
-#### `equals`
+#### `eq`
 
 Checks if a field value is referentially equal to the filter value.
 
 ```typescript
-{ kind: "equals", field: "name" }
+{ kind: "eq", field: "name" }
+```
+
+#### `neq`
+
+Checks if a field value is not referentially equal to the filter value.
+
+```typescript
+{ kind: "neq", field: "status" }
 ```
 
 #### `contains`
@@ -168,7 +176,7 @@ All conditions must be true for the filter to pass.
 {
   kind: "and",
   conditions: [
-    { kind: "equals", field: "status" },
+    { kind: "eq", field: "status" },
     { kind: "gt", field: "age" }
   ]
 }
@@ -183,7 +191,7 @@ At least one condition must be true for the filter to pass.
   kind: "or",
   conditions: [
     { kind: "contains", field: "email" },
-    { kind: "equals", field: "name" }
+    { kind: "eq", field: "name" }
   ]
 }
 ```
@@ -207,7 +215,7 @@ interface Post {
 const userEntity = entity<User>();
 
 const userFilter = userEntity.filterDef({
-    name: { kind: "equals" },
+    name: { kind: "eq" },
 
     // Custom filter: check if user has written a specific number of posts
     postCount: (user: User, count: number) => {
@@ -252,13 +260,13 @@ const postEntity = entity<Post>();
 
 // Define a filter for posts
 const postFilter = postEntity.filterDef({
-    id: { kind: "equals" },
+    id: { kind: "eq" },
     titleContains: { kind: "contains", field: "title" },
 });
 
 // Use the post filter within a user filter
 const userFilter = userEntity.filterDef({
-    name: { kind: "equals" },
+    name: { kind: "eq" },
 
     // Custom filter that uses the post filter on nested posts array
     wrotePostWithId: (user: User, postId: string) => {
@@ -303,8 +311,8 @@ interface Product {
 
 const productFilter = entity<Product>().filterDef({
     // Primitive filters with inferred fields
-    name: { kind: "equals" },
-    inStock: { kind: "equals" },
+    name: { kind: "eq" },
+    inStock: { kind: "eq" },
 
     // Primitive filter with explicit fields
     nameContains: { kind: "contains", field: "name" },

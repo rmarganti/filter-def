@@ -4,7 +4,7 @@ export type {
     BooleanFilter,
     CommonFilterOptions,
     ContainsFilter,
-    EqualsFilter,
+    EqFilter,
     Filter,
     FilterDef,
     FilterField,
@@ -17,6 +17,7 @@ export type {
     IsNullFilter,
     LTEFilter,
     LTFilter,
+    NeqFilter,
     OrFilter,
     PrimitiveFilter,
 } from "./lib/filter-def";
