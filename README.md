@@ -166,7 +166,7 @@ Checks if a field is not null and not undefined.
 
 ### Boolean Filters
 
-Combine multiple primitive filters with logical operators.
+Combine multiple primitive filters with logical operators. **All conditions must have explicit `field` properties.**
 
 #### `and`
 
@@ -194,6 +194,30 @@ At least one condition must be true for the filter to pass.
     { kind: "eq", field: "name" }
   ]
 }
+```
+
+Boolean filters are particularly useful for searching across multiple fields:
+
+```typescript
+const userFilter = entity<User>().filterDef({
+    // Search for a term in either name or email
+    searchTerm: {
+        kind: "or",
+        conditions: [
+            { kind: "contains", field: "name" },
+            { kind: "contains", field: "email" },
+        ],
+    },
+
+    // Find products with high ratings from either source
+    highlyRated: {
+        kind: "or",
+        conditions: [
+            { kind: "gte", field: "criticRating" },
+            { kind: "gte", field: "userRating" },
+        ],
+    },
+});
 ```
 
 ### Custom Filters
@@ -318,7 +342,7 @@ const productFilter = entity<Product>().filterDef({
     nameContains: { kind: "contains", field: "name" },
     inCategory: { kind: "inArray", field: "category" },
 
-    // Boolean filter (conditions still require explicit fields)
+    // Boolean filter (all conditions require explicit fields)
     ratingAtLeast: {
         kind: "or",
         conditions: [
@@ -352,5 +376,5 @@ const hasProducts = products.some(predicate);
 - All filter inputs are optional
 - Omitting a filter input automatically passes that filter
 - Filters are combined with AND logic at the top level
-- Boolean filters (and/or) work with primitive filters and their inputs
+- Boolean filters (and/or) require all conditions to have explicit `field` properties
 - Type inference works seamlessly with TypeScript strict mode
