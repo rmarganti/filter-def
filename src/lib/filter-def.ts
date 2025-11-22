@@ -122,7 +122,7 @@ type ValidateFilterDef<Entity, TFilterDef> = {
           ? // Boolean filters: all conditions must have required field properties
             AllConditionsHaveRequiredFields<Conditions> extends true
               ? TFilterDef[K]
-              : never
+              : TypeError<"All conditions on boolean filters must specify a `field` property">
           : TFilterDef[K] extends (...args: any[]) => any
             ? // Custom filters do not rely on fields, so they are always valid.
               TFilterDef[K]
@@ -130,8 +130,10 @@ type ValidateFilterDef<Entity, TFilterDef> = {
               ? // We otherwise require the filter key to be a valid field.
                 TFilterDef[K]
               : // Everything else is invalid
-                never;
+                TypeError<"Filters must specify a valid `field` property or use a key that matches a valid entity field">;
 };
+
+type TypeError<T extends string> = `⚠️ TypeError: ${T}`;
 
 /**
  * Helper type to recursively check if all conditions in an array have required field properties.

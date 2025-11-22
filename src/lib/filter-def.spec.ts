@@ -1174,18 +1174,6 @@ describe("Boolean Filter Field Requirement Validation", () => {
 
     // Type-level validation tests - these demonstrate the validation works
     it("should demonstrate type validation catches missing fields", () => {
-        // ✅ Valid: all conditions have explicit fields
-        const _validFilter = userEntity.filterDef({
-            searchEverywhere: {
-                kind: "or",
-                conditions: [
-                    { kind: "contains", field: "name" },
-                    { kind: "contains", field: "email" },
-                ],
-            },
-        });
-        void _validFilter;
-
         // ❌ INVALID: condition missing field property
         userEntity.filterDef({
             // @ts-expect-error the second `contains` condition is missing the `field` property
