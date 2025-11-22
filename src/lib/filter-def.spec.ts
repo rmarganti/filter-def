@@ -1072,3 +1072,144 @@ describe("Edge Cases", () => {
         }>();
     });
 });
+
+describe("Boolean Filter Field Requirement Validation", () => {
+    it("should allow boolean filters when all conditions have explicit fields", () => {
+        // This should compile - all conditions have required field properties
+        const filter = userEntity.filterDef({
+            eitherNameOrEmail: {
+                kind: "or",
+                conditions: [
+                    { kind: "eq", field: "name" },
+                    { kind: "eq", field: "email" },
+                ],
+            },
+            ratingAtLeast: {
+                kind: "or",
+                conditions: [
+                    { kind: "gte", field: "score" },
+                    { kind: "gte", field: "age" },
+                ],
+            },
+        });
+
+        const predicate = filter({
+            eitherNameOrEmail: "John Doe",
+            ratingAtLeast: 80,
+        });
+        const result = exampleUsers.filter(predicate);
+
+        // John has name "John Doe" (matches) and score 85 >= 80 (matches)
+        expect(result).toEqual([exampleUsers[0]]);
+    });
+
+    it("should work with AND filter across different fields", () => {
+        const filter = userEntity.filterDef({
+            activeAndYoung: {
+                kind: "and",
+                conditions: [
+                    { kind: "eq", field: "isActive" },
+                    { kind: "lt", field: "age" },
+                ],
+            },
+        });
+
+        const predicate = filter({ activeAndYoung: true });
+        const result = exampleUsers.filter(predicate);
+
+        // This is a contrived example - we're using `true` for both isActive (boolean)
+        // and age < true (which converts to 1), so it finds users where isActive=true AND age < 1
+        // Nobody matches this
+        expect(result).toEqual([]);
+    });
+
+    it("should work with OR filter searching across multiple string fields", () => {
+        const filter = userEntity.filterDef({
+            searchTerm: {
+                kind: "or",
+                conditions: [
+                    { kind: "contains", field: "name" },
+                    { kind: "contains", field: "email" },
+                ],
+            },
+        });
+
+        const predicate = filter({ searchTerm: "example.com" });
+        const result = exampleUsers.filter(predicate);
+
+        // Finds users with "example.com" in name or email
+        expect(result).toEqual([
+            exampleUsers[0],
+            exampleUsers[1],
+            exampleUsers[3],
+        ]);
+    });
+
+    it("should infer correct input types for boolean filters", () => {
+        const filter = userEntity.filterDef({
+            eitherNameOrEmail: {
+                kind: "or",
+                conditions: [
+                    { kind: "eq", field: "name" },
+                    { kind: "eq", field: "email" },
+                ],
+            },
+            ageRange: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "age" },
+                    { kind: "lte", field: "age" },
+                ],
+            },
+        });
+
+        type Input = FilterInput<typeof filter>;
+
+        // The input is a union of string (from name or email)
+        expectTypeOf<Input>().toEqualTypeOf<{
+            eitherNameOrEmail?: string;
+            ageRange?: number;
+        }>();
+    });
+
+    // Type-level validation tests - these demonstrate the validation works
+    it("should demonstrate type validation catches missing fields", () => {
+        // ✅ Valid: all conditions have explicit fields
+        const _validFilter = userEntity.filterDef({
+            searchEverywhere: {
+                kind: "or",
+                conditions: [
+                    { kind: "contains", field: "name" },
+                    { kind: "contains", field: "email" },
+                ],
+            },
+        });
+        void _validFilter;
+
+        // ❌ INVALID: condition missing field property
+        userEntity.filterDef({
+            // @ts-expect-error the second `contains` condition is missing the `field` property
+            searchAnywhere: {
+                kind: "or",
+                conditions: [
+                    { kind: "contains", field: "name" },
+                    { kind: "contains" }, // Missing required field
+                ],
+            },
+        });
+
+        // ❌ INVALID: all conditions missing field properties
+        userEntity.filterDef({
+            // @ts-expect-error all conditions are missing the `field` property
+            somethingWrong: {
+                kind: "and",
+                conditions: [
+                    { kind: "gt" }, // Missing required field
+                    { kind: "lt" }, // Missing required field
+                ],
+            },
+        });
+
+        expect(true).toBe(true);
+    });
+});

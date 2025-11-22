@@ -55,7 +55,8 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
 
 /**
  * Validates that filter keys without explicit field properties match entity fields.
- * Boolean filters (and/or) and custom filters are always allowed regardless of key name.
+ * Boolean filters (and/or) require all conditions to have explicit field properties.
+ * Custom filters are always allowed regardless of key name.
  *
  * ```typescript
  * interface User {
@@ -74,7 +75,16 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  *
  *     // Even though `emailContains` doesn't match the `User.email` field,
  *     // we provided the `field` property to explicitly.
- *     emailContains: { kind: 'contains', field: 'email' }, // `email` field is explicitly defined
+ *     emailContains: { kind: 'contains', field: 'email' },
+ *
+ *     // Boolean filters require all conditions to have explicit fields
+ *     eitherName: {
+ *         kind: 'or',
+ *         conditions: [
+ *             { kind: 'eq', field: 'name' },
+ *             { kind: 'eq', field: 'email' },
+ *         ]
+ *     },
  * });
  *
  * // INVALID
@@ -88,21 +98,57 @@ export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
  *
  *     // Neither `emailContains` nor `invalidEmail` are valid User properties.
  *     emailContains: { kind: 'contains', field: 'invalidEmail' },
+ *
+ *     // Boolean filters with conditions missing explicit fields are invalid
+ *     searchAnywhere: {
+ *         kind: 'or',
+ *         conditions: [
+ *             { kind: 'contains', field: 'name' },
+ *             { kind: 'contains' }, // Missing required field property
+ *         ]
+ *     },
  * });
  *
  * ```
  */
 type ValidateFilterDef<Entity, TFilterDef> = {
     [K in keyof TFilterDef]: TFilterDef[K] extends { field: any }
-        ? TFilterDef[K]
-        : TFilterDef[K] extends { kind: "and" | "or" }
-          ? TFilterDef[K]
-          : TFilterDef[K] extends (...args: any[]) => any
-            ? TFilterDef[K]
-            : K extends keyof Entity
+        ? // Filters with explicit `field` are already restricted to valid fields.
+          TFilterDef[K]
+        : TFilterDef[K] extends {
+                kind: "and" | "or";
+                conditions: infer Conditions extends any[];
+            }
+          ? // Boolean filters: all conditions must have required field properties
+            AllConditionsHaveRequiredFields<Conditions> extends true
               ? TFilterDef[K]
-              : never;
+              : never
+          : TFilterDef[K] extends (...args: any[]) => any
+            ? // Custom filters do not rely on fields, so they are always valid.
+              TFilterDef[K]
+            : K extends keyof Entity
+              ? // We otherwise require the filter key to be a valid field.
+                TFilterDef[K]
+              : // Everything else is invalid
+                never;
 };
+
+/**
+ * Helper type to recursively check if all conditions in an array have required field properties.
+ */
+type AllConditionsHaveRequiredFields<Conditions extends any[]> =
+    Conditions extends [infer First, ...infer Rest]
+        ? HasRequiredField<First> extends true
+            ? Rest extends any[]
+                ? AllConditionsHaveRequiredFields<Rest>
+                : true
+            : false
+        : true;
+
+/**
+ * Helper type to check if a type has a required field property.
+ */
+type HasRequiredField<T> = T extends { field: keyof any } ? true : false;
 
 /**
  * A single filter definition, ie. `{ kind: 'eq', field: 'email' }`
