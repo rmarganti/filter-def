@@ -453,7 +453,7 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
 };
 
 /**
- * A compiled filter field checker function that tests if an entity passes a single filter..
+ * A compiled filter field checker function that tests if an entity passes a single filter.
  */
 type CompiledFilterField<Entity> = (
     entity: Entity,
