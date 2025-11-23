@@ -33,6 +33,17 @@ const predicate = userFilter({
 const filteredUsers = users.filter(predicate);
 const firstUser = users.find(predicate);
 const hasMatch = users.some(predicate);
+
+// Or use optional helper functions for convenience
+import { makeFilterHelpers } from "filter-def";
+
+const { filter: filterUsers, find: findUser } = makeFilterHelpers(userFilter);
+
+const filteredUsers = filterUsers(users, {
+    name: "John",
+    emailContains: "@example.com",
+    olderThan: 25,
+});
 ```
 
 ## Features
@@ -317,6 +328,78 @@ This pattern allows you to:
 - Reuse filter definitions across different contexts
 - Filter parent entities based on child entity properties
 - Compose complex filtering logic from simpler filter definitions
+
+## Optional Helper Functions
+
+For convenience, `filter-def` provides helper functions that wrap the predicate-based API. These are entirely optional - the standard predicate approach is more flexible and works seamlessly with native array methods.
+
+```typescript
+import { entity, makeFilterHelpers } from "filter-def";
+
+interface User {
+    name: string;
+    age: number;
+    isActive: boolean;
+}
+
+const userFilter = entity<User>().filterDef({
+    name: { kind: "eq" },
+    minAge: { kind: "gte", field: "age" },
+    isActive: { kind: "eq" },
+});
+
+// Create helper functions
+const {
+    filter: filterUsers,
+    find: findUser,
+    findIndex: findUserIndex,
+    some: someUsers,
+    every: everyUser,
+} = makeFilterHelpers(userFilter);
+
+// Use the helpers
+const activeUsers: User[] = filterUsers(users, { isActive: true });
+const john: User | undefined = findUser(users, { name: "John" });
+const johnIndex: number = findUserIndex(users, { name: "John" });
+const hasAdults: boolean = someUsers(users, { minAge: 18 });
+const allActive: boolean = everyUser(users, { isActive: true });
+```
+
+### When to Use Helpers vs Predicates
+
+**Use predicates (recommended for most cases):**
+
+- When you need to pass the filter function around
+- When combining with other functional patterns
+- When you want maximum flexibility
+- For complex filter compositions
+
+```typescript
+const predicate = userFilter({ isActive: true });
+
+// Maximum flexibility with native methods
+const activeUsers = users.filter(predicate);
+const mappedAndFiltered = users.filter(predicate).map((u) => u.name);
+
+// Easy to compose with other functions
+const processUsers = (users: User[], extraFilter: (u: User) => boolean) =>
+    users.filter(predicate).filter(extraFilter);
+```
+
+**Use helpers (optional convenience):**
+
+- When you want a more concise API
+- When you prefer named functions over predicates
+- When filter logic is co-located with usage
+
+```typescript
+const { filter: filterUsers } = makeFilterHelpers(userFilter);
+
+// More concise syntax
+const activeUsers = filterUsers(users, { isActive: true });
+```
+
+Both approaches are fully type-safe and produce identical results.
 
 ## Complete Example
 
