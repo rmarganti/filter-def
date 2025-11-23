@@ -59,5 +59,9 @@
 - Use vitest with describe/it blocks
 - Interface definitions for test data
 - Descriptive test names and assertions
-- Test edge cases and empty inputs</content>
-  <parameter name="filePath">AGENTS.md
+- Test edge cases and empty inputs
+
+## General notes
+
+- Do not create summary documents after making changes unless asked.
+- Do not create a CHANGELOG.md file.
