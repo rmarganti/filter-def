@@ -21,3 +21,5 @@ export type {
     OrFilter,
     PrimitiveFilter,
 } from "./lib/filter-def";
+export { makeFilterHelpers } from "./lib/helpers";
+export type { FilterHelpers } from "./lib/helpers";

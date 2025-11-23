@@ -1,6 +1,6 @@
 import type { Filter } from "./filter-def";
 
-interface FilterHelpers<TEntity, TFilterInput> {
+export interface FilterHelpers<TEntity, TFilterInput> {
     filter: (entities: TEntity[], filterInput?: TFilterInput) => TEntity[];
 
     find: (
