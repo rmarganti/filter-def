@@ -41,8 +41,9 @@
  */
 export const entity = <Entity>() => {
     const filterDef = <TFilterDef extends FilterDef<Entity>>(
-        FiltersDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
-    ): Filter<Entity, TFilterDef> => compileFilterDef(FiltersDef);
+        filterDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
+    ): Filter<Entity, Simplify<FilterDefInput<Entity, TFilterDef>>> =>
+        compileFilterDef(filterDef);
 
     return { filterDef };
 };
@@ -132,8 +133,6 @@ type ValidateFilterDef<Entity, TFilterDef> = {
               : // Everything else is invalid
                 TypeError<"Filters must specify a valid `field` property or use a key that matches a valid entity field">;
 };
-
-type TypeError<T extends string> = `⚠️ TypeError: ${T}`;
 
 /**
  * Helper type to recursively check if all conditions in an array have required field properties.
@@ -290,8 +289,8 @@ export type CustomFilter<Entity, Input> = (
  * ```
  */
 export type FilterInput<TFilter> =
-    TFilter extends Filter<infer TEntity, infer TFilterDef>
-        ? FilterDefInput<TEntity, TFilterDef>
+    TFilter extends Filter<infer _TEntity, infer TFilterInput>
+        ? TFilterInput
         : never;
 
 /**
@@ -404,8 +403,8 @@ export type FilterFieldInput<
  * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
  * and returns a function that determines if an entity passes the filter.
  */
-export type Filter<Entity, TFilterDef extends FilterDef<Entity>> = (
-    filterInput: FilterDefInput<Entity, TFilterDef> | undefined,
+export type Filter<Entity, TFilterInput> = (
+    filterInput?: TFilterInput,
 ) => (entity: Entity) => boolean;
 
 /**
@@ -415,14 +414,14 @@ export type Filter<Entity, TFilterDef extends FilterDef<Entity>> = (
  */
 const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
     filtersDef: TFilterDef,
-): Filter<Entity, TFilterDef> => {
+): Filter<Entity, FilterDefInput<Entity, TFilterDef>> => {
     // Pre-compile all filters at definition time
     const compiledFilters: Array<{
         key: string;
-        checker: CompiledFilterChecker<Entity>;
+        checker: CompiledFilterField<Entity>;
     }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
         key,
-        checker: compileFilter(key, filterDef),
+        checker: compileFilterField(key, filterDef),
     }));
 
     // Return the optimized filter function
@@ -454,31 +453,31 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
 };
 
 /**
- * A compiled filter checker function that tests if an entity passes a filter.
+ * A compiled filter field checker function that tests if an entity passes a single filter..
  */
-type CompiledFilterChecker<Entity> = (
+type CompiledFilterField<Entity> = (
     entity: Entity,
     filterValue: unknown,
 ) => boolean;
 
 /**
- * Pre-compiles a filter definition into an optimized checker function.
+ * Pre-compiles a filter field into an optimized checker function.
  */
-const compileFilter = <Entity>(
+const compileFilterField = <Entity>(
     key: string,
-    filterDef: FilterField<Entity>,
-): CompiledFilterChecker<Entity> => {
-    if (typeof filterDef === "function") {
-        return filterDef;
+    filterField: FilterField<Entity>,
+): CompiledFilterField<Entity> => {
+    if (typeof filterField === "function") {
+        return filterField;
     }
 
-    switch (filterDef.kind) {
+    switch (filterField.kind) {
         case "and":
         case "or":
-            return compileBooleanFilter(filterDef);
+            return compileBooleanFilter(filterField);
 
         default:
-            return compilePrimitiveFilter(key, filterDef);
+            return compilePrimitiveFilter(key, filterField);
     }
 };
 
@@ -486,15 +485,15 @@ const compileFilter = <Entity>(
  * Pre-compiles a boolean filter definition into an optimized checker function.
  */
 const compileBooleanFilter = <Entity>(
-    filterDef: BooleanFilter<Entity>,
-): CompiledFilterChecker<Entity> => {
-    const compiledConditions = filterDef.conditions.map((condition) =>
+    filterField: BooleanFilter<Entity>,
+): CompiledFilterField<Entity> => {
+    const compiledConditions = filterField.conditions.map((condition) =>
         // Boolean filter conditions must have explicit field property
         // TODO: Implement field property validation for Boolean filters.
         compilePrimitiveFilter(condition.field as string, condition),
     );
 
-    switch (filterDef.kind) {
+    switch (filterField.kind) {
         case "and":
             return (entity, filterValue) =>
                 compiledConditions.every((checker) =>
@@ -514,11 +513,11 @@ const compileBooleanFilter = <Entity>(
  */
 const compilePrimitiveFilter = <Entity>(
     key: string,
-    filterDef: PrimitiveFilter<Entity>,
-): CompiledFilterChecker<Entity> => {
-    const field = (filterDef.field ?? key) as keyof Entity;
+    filterField: PrimitiveFilter<Entity>,
+): CompiledFilterField<Entity> => {
+    const field = (filterField.field ?? key) as keyof Entity;
 
-    switch (filterDef.kind) {
+    switch (filterField.kind) {
         case "eq":
             return (entity, filterValue) => entity[field] === filterValue;
 
@@ -558,7 +557,24 @@ const compilePrimitiveFilter = <Entity>(
                 Number(entity[field]) <= (filterValue as number);
 
         default:
-            filterDef satisfies never;
+            filterField satisfies never;
             return () => false;
     }
 };
+
+// ----------------------------------------------------------------
+// Utilities
+// ----------------------------------------------------------------
+
+/**
+ * Forces TypeScript to evaluate and display a type in a simplified form.
+ * This improves the developer experience by showing resolved types in hovers/intellisense.
+ */
+type Simplify<T> = {
+    [K in keyof T]: T[K];
+} & {};
+
+/**
+ * Utility type to help expose more meaningful errors to consumers.
+ */
+type TypeError<T extends string> = `⚠️ TypeError: ${T}`;
