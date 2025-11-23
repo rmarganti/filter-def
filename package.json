@@ -1,7 +1,7 @@
 {
   "name": "filter-def",
   "version": "0.0.0",
-  "description": "A starter for creating a TypeScript package.",
+  "description": "Type-safe data filters for TypeScript. Define filters once, get full type inference for filter inputs and results.",
   "type": "module",
   "license": "MIT",
   "homepage": "https://github.com/rmarganti/filter-def#readme",
