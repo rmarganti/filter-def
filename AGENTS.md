@@ -8,6 +8,12 @@
 - Test pattern: `pnpm test -- --run --reporter=verbose "*eq*"`
 - Type check: `pnpm run typecheck`
 
+## Commit Guidelines
+
+- Use conventional commits format (e.g., `feat:`, `fix:`, `chore:`, `docs:`)
+- All commit messages must include a brief description of the change
+- Semantic-release uses commit messages to determine version bumps
+
 ## Code Style Guidelines
 
 ### TypeScript Configuration
