@@ -65,3 +65,4 @@
 
 - Do not create summary documents after making changes unless asked.
 - Do not create a CHANGELOG.md file.
+- Be extremely concise. Sacrifice grammar for the sake of concision.
