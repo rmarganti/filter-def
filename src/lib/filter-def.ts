@@ -573,6 +573,8 @@ const compilePrimitiveFilter = <Entity>(
         case "gt": {
             return (entity, filterValue) => {
                 const fieldNum = asNumber(entity[field]);
+                // filterValue is already the correct type from type-safe input,
+                // so we just need to cast it for TypeScript
                 const filterNum = filterValue as number;
                 return fieldNum > filterNum;
             };
