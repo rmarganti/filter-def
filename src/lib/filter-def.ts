@@ -523,6 +523,18 @@ const compileBooleanFilter = <Entity>(
 };
 
 /**
+ * Helper to get numeric value, avoiding conversion if already a number
+ */
+const asNumber = (value: unknown): number =>
+    typeof value === "number" ? value : Number(value);
+
+/**
+ * Helper to get string value, avoiding conversion if already a string
+ */
+const asString = (value: unknown): string =>
+    typeof value === "string" ? value : String(value);
+
+/**
  * Pre-compiles a primitive filter definition into an optimized checker function.
  */
 const compilePrimitiveFilter = <Entity>(
@@ -539,15 +551,9 @@ const compilePrimitiveFilter = <Entity>(
             return (entity, filterValue) => entity[field] !== filterValue;
 
         case "contains": {
-            // Pre-convert filterValue to string at compile time
             return (entity, filterValue) => {
-                const fieldValue = entity[field];
-                const filterStr = String(filterValue);
-                // Avoid String() conversion if already a string
-                const fieldStr =
-                    typeof fieldValue === "string"
-                        ? fieldValue
-                        : String(fieldValue);
+                const fieldStr = asString(entity[field]);
+                const filterStr = asString(filterValue);
                 return fieldStr.includes(filterStr);
             };
         }
@@ -566,49 +572,32 @@ const compilePrimitiveFilter = <Entity>(
 
         case "gt": {
             return (entity, filterValue) => {
-                const fieldValue = entity[field];
+                const fieldNum = asNumber(entity[field]);
                 const filterNum = filterValue as number;
-                // Avoid Number() conversion if already a number
-                const fieldNum =
-                    typeof fieldValue === "number"
-                        ? fieldValue
-                        : Number(fieldValue);
                 return fieldNum > filterNum;
             };
         }
 
         case "gte": {
             return (entity, filterValue) => {
-                const fieldValue = entity[field];
+                const fieldNum = asNumber(entity[field]);
                 const filterNum = filterValue as number;
-                const fieldNum =
-                    typeof fieldValue === "number"
-                        ? fieldValue
-                        : Number(fieldValue);
                 return fieldNum >= filterNum;
             };
         }
 
         case "lt": {
             return (entity, filterValue) => {
-                const fieldValue = entity[field];
+                const fieldNum = asNumber(entity[field]);
                 const filterNum = filterValue as number;
-                const fieldNum =
-                    typeof fieldValue === "number"
-                        ? fieldValue
-                        : Number(fieldValue);
                 return fieldNum < filterNum;
             };
         }
 
         case "lte": {
             return (entity, filterValue) => {
-                const fieldValue = entity[field];
+                const fieldNum = asNumber(entity[field]);
                 const filterNum = filterValue as number;
-                const fieldNum =
-                    typeof fieldValue === "number"
-                        ? fieldValue
-                        : Number(fieldValue);
                 return fieldNum <= filterNum;
             };
         }
