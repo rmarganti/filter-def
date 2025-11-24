@@ -416,13 +416,16 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
     filtersDef: TFilterDef,
 ): Filter<Entity, FilterDefInput<Entity, TFilterDef>> => {
     // Pre-compile all filters at definition time
-    const compiledFilters: Array<{
-        key: string;
-        checker: CompiledFilterField<Entity>;
-    }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
-        key,
-        checker: compileFilterField(key, filterDef),
-    }));
+    // Use separate arrays to avoid object allocations
+    const entries = Object.entries(filtersDef);
+    const keys: string[] = [];
+    const checkers: Array<CompiledFilterField<Entity>> = [];
+
+    for (let i = 0; i < entries.length; i++) {
+        const [key, filterDef] = entries[i];
+        keys.push(key);
+        checkers.push(compileFilterField(key, filterDef));
+    }
 
     // Return the optimized filter function
     return (filterInput: FilterDefInput<Entity, TFilterDef> | undefined) =>
@@ -432,10 +435,9 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
             }
 
             // Check if entity passes ALL filters
-            for (let i = 0; i < compiledFilters.length; i++) {
-                const { key, checker } = compiledFilters[i];
+            for (let i = 0; i < keys.length; i++) {
                 const filterValue =
-                    filterInput[key as keyof typeof filterInput];
+                    filterInput[keys[i] as keyof typeof filterInput];
 
                 // If no filter value provided, skip this filter (it passes)
                 if (filterValue === undefined) {
@@ -443,7 +445,7 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
                 }
 
                 // Use the pre-compiled checker
-                if (!checker(entity, filterValue)) {
+                if (!checkers[i](entity, filterValue)) {
                     return false;
                 }
             }
@@ -494,17 +496,29 @@ const compileBooleanFilter = <Entity>(
     );
 
     switch (filterField.kind) {
-        case "and":
-            return (entity, filterValue) =>
-                compiledConditions.every((checker) =>
-                    checker(entity, filterValue),
-                );
+        case "and": {
+            // Manual loop for early exit optimization
+            return (entity, filterValue) => {
+                for (let i = 0; i < compiledConditions.length; i++) {
+                    if (!compiledConditions[i](entity, filterValue)) {
+                        return false;
+                    }
+                }
+                return true;
+            };
+        }
 
-        case "or":
-            return (entity, filterValue) =>
-                compiledConditions.some((checker) =>
-                    checker(entity, filterValue),
-                );
+        case "or": {
+            // Manual loop for early exit optimization
+            return (entity, filterValue) => {
+                for (let i = 0; i < compiledConditions.length; i++) {
+                    if (compiledConditions[i](entity, filterValue)) {
+                        return true;
+                    }
+                }
+                return false;
+            };
+        }
     }
 };
 
@@ -524,9 +538,19 @@ const compilePrimitiveFilter = <Entity>(
         case "neq":
             return (entity, filterValue) => entity[field] !== filterValue;
 
-        case "contains":
-            return (entity, filterValue) =>
-                String(entity[field]).includes(String(filterValue));
+        case "contains": {
+            // Pre-convert filterValue to string at compile time
+            return (entity, filterValue) => {
+                const fieldValue = entity[field];
+                const filterStr = String(filterValue);
+                // Avoid String() conversion if already a string
+                const fieldStr =
+                    typeof fieldValue === "string"
+                        ? fieldValue
+                        : String(fieldValue);
+                return fieldStr.includes(filterStr);
+            };
+        }
 
         case "inArray":
             return (entity, filterValue) =>
@@ -540,21 +564,54 @@ const compilePrimitiveFilter = <Entity>(
             return (entity, filterValue) =>
                 filterValue ? entity[field] != null : entity[field] == null;
 
-        case "gt":
-            return (entity, filterValue) =>
-                Number(entity[field]) > (filterValue as number);
+        case "gt": {
+            return (entity, filterValue) => {
+                const fieldValue = entity[field];
+                const filterNum = filterValue as number;
+                // Avoid Number() conversion if already a number
+                const fieldNum =
+                    typeof fieldValue === "number"
+                        ? fieldValue
+                        : Number(fieldValue);
+                return fieldNum > filterNum;
+            };
+        }
 
-        case "gte":
-            return (entity, filterValue) =>
-                Number(entity[field]) >= (filterValue as number);
+        case "gte": {
+            return (entity, filterValue) => {
+                const fieldValue = entity[field];
+                const filterNum = filterValue as number;
+                const fieldNum =
+                    typeof fieldValue === "number"
+                        ? fieldValue
+                        : Number(fieldValue);
+                return fieldNum >= filterNum;
+            };
+        }
 
-        case "lt":
-            return (entity, filterValue) =>
-                Number(entity[field]) < (filterValue as number);
+        case "lt": {
+            return (entity, filterValue) => {
+                const fieldValue = entity[field];
+                const filterNum = filterValue as number;
+                const fieldNum =
+                    typeof fieldValue === "number"
+                        ? fieldValue
+                        : Number(fieldValue);
+                return fieldNum < filterNum;
+            };
+        }
 
-        case "lte":
-            return (entity, filterValue) =>
-                Number(entity[field]) <= (filterValue as number);
+        case "lte": {
+            return (entity, filterValue) => {
+                const fieldValue = entity[field];
+                const filterNum = filterValue as number;
+                const fieldNum =
+                    typeof fieldValue === "number"
+                        ? fieldValue
+                        : Number(fieldValue);
+                return fieldNum <= filterNum;
+            };
+        }
 
         default:
             filterField satisfies never;
