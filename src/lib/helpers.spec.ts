@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { entity } from "./filter-def";
-import { makeFilterHelpers } from "./helpers";
+import { entity } from "./filter-def.ts";
+import { makeFilterHelpers } from "./helpers.ts";
 
 interface User {
     id: number;
