@@ -197,6 +197,7 @@ export interface NeqFilter<Entity> extends CommonFilterOptions<Entity> {
  */
 export interface ContainsFilter<Entity> extends CommonFilterOptions<Entity> {
     kind: "contains";
+    caseInsensitive?: boolean;
 }
 
 /**
@@ -524,9 +525,21 @@ const compilePrimitiveFilter = <Entity>(
         case "neq":
             return (entity, filterValue) => entity[field] !== filterValue;
 
-        case "contains":
-            return (entity, filterValue) =>
-                String(entity[field]).includes(String(filterValue));
+        case "contains": {
+            return (entity, filterValue) => {
+                const { entityVal, filterVal } = filterField.caseInsensitive
+                    ? {
+                          entityVal: String(entity[field]).toLocaleLowerCase(),
+                          filterVal: String(filterValue).toLocaleLowerCase(),
+                      }
+                    : {
+                          entityVal: String(entity[field]),
+                          filterVal: String(filterValue),
+                      };
+
+                return entityVal.includes(filterVal);
+            };
+        }
 
         case "inArray":
             return (entity, filterValue) =>
