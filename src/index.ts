@@ -1,4 +1,4 @@
-export { entity } from "./lib/filter-def";
+export { entity } from "./lib/filter-def.ts";
 export type {
     AndFilter,
     BooleanFilter,
@@ -20,6 +20,6 @@ export type {
     NeqFilter,
     OrFilter,
     PrimitiveFilter,
-} from "./lib/filter-def";
-export { makeFilterHelpers } from "./lib/helpers";
-export type { FilterHelpers } from "./lib/helpers";
+} from "./lib/filter-def.ts";
+export { makeFilterHelpers } from "./lib/helpers.ts";
+export type { FilterHelpers } from "./lib/helpers.ts";
