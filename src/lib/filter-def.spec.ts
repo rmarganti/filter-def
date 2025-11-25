@@ -179,6 +179,11 @@ describe("Neq Filter", () => {
 describe("Contains Filter", () => {
     const userFilter = userEntity.filterDef({
         emailContains: { kind: "contains", field: "email" },
+        iEmailContains: {
+            kind: "contains",
+            field: "email",
+            caseInsensitive: true,
+        },
         nameContains: { kind: "contains", field: "name" },
     });
 
@@ -200,11 +205,19 @@ describe("Contains Filter", () => {
         expect(result).toEqual([]);
     });
 
+    it("should accept `caseInsensitive` option", () => {
+        const predicate = userFilter({ iEmailContains: ".OrG" });
+        const result = exampleUsers.filter(predicate);
+
+        expect(result).toEqual([exampleUsers[2]]);
+    });
+
     it("should infer the correct input type", () => {
         type Input = FilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             emailContains?: string;
+            iEmailContains?: string;
             nameContains?: string;
         }>();
     });
