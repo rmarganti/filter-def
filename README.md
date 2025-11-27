@@ -329,6 +329,46 @@ This pattern allows you to:
 - Filter parent entities based on child entity properties
 - Compose complex filtering logic from simpler filter definitions
 
+## Defining Filter Input Shape First
+
+Sometimes you may want to define your filter input interface first and then build filters around it. You can use TypeScript's `satisfies` operator to ensure your filter definition matches your custom input type:
+
+```typescript
+import { entity } from "filter-def";
+import type { Filter } from "filter-def";
+
+interface User {
+    name: string;
+    email: string;
+    age: number;
+}
+
+// Define your filter input shape first
+interface UserFilterInput {
+    name?: string;
+    age?: number;
+}
+
+// Use satisfies to ensure the filter matches your input type
+const userFilter = entity<User>().filterDef({
+    name: { kind: "eq" },
+    age: { kind: "eq" },
+}) satisfies Filter<User, UserFilterInput>;
+
+// Now the filter enforces your custom input type
+const predicate = userFilter({ nameEq: "John", ageEq: 30 });
+const results = users.filter(predicate);
+```
+
+This approach is useful when:
+
+- You need to match an existing API contract or schema
+- You want to control the exact shape of filter inputs
+- You're sharing filter input types across multiple modules
+- You want to document the expected filter inputs explicitly
+
+The `satisfies` operator ensures your filter definition is compatible with your input type while preserving the full type inference from `filterDef()`.
+
 ## Optional Helper Functions
 
 For convenience, `filter-def` provides helper functions that wrap the predicate-based API. These are entirely optional - the standard predicate approach is more flexible and works seamlessly with native array methods.
@@ -360,7 +400,7 @@ const {
 // Use the helpers
 const activeUsers: User[] = filterUsers(users, { isActive: true });
 const john: User | undefined = findUser(users, { name: "John" });
-const johnIndex: number = findUserIndex(users, { name: "John" });
+const johnIndex: number | undefined = findUserIndex(users, { name: "John" });
 const hasAdults: boolean = someUsers(users, { minAge: 18 });
 const allActive: boolean = everyUser(users, { isActive: true });
 ```
