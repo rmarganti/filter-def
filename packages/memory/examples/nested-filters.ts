@@ -1,6 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { entity } from "../src/lib/filter-def.ts";
-import { makeFilterHelpers } from "../src/lib/helpers.ts";
+import { entity, makeFilterHelpers } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Models

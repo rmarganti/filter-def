@@ -1,12 +1,18 @@
-export { entity } from "./lib/filter-def.ts";
+export { entity } from "./filter-def.ts";
+export { makeFilterHelpers } from "./helpers.ts";
+export type { FilterHelpers } from "./helpers.ts";
+
+// Re-export core types for convenience
 export type {
     AndFilter,
     BooleanFilter,
     CommonFilterOptions,
     ContainsFilter,
+    CustomFilter,
     EqFilter,
     Filter,
     FilterDef,
+    FilterDefInput,
     FilterField,
     FilterFieldInput,
     FilterInput,
@@ -20,6 +26,7 @@ export type {
     NeqFilter,
     OrFilter,
     PrimitiveFilter,
-} from "./lib/filter-def.ts";
-export { makeFilterHelpers } from "./lib/helpers.ts";
-export type { FilterHelpers } from "./lib/helpers.ts";
+    Simplify,
+    TypeError,
+    ValidateFilterDef,
+} from "@filter-def/core";

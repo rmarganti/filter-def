@@ -8,14 +8,14 @@ Expand filter-def to support multiple data backends (in-memory, Drizzle+Postgres
 
 ## Phase 1: Monorepo Setup
 
-- [ ] Restructure to pnpm workspace with `packages/` directory
-- [ ] Create package structure:
+- [x] Restructure to pnpm workspace with `packages/` directory
+- [x] Create package structure:
     - `packages/core` - shared types, validation, utilities
     - `packages/memory` - current in-memory implementation
     - `packages/drizzle` - Drizzle ORM adapter
-- [ ] Update root `pnpm-workspace.yaml`
-- [ ] Configure shared tooling (tsconfig, biome, prettier, vitest)
-- [ ] Setup cross-package build order via `tsdown`
+- [x] Update root `pnpm-workspace.yaml`
+- [x] Configure shared tooling (tsconfig, biome, prettier, vitest)
+- [x] Setup cross-package build order via `tsdown`
 
 ---
 

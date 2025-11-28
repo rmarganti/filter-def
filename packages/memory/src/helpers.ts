@@ -1,4 +1,4 @@
-import type { Filter } from "./filter-def.ts";
+import type { Filter } from "@filter-def/core";
 
 export interface FilterHelpers<TEntity, TFilterInput> {
     filter: (entities: TEntity[], filterInput?: TFilterInput) => TEntity[];

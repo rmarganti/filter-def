@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { FilterInput } from "./filter-def.ts";
-import { entity } from "./filter-def.ts";
+import type { FilterInput } from "./index.ts";
+import { entity } from "./index.ts";
 
 interface User {
     name: string;

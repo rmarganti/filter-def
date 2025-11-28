@@ -9,6 +9,15 @@ on:
         type: boolean
         default: false
 
+# TODO: Monorepo publishing requires additional setup.
+# Consider using one of these approaches:
+# - changesets (https://github.com/changesets/changesets)
+# - multi-semantic-release (https://github.com/qiwi/multi-semantic-release)
+# - semantic-release-monorepo plugin
+#
+# For now, this workflow is a placeholder that needs to be configured
+# for proper multi-package versioning and publishing.
+
 permissions:
   contents: write
   issues: write
@@ -50,12 +59,16 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Release
+      - name: Publish (placeholder)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          echo "TODO: Configure monorepo publishing strategy"
+          echo "See workflow comments for recommended approaches"
           if [ "${{ inputs.dry_run }}" = "true" ]; then
-            pnpm exec semantic-release --dry-run
+            echo "Dry run mode - no packages published"
           else
-            pnpm exec semantic-release
+            echo "Would publish packages here"
           fi

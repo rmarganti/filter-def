@@ -1,6 +1,7 @@
 {
-  "name": "filter-def",
+  "name": "filter-def-monorepo",
   "version": "0.0.0",
+  "private": true,
   "description": "Type-safe data filters for TypeScript. Define filters once, get full type inference for filter inputs and results.",
   "type": "module",
   "license": "MIT",
@@ -13,26 +14,15 @@
     "url": "git+https://github.com/rmarganti/filter-def.git"
   },
   "author": "Ryan Marganti <ryan.marganti@mail.com>",
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
-  },
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "test": "vitest",
-    "bench": "vitest bench --run",
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r --parallel run dev",
+    "test": "pnpm -r run test",
+    "bench": "pnpm --filter @filter-def/memory exec vitest bench --run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "pnpm exec biome lint",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm run build",
+    "typecheck": "pnpm -r run typecheck",
     "prepare": "husky"
   },
   "devDependencies": {

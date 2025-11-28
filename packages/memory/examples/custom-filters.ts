@@ -1,4 +1,4 @@
-import { entity } from "../src/lib/filter-def.ts";
+import { entity } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Models
