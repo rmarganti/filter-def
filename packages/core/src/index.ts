@@ -1,3 +1,10 @@
+// Filter kind types
+export type {
+    BooleanFilterKind,
+    FilterKind,
+    PrimitiveFilterKind,
+} from "./types.ts";
+
 // Filter definition types
 export type {
     FilterDef,
@@ -34,6 +41,14 @@ export type { Filter } from "./types.ts";
 
 // Validation types
 export type { ValidateFilterDef } from "./types.ts";
+
+// Adapter utilities
+export type {
+    ExtractCustomFilterInput,
+    ExtractFilterKind,
+    GetFieldForFilter,
+    IsCustomFilter,
+} from "./types.ts";
 
 // Utilities
 export type { Simplify, TypeError } from "./types.ts";

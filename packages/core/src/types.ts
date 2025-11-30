@@ -1,4 +1,33 @@
 // ----------------------------------------------------------------
+// Filter kind constants
+// ----------------------------------------------------------------
+
+/**
+ * Union type of all primitive filter kinds.
+ */
+export type PrimitiveFilterKind =
+    | "eq"
+    | "neq"
+    | "contains"
+    | "inArray"
+    | "isNull"
+    | "isNotNull"
+    | "gt"
+    | "gte"
+    | "lt"
+    | "lte";
+
+/**
+ * Union type of all boolean filter kinds.
+ */
+export type BooleanFilterKind = "and" | "or";
+
+/**
+ * Union type of all filter kinds.
+ */
+export type FilterKind = PrimitiveFilterKind | BooleanFilterKind;
+
+// ----------------------------------------------------------------
 // Filter definitions
 // ----------------------------------------------------------------
 
@@ -159,8 +188,9 @@ export type FilterDefInput<Entity, TFilterDef extends FilterDef<Entity>> = {
 
 /**
  * Helper type to get the field for a filter, either from explicit field property or inferred from key.
+ * Useful for adapter authors to determine which entity field a filter targets.
  */
-type GetFieldForFilter<
+export type GetFieldForFilter<
     K extends PropertyKey,
     Entity,
     TFilterField,
@@ -364,6 +394,37 @@ type AllConditionsHaveRequiredFields<Conditions extends any[]> =
  * Helper type to check if a type has a required field property.
  */
 type HasRequiredField<T> = T extends { field: keyof any } ? true : false;
+
+// ----------------------------------------------------------------
+// Adapter utilities
+// ----------------------------------------------------------------
+
+/**
+ * Extracts the filter kind from a filter field definition.
+ * Returns the string literal kind for primitive/boolean filters, or 'custom' for custom filters.
+ */
+export type ExtractFilterKind<TFilterField> = TFilterField extends {
+    kind: infer K extends FilterKind;
+}
+    ? K
+    : TFilterField extends (...args: any[]) => any
+      ? "custom"
+      : never;
+
+/**
+ * Checks if a filter field is a custom filter function.
+ */
+export type IsCustomFilter<TFilterField> = TFilterField extends (
+    ...args: any[]
+) => any
+    ? true
+    : false;
+
+/**
+ * Extracts the input type for a custom filter function.
+ */
+export type ExtractCustomFilterInput<TFilterField> =
+    TFilterField extends CustomFilter<any, infer Input> ? Input : never;
 
 // ----------------------------------------------------------------
 // Utilities

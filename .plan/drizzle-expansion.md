@@ -23,34 +23,34 @@ Expand filter-def to support multiple data backends (in-memory, Drizzle+Postgres
 
 ### Types to Extract
 
-- [ ] `FilterDef<Entity>` - filter definition shape
-- [ ] `PrimitiveFilter` types (eq, neq, contains, inArray, gt, gte, lt, lte, isNull, isNotNull)
-- [ ] `BooleanFilter` types (and, or)
-- [ ] `CustomFilter<Entity, Input>` - keep but mark as adapter-specific
-- [ ] `FilterInput<TFilter>` - input type extraction
-- [ ] `ValidateFilterDef` - compile-time validation
+- [x] `FilterDef<Entity>` - filter definition shape
+- [x] `PrimitiveFilter` types (eq, neq, contains, inArray, gt, gte, lt, lte, isNull, isNotNull)
+- [x] `BooleanFilter` types (and, or)
+- [x] `CustomFilter<Entity, Input>` - keep but mark as adapter-specific
+- [x] `FilterInput<TFilter>` - input type extraction
+- [x] `ValidateFilterDef` - compile-time validation
 
 ### Utilities to Extract
 
-- [ ] Field inference logic
-- [ ] Filter kind constants/union types
+- [x] Field inference logic (`GetFieldForFilter` type)
+- [x] Filter kind constants/union types (`FilterKind`, `PrimitiveFilterKind`, `BooleanFilterKind`)
 
 ### Core Package Exports
 
-- [ ] All filter definition types
-- [ ] Type utilities for adapter authors
-- [ ] No runtime code initially (types-only package possible)
+- [x] All filter definition types
+- [x] Type utilities for adapter authors (`ExtractFilterKind`, `ExtractCustomFilterInput`, `IsCustomFilter`, `GetFieldForFilter`)
+- [x] No runtime code initially (types-only package possible)
 
 ---
 
 ## Phase 3: Memory Package (`@filter-def/memory`)
 
-- [ ] Move current implementation to `packages/memory`
-- [ ] Import types from `@filter-def/core`
-- [ ] Keep `entity<T>().filterDef()` API
-- [ ] Keep `makeFilterHelpers()` helper
-- [ ] Custom filters remain fully supported
-- [ ] Re-export core types for convenience
+- [x] Move current implementation to `packages/memory`
+- [x] Import types from `@filter-def/core`
+- [x] Keep `entity<T>().filterDef()` API
+- [x] Keep `makeFilterHelpers()` helper
+- [x] Custom filters remain fully supported
+- [x] Re-export core types for convenience
 
 ---
 
