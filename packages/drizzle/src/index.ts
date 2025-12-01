@@ -1,5 +1,7 @@
-// @filter-def/drizzle
-// This package will provide Drizzle ORM adapter for filter-def
-// Implementation coming in Phase 4
-
-export {};
+export type {
+    DrizzleCustomFilter,
+    DrizzleFilter,
+    DrizzleFilterDef,
+    DrizzleFilterDefInput,
+} from "./drizzle-filter.js";
+export { drizzleFilter as tableFilter } from "./drizzle-filter.js";

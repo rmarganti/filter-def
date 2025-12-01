@@ -1,4 +1,4 @@
-import { entity, makeFilterHelpers } from "@filter-def/memory";
+import { inMemoryFilter, makeFilterHelpers } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Models
@@ -90,7 +90,7 @@ const contacts: Contact[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const contactFilter = entity<Contact>().filterDef({
+const contactFilter = inMemoryFilter<Contact>().filterDef({
     // Standard filters
     id: { kind: "eq" },
     name: { kind: "eq" },

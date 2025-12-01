@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { entity, makeFilterHelpers } from "@filter-def/memory";
+import { inMemoryFilter, makeFilterHelpers } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Models
@@ -50,7 +50,7 @@ const postFactory = (authorId: string): Post => ({
 // Filters
 // ----------------------------------------------------------------
 
-const postFilter = entity<Post>().filterDef({
+const postFilter = inMemoryFilter<Post>().filterDef({
     id: { kind: "eq" },
     title: { kind: "eq" },
     authorId: { kind: "eq" },
@@ -63,7 +63,7 @@ const postFilter = entity<Post>().filterDef({
 
 const { some: somePosts } = makeFilterHelpers(postFilter);
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     id: { kind: "eq" },
     name: { kind: "eq" },
     email: { kind: "eq" },

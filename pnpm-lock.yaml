@@ -57,9 +57,12 @@ importers:
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.2.17
+        version: 0.2.17
       drizzle-orm:
         specifier: ^0.44.2
-        version: 0.44.7
+        version: 0.44.7(@electric-sql/pglite@0.2.17)
       tsdown:
         specifier: ^0.16.0
         version: 0.16.3(ms@2.1.3)(typescript@5.9.3)
@@ -184,6 +187,9 @@ packages:
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
+
+  '@electric-sql/pglite@0.2.17':
+    resolution: {integrity: sha512-qEpKRT2oUaWDH6tjRxLHjdzMqRUGYDnGZlKrnL4dJ77JVMcP2Hpo3NYnOSPKdZdeec57B6QPprCUFg0picx5Pw==}
 
   '@emnapi/core@1.7.0':
     resolution: {integrity: sha512-pJdKGq/1iquWYtv1RRSljZklxHCOCAJFJrImO5ZLKPJVJlVUcs8yFwNQlqS0Lo8xT1VAXXTCZocF9n26FWEKsw==}
@@ -2340,6 +2346,8 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
+  '@electric-sql/pglite@0.2.17': {}
+
   '@emnapi/core@1.7.0':
     dependencies:
       '@emnapi/wasi-threads': 1.1.0
@@ -3028,7 +3036,9 @@ snapshots:
 
   dotenv@17.2.3: {}
 
-  drizzle-orm@0.44.7: {}
+  drizzle-orm@0.44.7(@electric-sql/pglite@0.2.17):
+    optionalDependencies:
+      '@electric-sql/pglite': 0.2.17
 
   dts-resolver@2.1.3: {}
 

@@ -13,6 +13,9 @@
         "enabled": true,
         "rules": {
             "recommended": true,
+            "style": {
+                "useExportType": "error"
+            },
             "suspicious": {
                 "noExplicitAny": "off"
             }

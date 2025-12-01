@@ -1,4 +1,4 @@
-import { entity } from "@filter-def/memory";
+import { inMemoryFilter } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Model
@@ -58,7 +58,7 @@ const products: Product[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const productFilter = entity<Product>().filterDef({
+const productFilter = inMemoryFilter<Product>().filterDef({
     // Field names match entity properties, so `field` is inferred
     id: { kind: "eq" },
     category: { kind: "eq" },

@@ -22,7 +22,7 @@ export interface FilterHelpers<TEntity, TFilterInput> {
  * Creates a set of filter helpers for a given filter function.
  *
  * ```typescript
- * const userFilter = entity<User>().filterDef({
+ * const userFilter = inMemoryFilter<User>().filterDef({
  *   id: { kind: 'eq' },
  *   olderThan: { kind: 'gt', field: 'age },
  * });

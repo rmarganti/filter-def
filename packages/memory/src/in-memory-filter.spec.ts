@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { FilterInput } from "./index.ts";
-import { entity } from "./index.ts";
+import { inMemoryFilter } from "./index.ts";
 
 interface User {
     name: string;
@@ -18,8 +18,8 @@ interface Post {
     content: string;
 }
 
-const userEntity = entity<User>();
-const postEntity = entity<Post>();
+const userEntity = inMemoryFilter<User>();
+const postEntity = inMemoryFilter<Post>();
 
 const exampleUsers: Array<User> = [
     {

@@ -5,7 +5,7 @@ A TypeScript library for defining and executing type-safe data filters. Define y
 ## Quick Start
 
 ```typescript
-import { entity } from "filter-def";
+import { inMemoryFilter } from "filter-def";
 import type { FilterInput } from "filter-def";
 
 interface User {
@@ -14,7 +14,7 @@ interface User {
     age: number;
 }
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     olderThan: { kind: "gt", field: "age" },
@@ -65,7 +65,7 @@ interface User {
     age: number;
 }
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     // Field is inferred from the key name
     name: { kind: "eq" }, // field: "name" is inferred
     email: { kind: "contains" }, // field: "email" is inferred
@@ -210,7 +210,7 @@ At least one condition must be true for the filter to pass.
 Boolean filters are particularly useful for searching across multiple fields:
 
 ```typescript
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     // Search for a term in either name or email
     searchTerm: {
         kind: "or",
@@ -247,7 +247,7 @@ interface Post {
     title: string;
 }
 
-const userEntity = entity<User>();
+const userEntity = inMemoryFilter<User>();
 
 const userFilter = userEntity.filterDef({
     name: { kind: "eq" },
@@ -290,8 +290,8 @@ interface Post {
     content: string;
 }
 
-const userEntity = entity<User>();
-const postEntity = entity<Post>();
+const userEntity = inMemoryFilter<User>();
+const postEntity = inMemoryFilter<Post>();
 
 // Define a filter for posts
 const postFilter = postEntity.filterDef({
@@ -334,7 +334,7 @@ This pattern allows you to:
 Sometimes you may want to define your filter input interface first and then build filters around it. You can use TypeScript's `satisfies` operator to ensure your filter definition matches your custom input type:
 
 ```typescript
-import { entity } from "filter-def";
+import { inMemoryFilter } from "filter-def";
 import type { Filter } from "filter-def";
 
 interface User {
@@ -350,7 +350,7 @@ interface UserFilterInput {
 }
 
 // Use satisfies to ensure the filter matches your input type
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     name: { kind: "eq" },
     age: { kind: "eq" },
 }) satisfies Filter<User, UserFilterInput>;
@@ -374,7 +374,7 @@ The `satisfies` operator ensures your filter definition is compatible with your 
 For convenience, `filter-def` provides helper functions that wrap the predicate-based API. These are entirely optional - the standard predicate approach is more flexible and works seamlessly with native array methods.
 
 ```typescript
-import { entity, makeFilterHelpers } from "filter-def";
+import { inMemoryFilter, makeFilterHelpers } from "filter-def";
 
 interface User {
     name: string;
@@ -382,7 +382,7 @@ interface User {
     isActive: boolean;
 }
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().filterDef({
     name: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
     isActive: { kind: "eq" },
@@ -444,7 +444,7 @@ Both approaches are fully type-safe and produce identical results.
 ## Complete Example
 
 ```typescript
-import { entity } from "filter-def";
+import { inMemoryFilter } from "filter-def";
 import type { FilterInput } from "filter-def";
 
 interface Product {
@@ -456,7 +456,7 @@ interface Product {
     userRating: number;
 }
 
-const productFilter = entity<Product>().filterDef({
+const productFilter = inMemoryFilter<Product>().filterDef({
     // Primitive filters with inferred fields
     name: { kind: "eq" },
     inStock: { kind: "eq" },

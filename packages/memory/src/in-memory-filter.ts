@@ -9,6 +9,35 @@ import type {
     ValidateFilterDef,
 } from "@filter-def/core";
 
+// ----------------------------------------------------------------
+// Types
+// ----------------------------------------------------------------
+
+/**
+ * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
+ * and returns a function that determines if an entity passes the filter.
+ */
+export type InMemoryFilter<Entity, TFilterInput> = (
+    filterInput?: TFilterInput,
+) => (entity: Entity) => boolean;
+
+/**
+ * The expected input for a Filter.
+ *
+ * ```typescript
+ * const userFilter = inMemoryFilter<User>().filterDef({ ... });
+ * type UserFilterInput = FilterInput<typeof userFilter>;
+ * ```
+ */
+export type InMemoryFilterInput<TFilter> =
+    TFilter extends InMemoryFilter<infer _TEntity, infer TFilterInput>
+        ? TFilterInput
+        : never;
+
+// ----------------------------------------------------------------
+// Entry Point
+// ----------------------------------------------------------------
+
 /**
  * Signify what kind of data we will be filtering.
  *
@@ -19,7 +48,7 @@ import type {
  *     email: string;
  * }
  *
- * const user = entity<User>();
+ * const user = inMemoryFilter<User>();
  * ```
  *
  * You can then use the entity definition to define our filters.
@@ -35,7 +64,7 @@ import type {
  * filter definition separately.
  *
  * ```typescript
- * const userFilter = entity<User>().filterDef({ ... })
+ * const userFilter = inMemoryFilter<User>().filterDef({ ... })
  * ```
  *
  * This resulting filter definition accepts a set of filter values, which
@@ -50,11 +79,12 @@ import type {
  * const johnUser = myUserArray.find(where);
  * ```
  */
-export const entity = <Entity>() => {
+export const inMemoryFilter = <Entity>() => {
     const filterDef = <TFilterDef extends FilterDef<Entity>>(
         filterDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
-    ): Filter<Entity, Simplify<FilterDefInput<Entity, TFilterDef>>> =>
-        compileFilterDef(filterDef);
+    ): Filter<Entity, Simplify<FilterDefInput<Entity, TFilterDef>>> => {
+        return compileFilterDef(filterDef);
+    };
 
     return { filterDef };
 };

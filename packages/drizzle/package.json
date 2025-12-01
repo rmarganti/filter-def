@@ -27,7 +27,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "test": "echo 'No tests yet'",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -37,6 +37,7 @@
     "drizzle-orm": ">=0.30.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
     "drizzle-orm": "^0.44.2",
     "tsdown": "^0.16.0",
     "typescript": "^5.9.3",

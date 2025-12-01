@@ -170,12 +170,12 @@ export type CustomFilter<Entity, Input> = (
  * The expected input for a Filter.
  *
  * ```typescript
- * const userFilter = entity<User>().filterDef({ ... });
+ * const userFilter = inMemoryFilter<User>().filterDef({ ... });
  * type UserFilterInput = FilterInput<typeof userFilter>;
  * ```
  */
-export type FilterInput<TFilter> =
-    TFilter extends Filter<infer _TEntity, infer TFilterInput>
+export type InMemoryFilterInput<TFilter> =
+    TFilter extends InMemoryFilter<infer _TEntity, infer TFilterInput>
         ? TFilterInput
         : never;
 
@@ -290,7 +290,7 @@ export type FilterFieldInput<
  * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
  * and returns a function that determines if an entity passes the filter.
  */
-export type Filter<Entity, TFilterInput> = (
+export type InMemoryFilter<Entity, TFilterInput> = (
     filterInput?: TFilterInput,
 ) => (entity: Entity) => boolean;
 
@@ -311,7 +311,7 @@ export type Filter<Entity, TFilterInput> = (
  * }
  *
  * // VALID
- * entity<User>().filterDef({
+ * inMemoryFilter<User>().filterDef({
  *     // `id` field is explicitly defined. It could also be omitted, since it matches the filter name.
  *     id: { kind: 'eq', field: 'id' },
  *
@@ -333,7 +333,7 @@ export type Filter<Entity, TFilterInput> = (
  * });
  *
  * // INVALID
- * entity<User>().filterDef({
+ * inMemoryFilter<User>().filterDef({
  *     // Even though `id` matches the `User.id` property, we tried
  *     // to explicitly specify a different, invalid field.
  *     id: { kind: 'eq', field: 'invalidField' },

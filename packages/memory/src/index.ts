@@ -1,6 +1,6 @@
-export { entity } from "./filter-def.ts";
 export { makeFilterHelpers } from "./helpers.ts";
 export type { FilterHelpers } from "./helpers.ts";
+export { inMemoryFilter } from "./in-memory-filter.ts";
 
 // Filter definition types
 export type {

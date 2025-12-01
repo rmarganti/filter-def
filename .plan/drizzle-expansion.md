@@ -89,19 +89,19 @@ await db.select().from(usersTable).where(where);
 
 ### Tasks
 
-- [ ] Create `tableFilter(table)` entry point
-- [ ] Infer entity type from Drizzle table schema (`InferSelectModel`)
-- [ ] Map column references from table (not interface properties)
-- [ ] Implement filter compilation to Drizzle `SQL` expressions
-- [ ] Handle `contains` → `like('%value%')` conversion
-- [ ] Return `SQL | undefined` for empty filters
-- [ ] Handle boolean filters (and/or) composition
+- [x] Create `tableFilter(table)` entry point
+- [x] Infer entity type from Drizzle table schema (`InferSelectModel`)
+- [x] Map column references from table (not interface properties)
+- [x] Implement filter compilation to Drizzle `SQL` expressions
+- [x] Handle `contains` → `like('%value%')` conversion
+- [x] Return `SQL | undefined` for empty filters
+- [x] Handle boolean filters (and/or) composition
 
 ### Custom Filter Handling
 
-- [ ] Custom filters return `SQL | undefined` expressions
-- [ ] Enables EXISTS subqueries, raw SQL, complex conditions
-- [ ] User responsible for SQL correctness
+- [x] Custom filters return `SQL | undefined` expressions
+- [x] Enables EXISTS subqueries, raw SQL, complex conditions
+- [x] User responsible for SQL correctness
 
 ### Related Tables / Joins
 

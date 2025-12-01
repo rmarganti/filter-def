@@ -1,4 +1,4 @@
-import { entity } from "@filter-def/memory";
+import { inMemoryFilter } from "@filter-def/memory";
 
 // ----------------------------------------------------------------
 // Models
@@ -87,7 +87,7 @@ const posts: BlogPost[] = [
 // Filter definition with custom filters
 // ----------------------------------------------------------------
 
-const postFilter = entity<BlogPost>().filterDef({
+const postFilter = inMemoryFilter<BlogPost>().filterDef({
     // Standard primitive filters
     id: { kind: "eq" },
     author: { kind: "eq" },
@@ -276,7 +276,7 @@ recommendedPosts.forEach((post) => {
 
 console.log("\n=== Advanced Custom Logic ===\n");
 
-const advancedFilter = entity<BlogPost>().filterDef({
+const advancedFilter = inMemoryFilter<BlogPost>().filterDef({
     // Complex custom filter: Check multiple conditions
     isFeaturedWorthy: (post: BlogPost, threshold: boolean) => {
         if (!threshold) return true;
