@@ -1,4 +1,4 @@
-import { and, eq, exists, gte, ilike, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
 import {
     boolean,
     integer,
@@ -179,79 +179,3 @@ console.log(
 
 const draftOnlyWhere = postFilter({ optionalStatus: "draft" });
 console.log("✅ Drafts only (status=draft):", draftOnlyWhere?.toString());
-
-// ----------------------------------------------------------------
-// Advanced: EXISTS subquery for related tables
-// ----------------------------------------------------------------
-
-console.log("\n=== EXISTS Subquery Example ===\n");
-
-// Define a users table for the relationship
-const usersTable = pgTable("users", {
-    id: integer("id").primaryKey(),
-    name: text("name").notNull(),
-    email: text("email").notNull(),
-    isActive: boolean("is_active").notNull(),
-});
-
-// Filter that uses EXISTS to check related table
-// Note: This requires a db instance to construct the subquery
-const createUserFilterWithDb = (db: any) =>
-    drizzleFilter(usersTable).filterDef({
-        name: { kind: "eq" },
-        isActive: { kind: "eq" },
-
-        // Check if user has a post with a specific title
-        hasPostWithTitle: (title: string) =>
-            exists(
-                db
-                    .select()
-                    .from(postsTable)
-                    .where(
-                        and(
-                            eq(postsTable.authorId, usersTable.id),
-                            ilike(postsTable.title, `%${title}%`),
-                        ),
-                    ),
-            ),
-
-        // Check if user has any published posts
-        hasPublishedPosts: (required: boolean) =>
-            required
-                ? exists(
-                      db
-                          .select()
-                          .from(postsTable)
-                          .where(
-                              and(
-                                  eq(postsTable.authorId, usersTable.id),
-                                  eq(postsTable.isPublished, true),
-                              ),
-                          ),
-                  )
-                : undefined,
-
-        // Check if user has popular posts
-        hasPopularPost: (minScore: number) =>
-            exists(
-                db
-                    .select()
-                    .from(postsTable)
-                    .where(
-                        and(
-                            eq(postsTable.authorId, usersTable.id),
-                            sql`(${postsTable.viewCount} * 1 + ${postsTable.likeCount} * 5 + ${postsTable.commentCount} * 10) >= ${minScore}`,
-                        ),
-                    ),
-            ),
-    });
-
-console.log("✅ EXISTS subquery filter defined (requires db instance to use)");
-
-// Example usage (with a db instance):
-// const userFilter = createUserFilterWithDb(db);
-// const where = userFilter({
-//     hasPostWithTitle: "TypeScript",
-//     isActive: true,
-// });
-// const users = await db.select().from(usersTable).where(where);

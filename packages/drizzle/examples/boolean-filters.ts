@@ -166,31 +166,3 @@ console.log(
     globalSearchWhere?.toString(),
 );
 // Generates: name LIKE '%john%' OR email LIKE '%john%' OR phone LIKE '%john%'
-
-// ----------------------------------------------------------------
-// Integration with Drizzle queries
-// ----------------------------------------------------------------
-
-// Example function showing how to use boolean filters in actual queries
-async function searchUsers(
-    db: any, // Replace with your actual db type
-    filters: Parameters<typeof userFilter>[0],
-) {
-    const where = userFilter(filters);
-    return db.select().from(usersTable).where(where);
-}
-
-// Example: Find users by search term with role filter
-async function findUsersByRole(
-    db: any,
-    searchTerm: string,
-    role: string,
-    activeOnly: boolean,
-) {
-    const where = userFilter({
-        searchTerm,
-        role,
-        isActive: activeOnly ? true : undefined,
-    });
-    return db.select().from(usersTable).where(where);
-}

@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { boolean, integer, pgTable, text } from "drizzle-orm/pg-core";
 import { drizzleFilter } from "../src";
 
@@ -83,39 +82,3 @@ console.log("✅ Empty filter returns:", emptyWhere);
 // Undefined input returns undefined
 const undefinedWhere = productFilter();
 console.log("✅ Undefined input returns:", undefinedWhere);
-
-// ----------------------------------------------------------------
-// Integration with Drizzle queries
-// ----------------------------------------------------------------
-
-// Example function showing how to use filters in actual queries
-async function searchProducts(
-    db: any, // Replace with your actual db type
-    filters: Parameters<typeof productFilter>[0],
-) {
-    const where = productFilter(filters);
-    return db.select().from(productsTable).where(where);
-}
-
-// Example function with optional additional conditions
-async function searchProductsWithExtra(
-    db: any,
-    filters: Parameters<typeof productFilter>[0],
-    additionalCondition?: ReturnType<typeof eq>,
-) {
-    const filterWhere = productFilter(filters);
-
-    // Combine filter with additional conditions if needed
-    if (filterWhere && additionalCondition) {
-        const { and } = await import("drizzle-orm");
-        return db
-            .select()
-            .from(productsTable)
-            .where(and(filterWhere, additionalCondition));
-    }
-
-    return db
-        .select()
-        .from(productsTable)
-        .where(filterWhere ?? additionalCondition);
-}
