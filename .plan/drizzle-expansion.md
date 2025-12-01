@@ -60,7 +60,7 @@ Expand filter-def to support multiple data backends (in-memory, Drizzle+Postgres
 
 ```ts
 // Schema-first approach
-const userFilter = tableFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).filterDef({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
 });
@@ -89,7 +89,7 @@ await db.select().from(usersTable).where(where);
 
 ### Tasks
 
-- [x] Create `tableFilter(table)` entry point
+- [x] Create `drizzleFilter(table)` entry point
 - [x] Infer entity type from Drizzle table schema (`InferSelectModel`)
 - [x] Map column references from table (not interface properties)
 - [x] Implement filter compilation to Drizzle `SQL` expressions
@@ -105,7 +105,7 @@ await db.select().from(usersTable).where(where);
 
 ### Related Tables / Joins
 
-The `tableFilter(usersTable)` API only references one table. Related table filtering is complex because:
+The `drizzleFilter(usersTable)` API only references one table. Related table filtering is complex because:
 
 - Filters generate WHERE clauses, not JOIN clauses
 - Query builder requires explicit `.leftJoin()` / `.innerJoin()` calls
@@ -113,16 +113,16 @@ The `tableFilter(usersTable)` API only references one table. Related table filte
 
 **Recommended: EXISTS subquery pattern**
 
-- [ ] Built-in filter kinds (`eq`, `contains`, etc.) work on base table only
-- [ ] Custom filters return `SQL` expressions, enabling:
+- [x] Built-in filter kinds (`eq`, `contains`, etc.) work on base table only
+- [x] Custom filters return `SQL` expressions, enabling:
     - Subqueries: `exists(select().from(posts).where(...))`
     - Direct column refs if user ensures join exists (advanced, at-your-own-risk)
-- [ ] Document pattern for related table filtering via `exists()` subqueries
+- [x] Document pattern for related table filtering via `exists()` subqueries
 
 **Example: Related table via EXISTS subquery**
 
 ```ts
-const userFilter = tableFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).filterDef({
     name: { kind: "eq" },
     // Custom filter uses EXISTS subquery (no join required)
     hasPostWithTitle: (title: string) =>
@@ -143,65 +143,6 @@ const userFilter = tableFilter(usersTable).filterDef({
 const where = userFilter({ hasPostWithTitle: "TypeScript" });
 await db.select().from(usersTable).where(where);
 ```
-
-**Future consideration (v2+):**
-
-- [ ] Multi-table API with join metadata
-- [ ] Helper to apply filter + required joins together
-
----
-
-## Phase 5: Database Compatibility
-
-### Universal Operators (no issues)
-
-All Drizzle databases support these identically:
-
-- `eq`, `ne`, `gt`, `gte`, `lt`, `lte`
-- `inArray`, `isNull`, `isNotNull`
-- `and`, `or`, `exists`
-- `like` (case-sensitive)
-
-### Database-Specific: Case-Insensitive Contains
-
-| Database   | Native Support          | Workaround                       |
-| ---------- | ----------------------- | -------------------------------- |
-| PostgreSQL | `ILIKE` ✓               | —                                |
-| MySQL      | `LIKE` is CI by default | Collation-dependent              |
-| SQLite     | No `ILIKE`              | `lower(col) LIKE lower('%val%')` |
-
-**Recommendation:**
-
-- [ ] Default `contains` uses `like` (case-sensitive on PG, varies on MySQL/SQLite)
-- [ ] Add `containsInsensitive` filter kind using portable `lower()` approach
-- [ ] Optionally: `icontains` kind that uses `ilike` on PG, `lower()` elsewhere
-- [ ] Document behavior differences in README
-
-### Future Database-Specific Features
-
-These would be Postgres-only filter kinds (or adapter-specific):
-
-| Feature           | PostgreSQL    | MySQL           | SQLite |
-| ----------------- | ------------- | --------------- | ------ |
-| Array contains    | `@>` operator | N/A             | N/A    |
-| JSON field access | `->`, `->>`   | `->`, `->>`     | JSON1  |
-| Full-text search  | `@@` tsvector | `MATCH AGAINST` | N/A    |
-| Array overlap     | `&&` operator | N/A             | N/A    |
-
-**Decision:** Handle via custom filters initially. Add dedicated filter kinds only if demand warrants.
-
----
-
-## Phase 6: Drizzle-Specific Features (Future)
-
-- [ ] `between` filter kind
-- [ ] `notInArray` filter kind
-- [ ] `startsWith` / `endsWith` filter kinds
-- [ ] `containsInsensitive` filter kind (portable)
-- [ ] JSON column support (PG/MySQL)
-- [ ] Array column support (Postgres)
-
----
 
 ## Phase 7: Documentation & Examples
 
@@ -238,4 +179,3 @@ These would be Postgres-only filter kinds (or adapter-specific):
 - [ ] Publish all packages under `@filter-def` scope
 - [ ] `@filter-def/memory` v1.0 = current `filter-def` functionality
 - [ ] `@filter-def/drizzle` v0.x until API stabilizes
-- [ ] Deprecate `filter-def` package, point to `@filter-def/memory`

@@ -167,19 +167,6 @@ export type CustomFilter<Entity, Input> = (
 // ----------------------------------------------------------------
 
 /**
- * The expected input for a Filter.
- *
- * ```typescript
- * const userFilter = inMemoryFilter<User>().filterDef({ ... });
- * type UserFilterInput = FilterInput<typeof userFilter>;
- * ```
- */
-export type InMemoryFilterInput<TFilter> =
-    TFilter extends InMemoryFilter<infer _TEntity, infer TFilterInput>
-        ? TFilterInput
-        : never;
-
-/**
  * The expected input for a FilterDef.
  */
 export type FilterDefInput<Entity, TFilterDef extends FilterDef<Entity>> = {
@@ -281,18 +268,6 @@ export type FilterFieldInput<
           TFilterField extends CustomFilter<Entity, infer TArg>
           ? TArg
           : never;
-
-// ----------------------------------------------------------------
-// Filter function type
-// ----------------------------------------------------------------
-
-/**
- * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
- * and returns a function that determines if an entity passes the filter.
- */
-export type InMemoryFilter<Entity, TFilterInput> = (
-    filterInput?: TFilterInput,
-) => (entity: Entity) => boolean;
 
 // ----------------------------------------------------------------
 // Validation types
