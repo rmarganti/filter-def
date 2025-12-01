@@ -1,7 +1,8 @@
 import type {
     BooleanFilter,
     ContainsFilter,
-    GetFieldForFilter,
+    CoreFilter,
+    CoreFilterInput,
     PrimitiveFilter,
     Simplify,
 } from "@filter-def/core";
@@ -22,99 +23,6 @@ import {
     ne,
     or,
 } from "drizzle-orm";
-
-// ----------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------
-
-/**
- * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
- * and returns a Drizzle SQL expression or undefined.
- */
-export type DrizzleFilter<TFilterInput> = (
-    filterInput?: TFilterInput,
-) => SQL | undefined;
-
-/**
- * Custom filter function that returns a Drizzle SQL expression.
- * Unlike memory package which takes (entity, input), drizzle custom filters
- * take just (input).
- */
-export type DrizzleCustomFilter<Input> = (input: Input) => SQL | undefined;
-
-/**
- * A single filter field definition for Drizzle.
- */
-type DrizzleFilterField<Entity> =
-    | PrimitiveFilter<Entity>
-    | BooleanFilter<Entity>
-    | DrizzleCustomFilter<any>;
-
-/**
- * Filter definition type for Drizzle.
- * Allows standard FilterField definitions or custom SQL filter functions.
- */
-export type DrizzleFilterDef<Entity> = Record<
-    string,
-    DrizzleFilterField<Entity>
->;
-
-/**
- * Extract the input type for a DrizzleFilterDef.
- */
-export type DrizzleFilterDefInput<
-    Entity,
-    TFilterDef extends DrizzleFilterDef<Entity>,
-> = {
-    [K in keyof TFilterDef]?: TFilterDef[K] extends (
-        input: infer I,
-    ) => SQL | undefined
-        ? I
-        : TFilterDef[K] extends DrizzleFilterField<Entity>
-          ? FilterFieldInput<K, Entity, TFilterDef[K]>
-          : never;
-};
-
-// Helper type for filter field input
-type FilterFieldInput<
-    K extends PropertyKey,
-    Entity,
-    TFilterField,
-> = TFilterField extends { kind: "eq" }
-    ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-    : TFilterField extends { kind: "neq" }
-      ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-      : TFilterField extends { kind: "contains" }
-        ? string
-        : TFilterField extends { kind: "inArray" }
-          ? Entity[GetFieldForFilter<K, Entity, TFilterField>][]
-          : TFilterField extends { kind: "isNull" }
-            ? boolean
-            : TFilterField extends { kind: "isNotNull" }
-              ? boolean
-              : TFilterField extends { kind: "gt" }
-                ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-                : TFilterField extends { kind: "gte" }
-                  ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-                  : TFilterField extends { kind: "lt" }
-                    ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-                    : TFilterField extends { kind: "lte" }
-                      ? Entity[GetFieldForFilter<K, Entity, TFilterField>]
-                      : TFilterField extends {
-                              kind: "and";
-                              conditions: infer Conditions;
-                          }
-                        ? Conditions extends [infer First, ...unknown[]]
-                            ? FilterFieldInput<K, Entity, First>
-                            : never
-                        : TFilterField extends {
-                                kind: "or";
-                                conditions: infer Conditions;
-                            }
-                          ? Conditions extends [infer First, ...unknown[]]
-                              ? FilterFieldInput<K, Entity, First>
-                              : never
-                          : never;
 
 // ----------------------------------------------------------------
 // Entry Point
@@ -169,6 +77,77 @@ export const drizzleFilter = <TTable extends Table>(table: TTable) => {
 
     return { filterDef };
 };
+
+// ----------------------------------------------------------------
+// Core Types
+// ----------------------------------------------------------------
+
+/**
+ * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
+ * and returns a Drizzle SQL expression or undefined.
+ */
+export type DrizzleFilter<TFilterInput> = (
+    filterInput?: TFilterInput,
+) => SQL | undefined;
+
+/**
+ * The expected input for a DrizzleFilter.
+ *
+ * ```typescript
+ * const userFilter = drizzleFilter(usersTable).filterDef({ ... });
+ * type UserFilterInput = DrizzleFilterInput<typeof userFilter>;
+ * ```
+ */
+export type DrizzleFilterInput<T> =
+    T extends DrizzleFilter<infer TInput> ? TInput : never;
+
+/**
+ * Custom filter function that returns a Drizzle SQL expression.
+ * Unlike memory package which takes (entity, input), drizzle custom filters
+ * take just (input).
+ */
+export type DrizzleCustomFilter<Input> = (input: Input) => SQL | undefined;
+
+/**
+ * A single filter field definition for Drizzle.
+ */
+type DrizzleFilterField<Entity> =
+    | PrimitiveFilter<Entity>
+    | BooleanFilter<Entity>
+    | DrizzleCustomFilter<any>;
+
+// ----------------------------------------------------------------
+// Filter definitions
+// ----------------------------------------------------------------
+
+/**
+ * Filter definition type for Drizzle.
+ * Allows standard FilterField definitions or custom SQL filter functions.
+ */
+export type DrizzleFilterDef<Entity> = Record<
+    string,
+    DrizzleFilterField<Entity>
+>;
+
+/**
+ * Extract the input type for a DrizzleFilterDef.
+ */
+export type DrizzleFilterDefInput<
+    Entity,
+    TFilterDef extends DrizzleFilterDef<Entity>,
+> = {
+    [K in keyof TFilterDef]?: TFilterDef[K] extends DrizzleFilterField<Entity>
+        ? DrizzleFilterFieldInput<K, Entity, TFilterDef[K]>
+        : never;
+};
+
+// Helper type for filter field input
+type DrizzleFilterFieldInput<K extends PropertyKey, Entity, TFilterField> =
+    TFilterField extends DrizzleCustomFilter<infer Input>
+        ? Input
+        : TFilterField extends CoreFilter<Entity>
+          ? CoreFilterInput<K, Entity, TFilterField>
+          : never;
 
 // ----------------------------------------------------------------
 // Compilation

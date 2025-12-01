@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import type { FilterInput } from "./index.ts";
+import type { InMemoryFilterInput } from "./index.ts";
 import { inMemoryFilter } from "./index.ts";
 
 interface User {
@@ -108,7 +108,7 @@ describe("Eq Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             nameEq?: string;
@@ -167,7 +167,7 @@ describe("Neq Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             nameNeq?: string;
@@ -213,7 +213,7 @@ describe("Contains Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             emailContains?: string;
@@ -251,7 +251,7 @@ describe("InArray Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageInArray?: number[];
@@ -284,7 +284,7 @@ describe("IsNull Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             phoneIsNull?: boolean;
@@ -316,7 +316,7 @@ describe("IsNotNull Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             phoneIsNotNull?: boolean;
@@ -352,7 +352,7 @@ describe("Greater Than (GT) Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageGreaterThan?: number;
@@ -389,7 +389,7 @@ describe("Greater Than or Equal (GTE) Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageGreaterThanOrEqual?: number;
@@ -433,7 +433,7 @@ describe("Less Than (LT) Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageLessThan?: number;
@@ -470,7 +470,7 @@ describe("Less Than or Equal (LTE) Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageLessThanOrEqual?: number;
@@ -532,7 +532,7 @@ describe("Combined Filters", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             nameContains?: string;
@@ -610,7 +610,7 @@ describe("Boolean AND Filter", () => {
             },
         });
 
-        type Input = FilterInput<typeof ageFilter>;
+        type Input = InMemoryFilterInput<typeof ageFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageExact?: number;
@@ -713,7 +713,7 @@ describe("Boolean OR Filter", () => {
             },
         });
 
-        type Input = FilterInput<typeof ageFilter>;
+        type Input = InMemoryFilterInput<typeof ageFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             youngOrOld?: number;
@@ -843,7 +843,7 @@ describe("Complex Boolean Filters", () => {
             },
         });
 
-        type Input = FilterInput<typeof complexFilter>;
+        type Input = InMemoryFilterInput<typeof complexFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageExact?: number;
@@ -970,7 +970,7 @@ describe("Boolean Filter Edge Cases", () => {
             },
         });
 
-        type Input = FilterInput<typeof combinedFilter>;
+        type Input = InMemoryFilterInput<typeof combinedFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             ageExact?: number;
@@ -1017,7 +1017,7 @@ describe("Custom Filters", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             wrotePostId?: string;
@@ -1076,7 +1076,7 @@ describe("Edge Cases", () => {
     });
 
     it("should infer the correct input type", () => {
-        type Input = FilterInput<typeof userFilter>;
+        type Input = InMemoryFilterInput<typeof userFilter>;
 
         expectTypeOf<Input>().toEqualTypeOf<{
             nameEq?: string;
@@ -1176,7 +1176,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
             },
         });
 
-        type Input = FilterInput<typeof filter>;
+        type Input = InMemoryFilterInput<typeof filter>;
 
         // The input is a union of string (from name or email)
         expectTypeOf<Input>().toEqualTypeOf<{

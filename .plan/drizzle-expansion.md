@@ -146,11 +146,12 @@ await db.select().from(usersTable).where(where);
 
 ## Phase 7: Documentation & Examples
 
-- [ ] Update root README with monorepo structure
-- [ ] Package-specific READMEs
-- [ ] Migration guide from single-package
-- [ ] Example: Shared filter types across memory + Drizzle
-- [ ] Document database-specific behaviors
+- [x] Package-specific READMEs
+- [x] Current root README.md docs should be moved to memory-specific README.
+- [x] Update root README with monorepo structure, some basic examples for each package, and links to the package-specific READMEs
+- [x] Examples: drizzle examples that match the memory package examples
+- [x] Document database-specific behaviors
+- [x] Keep library-specific docs as consistent as possible between them (following)
 
 ---
 
@@ -172,7 +173,7 @@ await db.select().from(usersTable).where(where);
     └── @filter-def/drizzle (depends on core, drizzle-orm peer dep)
 ```
 
----
+## Phase 7: Release flow
 
 ## Release Strategy
 

@@ -1,51 +1,30 @@
 // ----------------------------------------------------------------
-// Filter kind constants
+// Core Filters
 // ----------------------------------------------------------------
 
 /**
- * Union type of all primitive filter kinds.
+ * The filter types supported by all adapters. This is essentially all filters
+ * other than custom filters, which are implementation-specific.
  */
-export type PrimitiveFilterKind =
-    | "eq"
-    | "neq"
-    | "contains"
-    | "inArray"
-    | "isNull"
-    | "isNotNull"
-    | "gt"
-    | "gte"
-    | "lt"
-    | "lte";
-
-/**
- * Union type of all boolean filter kinds.
- */
-export type BooleanFilterKind = "and" | "or";
+export type CoreFilter<Entity> =
+    | PrimitiveFilter<Entity>
+    | BooleanFilter<Entity>;
 
 /**
  * Union type of all filter kinds.
  */
-export type FilterKind = PrimitiveFilterKind | BooleanFilterKind;
-
-// ----------------------------------------------------------------
-// Filter definitions
-// ----------------------------------------------------------------
-
-/**
- * A record of filter field definitions for a given entity type.
- */
-export type FilterDef<Entity> = Record<string, FilterField<Entity>>;
-
-/**
- * A single filter definition, ie. `{ kind: 'eq', field: 'email' }`
- */
-export type FilterField<Entity> =
-    | PrimitiveFilter<Entity>
-    | BooleanFilter<Entity>
-    | CustomFilter<Entity, any>;
+export type CoreFilterKind = PrimitiveFilterKind | BooleanFilterKind;
 
 // -[ Primitive Filters ]----------------------------------------
 
+/**
+ * Union type of all primitive filter kinds.
+ */
+export type PrimitiveFilterKind = PrimitiveFilter<unknown>["kind"];
+
+/**
+ * All core primitive filters.
+ */
 export type PrimitiveFilter<Entity> =
     | EqFilter<Entity>
     | NeqFilter<Entity>
@@ -140,52 +119,35 @@ export interface LTEFilter<Entity> extends CommonFilterOptions<Entity> {
 
 // -[ Boolean Filters ]------------------------------------------
 
+/**
+ * Union type of all boolean filter kinds.
+ */
+export type BooleanFilterKind = BooleanFilter<unknown>["kind"];
+
+/**
+ * All core boolean filters.
+ */
 export type BooleanFilter<Entity> = AndFilter<Entity> | OrFilter<Entity>;
 
+/**
+ * An `and` filter requires that ALL of its conditions be met.
+ */
 export interface AndFilter<Entity> {
     kind: "and";
     conditions: [PrimitiveFilter<Entity>, ...PrimitiveFilter<Entity>[]];
 }
 
+/**
+ * An `or` filter requires that AT LEAST ONE of its conditions be met.
+ */
 export interface OrFilter<Entity> {
     kind: "or";
     conditions: [PrimitiveFilter<Entity>, ...PrimitiveFilter<Entity>[]];
 }
 
-// -[ Custom Filters ]-------------------------------------------
-
-/**
- * A function that accepts an entity and determines if a specific, custom filter passes.
- */
-export type CustomFilter<Entity, Input> = (
-    entity: Entity,
-    input: Input,
-) => boolean;
-
 // ----------------------------------------------------------------
-// Filter input types
+// Input types
 // ----------------------------------------------------------------
-
-/**
- * The expected input for a FilterDef.
- */
-export type FilterDefInput<Entity, TFilterDef extends FilterDef<Entity>> = {
-    [K in keyof TFilterDef]?: FilterFieldInput<K, Entity, TFilterDef[K]>;
-};
-
-/**
- * Helper type to get the field for a filter, either from explicit field property or inferred from key.
- * Useful for adapter authors to determine which entity field a filter targets.
- */
-export type GetFieldForFilter<
-    K extends PropertyKey,
-    Entity,
-    TFilterField,
-> = TFilterField extends { field: infer F extends keyof Entity }
-    ? F
-    : K extends keyof Entity
-      ? K
-      : never;
 
 /**
  * A map of filter types to their expected input.
@@ -196,10 +158,10 @@ export type GetFieldForFilter<
  * - `['field']`: accesses the field name from that definition (or uses the key if field is omitted)
  * - `Entity[...]`: looks up the actual type of that field on the entity
  */
-type FilterInputMap<
+export type CoreFilterInputMap<
     K extends PropertyKey,
     Entity,
-    TFilterField extends FilterField<Entity>,
+    TFilterField extends CoreFilter<Entity>,
 > = {
     eq: Entity[GetFieldForFilter<
         K,
@@ -239,35 +201,27 @@ type FilterInputMap<
         Entity,
         Extract<TFilterField, LTEFilter<Entity>>
     >];
-    and: FilterFieldInput<
+    and: CoreFilterInput<
         K,
         Entity,
         Extract<TFilterField, AndFilter<Entity>>["conditions"][number]
     >;
-    or: FilterFieldInput<
+    or: CoreFilterInput<
         K,
         Entity,
         Extract<TFilterField, OrFilter<Entity>>["conditions"][number]
     >;
 };
 
-/**
- * The expected input shape for a single filter field.
- */
-export type FilterFieldInput<
+export type CoreFilterInput<
     K extends PropertyKey,
     Entity,
-    TFilterField extends FilterField<Entity>,
-> =
-    // Primitive and Boolean Filters
-    TFilterField extends {
-        kind: infer Kind extends keyof FilterInputMap<K, Entity, TFilterField>;
-    }
-        ? FilterInputMap<K, Entity, TFilterField>[Kind] | undefined
-        : // Custom Filters
-          TFilterField extends CustomFilter<Entity, infer TArg>
-          ? TArg
-          : never;
+    TFilterField extends CoreFilter<Entity>,
+> = TFilterField extends {
+    kind: infer Kind extends keyof CoreFilterInputMap<K, Entity, TFilterField>;
+}
+    ? CoreFilterInputMap<K, Entity, TFilterField>[Kind] | undefined
+    : never;
 
 // ----------------------------------------------------------------
 // Validation types
@@ -371,37 +325,6 @@ type AllConditionsHaveRequiredFields<Conditions extends any[]> =
 type HasRequiredField<T> = T extends { field: keyof any } ? true : false;
 
 // ----------------------------------------------------------------
-// Adapter utilities
-// ----------------------------------------------------------------
-
-/**
- * Extracts the filter kind from a filter field definition.
- * Returns the string literal kind for primitive/boolean filters, or 'custom' for custom filters.
- */
-export type ExtractFilterKind<TFilterField> = TFilterField extends {
-    kind: infer K extends FilterKind;
-}
-    ? K
-    : TFilterField extends (...args: any[]) => any
-      ? "custom"
-      : never;
-
-/**
- * Checks if a filter field is a custom filter function.
- */
-export type IsCustomFilter<TFilterField> = TFilterField extends (
-    ...args: any[]
-) => any
-    ? true
-    : false;
-
-/**
- * Extracts the input type for a custom filter function.
- */
-export type ExtractCustomFilterInput<TFilterField> =
-    TFilterField extends CustomFilter<any, infer Input> ? Input : never;
-
-// ----------------------------------------------------------------
 // Utilities
 // ----------------------------------------------------------------
 
@@ -417,3 +340,17 @@ export type Simplify<T> = {
  * Utility type to help expose more meaningful errors to consumers.
  */
 export type TypeError<T extends string> = `⚠️ TypeError: ${T}`;
+
+/**
+ * Helper type to get the field for a filter, either from explicit field property or inferred from key.
+ * Useful for adapter authors to determine which entity field a filter targets.
+ */
+export type GetFieldForFilter<
+    K extends PropertyKey,
+    Entity,
+    TFilterField,
+> = TFilterField extends { field: infer F extends keyof Entity }
+    ? F
+    : K extends keyof Entity
+      ? K
+      : never;

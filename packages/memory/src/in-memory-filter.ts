@@ -1,38 +1,12 @@
 import type {
     BooleanFilter,
-    Filter,
-    FilterDef,
-    FilterDefInput,
-    FilterField,
+    CoreFilter,
+    CoreFilterInput,
+    CoreFilterKind,
     PrimitiveFilter,
     Simplify,
     ValidateFilterDef,
 } from "@filter-def/core";
-
-// ----------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------
-
-/**
- * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
- * and returns a function that determines if an entity passes the filter.
- */
-export type InMemoryFilter<Entity, TFilterInput> = (
-    filterInput?: TFilterInput,
-) => (entity: Entity) => boolean;
-
-/**
- * The expected input for a Filter.
- *
- * ```typescript
- * const userFilter = inMemoryFilter<User>().filterDef({ ... });
- * type UserFilterInput = FilterInput<typeof userFilter>;
- * ```
- */
-export type InMemoryFilterInput<TFilter> =
-    TFilter extends InMemoryFilter<infer _TEntity, infer TFilterInput>
-        ? TFilterInput
-        : never;
 
 // ----------------------------------------------------------------
 // Entry Point
@@ -80,14 +54,135 @@ export type InMemoryFilterInput<TFilter> =
  * ```
  */
 export const inMemoryFilter = <Entity>() => {
-    const filterDef = <TFilterDef extends FilterDef<Entity>>(
+    const filterDef = <TFilterDef extends InMemoryFilterDef<Entity>>(
         filterDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
-    ): Filter<Entity, Simplify<FilterDefInput<Entity, TFilterDef>>> => {
+    ): InMemoryFilter<
+        Entity,
+        Simplify<InMemoryFilterDefInput<Entity, TFilterDef>>
+    > => {
         return compileFilterDef(filterDef);
     };
 
     return { filterDef };
 };
+
+// ----------------------------------------------------------------
+// Core Types
+// ----------------------------------------------------------------
+
+/**
+ * A higher-order function that accepts a filter input (ie. `{ name: 'Bob' }`)
+ * and returns a function that determines if an entity passes the filter.
+ */
+export type InMemoryFilter<Entity, TFilterInput> = (
+    filterInput?: TFilterInput,
+) => (entity: Entity) => boolean;
+
+/**
+ * The expected input for a InMemoryFilter.
+ *
+ * ```typescript
+ * const userFilter = inMemoryFilter<User>().filterDef({ ... });
+ * type UserFilterInput = InMemoryFilterInput<typeof userFilter>;
+ * ```
+ */
+export type InMemoryFilterInput<TFilter> =
+    TFilter extends InMemoryFilter<infer _TEntity, infer TFilterInput>
+        ? TFilterInput
+        : never;
+
+/**
+ * A function that accepts an entity and determines if a specific, custom filter passes.
+ */
+export type InMemoryCustomFilter<Entity, Input> = (
+    entity: Entity,
+    input: Input,
+) => boolean;
+
+// ----------------------------------------------------------------
+// Filter definitions
+// ----------------------------------------------------------------
+
+/**
+ * A record of filter field definitions for a given entity type.
+ */
+export type InMemoryFilterDef<Entity> = Record<
+    string,
+    InMemoryFilterField<Entity>
+>;
+
+/**
+ * A single filter definition, ie. `{ kind: 'eq', field: 'email' }`
+ */
+export type InMemoryFilterField<Entity> =
+    | PrimitiveFilter<Entity>
+    | BooleanFilter<Entity>
+    | InMemoryCustomFilter<Entity, any>;
+
+// ----------------------------------------------------------------
+// Adapter utilities
+// ----------------------------------------------------------------
+
+/**
+ * Extracts the filter kind from a filter field definition.
+ * Returns the string literal kind for primitive/boolean filters, or 'custom' for custom filters.
+ */
+export type ExtractFilterKind<TFilterField> = TFilterField extends {
+    kind: infer K extends CoreFilterKind;
+}
+    ? K
+    : TFilterField extends (...args: any[]) => any
+      ? "custom"
+      : never;
+
+/**
+ * Checks if a filter field is a custom filter function.
+ */
+export type IsCustomFilter<TFilterField> = TFilterField extends (
+    ...args: any[]
+) => any
+    ? true
+    : false;
+
+/**
+ * Extracts the input type for a custom filter function.
+ */
+export type ExtractCustomFilterInput<TFilterField> =
+    TFilterField extends InMemoryCustomFilter<any, infer Input> ? Input : never;
+
+// ----------------------------------------------------------------
+// Filter input types
+// ----------------------------------------------------------------
+
+/**
+ * The expected input for a FilterDef.
+ */
+export type InMemoryFilterDefInput<
+    Entity,
+    TFilterDef extends InMemoryFilterDef<Entity>,
+> = {
+    [K in keyof TFilterDef]?: InMemoryFilterFieldInput<
+        K,
+        Entity,
+        TFilterDef[K]
+    >;
+};
+
+/**
+ * The expected input shape for a single filter field.
+ */
+export type InMemoryFilterFieldInput<
+    K extends PropertyKey,
+    Entity,
+    TFilterField extends InMemoryFilterField<Entity>,
+> =
+    // Custom Filters
+    TFilterField extends InMemoryCustomFilter<Entity, infer TArg>
+        ? TArg
+        : // Primitive and Boolean Filters
+          TFilterField extends CoreFilter<Entity>
+          ? CoreFilterInput<K, Entity, TFilterField>
+          : never;
 
 // ----------------------------------------------------------------
 // Compilation
@@ -106,9 +201,9 @@ type CompiledFilterField<Entity> = (
  * This then returns a higher-order function that accepts a filter input
  * and returns a function that determines if an entity passes the filter.
  */
-const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
+const compileFilterDef = <Entity, TFilterDef extends InMemoryFilterDef<Entity>>(
     filtersDef: TFilterDef,
-): Filter<Entity, FilterDefInput<Entity, TFilterDef>> => {
+): InMemoryFilter<Entity, InMemoryFilterDefInput<Entity, TFilterDef>> => {
     // Pre-compile all filters at definition time
     const compiledFilters: Array<{
         key: string;
@@ -119,7 +214,9 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
     }));
 
     // Return the optimized filter function
-    return (filterInput: FilterDefInput<Entity, TFilterDef> | undefined) =>
+    return (
+            filterInput: InMemoryFilterDefInput<Entity, TFilterDef> | undefined,
+        ) =>
         (entity: Entity) => {
             if (!filterInput) {
                 return true;
@@ -151,7 +248,7 @@ const compileFilterDef = <Entity, TFilterDef extends FilterDef<Entity>>(
  */
 const compileFilterField = <Entity>(
     key: string,
-    filterField: FilterField<Entity>,
+    filterField: InMemoryFilterField<Entity>,
 ): CompiledFilterField<Entity> => {
     if (typeof filterField === "function") {
         return filterField;

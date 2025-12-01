@@ -1,7 +1,8 @@
+export { drizzleFilter } from "./drizzle-filter.js";
 export type {
     DrizzleCustomFilter,
     DrizzleFilter,
     DrizzleFilterDef,
     DrizzleFilterDefInput,
+    DrizzleFilterInput,
 } from "./drizzle-filter.js";
-export { drizzleFilter as tableFilter } from "./drizzle-filter.js";

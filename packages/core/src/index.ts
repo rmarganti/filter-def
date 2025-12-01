@@ -1,17 +1,12 @@
 // Filter kind types
 export type {
     BooleanFilterKind,
-    FilterKind,
+    CoreFilterKind,
     PrimitiveFilterKind,
 } from "./types.ts";
 
-// Filter definition types
-export type {
-    FilterDef,
-    FilterDefInput,
-    FilterField,
-    FilterFieldInput,
-} from "./types.ts";
+// Core filters
+export type { CoreFilter } from "./types.ts";
 
 // Primitive filters
 export type {
@@ -32,19 +27,11 @@ export type {
 // Boolean filters
 export type { AndFilter, BooleanFilter, OrFilter } from "./types.ts";
 
-// Custom filters
-export type { CustomFilter } from "./types.ts";
+// Input types
+export type { CoreFilterInput } from "./types.ts";
 
 // Validation types
 export type { ValidateFilterDef } from "./types.ts";
 
-// Adapter utilities
-export type {
-    ExtractCustomFilterInput,
-    ExtractFilterKind,
-    GetFieldForFilter,
-    IsCustomFilter,
-} from "./types.ts";
-
 // Utilities
-export type { Simplify, TypeError } from "./types.ts";
+export type { GetFieldForFilter, Simplify, TypeError } from "./types.ts";

@@ -1,4 +1,4 @@
-import type { Filter } from "@filter-def/core";
+import type { InMemoryFilter } from "./in-memory-filter.ts";
 
 export interface FilterHelpers<TEntity, TFilterInput> {
     filter: (entities: TEntity[], filterInput?: TFilterInput) => TEntity[];
@@ -36,7 +36,7 @@ export interface FilterHelpers<TEntity, TFilterInput> {
  * ```
  */
 export const makeFilterHelpers = <TEntity, TFilterInput>(
-    filter: Filter<TEntity, TFilterInput>,
+    filter: InMemoryFilter<TEntity, TFilterInput>,
 ): FilterHelpers<TEntity, TFilterInput> => ({
     filter: (entities: TEntity[], filterInput?: TFilterInput) =>
         entities.filter(filter(filterInput)),
