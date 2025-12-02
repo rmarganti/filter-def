@@ -1,6 +1,7 @@
 import type {
     BooleanFilter,
     CoreFilter,
+    CoreFilterField,
     CoreFilterInput,
     CoreFilterKind,
     PrimitiveFilter,
@@ -115,8 +116,7 @@ export type InMemoryFilterDef<Entity> = Record<
  * A single filter definition, ie. `{ kind: 'eq', field: 'email' }`
  */
 export type InMemoryFilterField<Entity> =
-    | PrimitiveFilter<Entity>
-    | BooleanFilter<Entity>
+    | CoreFilterField<Entity>
     | InMemoryCustomFilter<Entity, any>;
 
 // ----------------------------------------------------------------
@@ -214,33 +214,29 @@ const compileFilterDef = <Entity, TFilterDef extends InMemoryFilterDef<Entity>>(
     }));
 
     // Return the optimized filter function
-    return (
-            filterInput: InMemoryFilterDefInput<Entity, TFilterDef> | undefined,
-        ) =>
-        (entity: Entity) => {
-            if (!filterInput) {
-                return true;
-            }
-
-            // Check if entity passes ALL filters
-            for (let i = 0; i < compiledFilters.length; i++) {
-                const { key, checker } = compiledFilters[i];
-                const filterValue =
-                    filterInput[key as keyof typeof filterInput];
-
-                // If no filter value provided, skip this filter (it passes)
-                if (filterValue === undefined) {
-                    continue;
-                }
-
-                // Use the pre-compiled checker
-                if (!checker(entity, filterValue)) {
-                    return false;
-                }
-            }
-
+    return (filterInput) => (entity) => {
+        if (!filterInput) {
             return true;
-        };
+        }
+
+        // Check if entity passes ALL filters
+        for (let i = 0; i < compiledFilters.length; i++) {
+            const { key, checker } = compiledFilters[i];
+            const filterValue = filterInput[key as keyof typeof filterInput];
+
+            // If no filter value provided, skip this filter (it passes)
+            if (filterValue === undefined) {
+                continue;
+            }
+
+            // Use the pre-compiled checker
+            if (!checker(entity, filterValue)) {
+                return false;
+            }
+        }
+
+        return true;
+    };
 };
 
 /**
@@ -271,8 +267,8 @@ const compileBooleanFilter = <Entity>(
     filterField: BooleanFilter<Entity>,
 ): CompiledFilterField<Entity> => {
     const compiledConditions = filterField.conditions.map((condition) =>
-        // Boolean filter conditions must have explicit field property
-        // TODO: Implement field property validation for Boolean filters.
+        // Boolean filter conditions must have explicit field property.
+        // This is validated elsewhere by `ValidateFilterDef`.
         compilePrimitiveFilter(condition.field as string, condition),
     );
 

@@ -145,6 +145,19 @@ export interface OrFilter<Entity> {
     conditions: [PrimitiveFilter<Entity>, ...PrimitiveFilter<Entity>[]];
 }
 
+/**
+ * A universal filter field that works with all implementations (in-memory, drizzle, etc).
+ */
+export type CoreFilterField<Entity> =
+    | PrimitiveFilter<Entity>
+    | BooleanFilter<Entity>;
+
+/**
+ * Filter definition type for core filter types. This definition only supports
+ * filter fields that are universal and not implementation specific.
+ */
+export type CoreFilterDef<Entity> = Record<string, CoreFilterField<Entity>>;
+
 // ----------------------------------------------------------------
 // Input types
 // ----------------------------------------------------------------
@@ -158,7 +171,7 @@ export interface OrFilter<Entity> {
  * - `['field']`: accesses the field name from that definition (or uses the key if field is omitted)
  * - `Entity[...]`: looks up the actual type of that field on the entity
  */
-export type CoreFilterInputMap<
+type CoreFilterInputMap<
     K extends PropertyKey,
     Entity,
     TFilterField extends CoreFilter<Entity>,

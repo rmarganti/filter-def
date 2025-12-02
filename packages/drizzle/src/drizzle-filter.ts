@@ -2,6 +2,7 @@ import type {
     BooleanFilter,
     ContainsFilter,
     CoreFilter,
+    CoreFilterField,
     CoreFilterInput,
     PrimitiveFilter,
     Simplify,
@@ -112,8 +113,7 @@ export type DrizzleCustomFilter<Input> = (input: Input) => SQL | undefined;
  * A single filter field definition for Drizzle.
  */
 type DrizzleFilterField<Entity> =
-    | PrimitiveFilter<Entity>
-    | BooleanFilter<Entity>
+    | CoreFilterField<Entity>
     | DrizzleCustomFilter<any>;
 
 // ----------------------------------------------------------------
@@ -122,7 +122,7 @@ type DrizzleFilterField<Entity> =
 
 /**
  * Filter definition type for Drizzle.
- * Allows standard FilterField definitions or custom SQL filter functions.
+ * Allows core filter field definitions or custom SQL filter functions.
  */
 export type DrizzleFilterDef<Entity> = Record<
     string,
@@ -177,7 +177,7 @@ const compileFilterDef = <Entity, TFilterDef extends DrizzleFilterDef<Entity>>(
     }));
 
     // Return the optimized filter function
-    return (filterInput?: DrizzleFilterDefInput<Entity, TFilterDef>) => {
+    return (filterInput) => {
         if (!filterInput) {
             return undefined;
         }
@@ -199,6 +199,7 @@ const compileFilterDef = <Entity, TFilterDef extends DrizzleFilterDef<Entity>>(
             }
         }
 
+        // Returning `undefined` lets Drizzle know there is no `where` clause to apply.
         if (conditions.length === 0) {
             return undefined;
         }
@@ -224,23 +225,13 @@ const compileFilterField = <Entity>(
         return (filterValue) => filterField(filterValue);
     }
 
-    // Type guard for filter field with kind property
-    const filterWithKind = filterField as { kind: string };
-
-    switch (filterWithKind.kind) {
+    switch (filterField.kind) {
         case "and":
         case "or":
-            return compileBooleanFilter<Entity>(
-                columns,
-                filterField as BooleanFilter<Entity>,
-            );
+            return compileBooleanFilter<Entity>(columns, filterField);
 
         default:
-            return compilePrimitiveFilter<Entity>(
-                columns,
-                key,
-                filterField as PrimitiveFilter<Entity>,
-            );
+            return compilePrimitiveFilter<Entity>(columns, key, filterField);
     }
 };
 
