@@ -1,26 +1,14 @@
-name: Publish
+name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: "Run in dry-run mode (no actual publish)"
-        required: false
-        type: boolean
-        default: false
+  push:
+    branches:
+      - main
 
-# TODO: Monorepo publishing requires additional setup.
-# Consider using one of these approaches:
-# - changesets (https://github.com/changesets/changesets)
-# - multi-semantic-release (https://github.com/qiwi/multi-semantic-release)
-# - semantic-release-monorepo plugin
-#
-# For now, this workflow is a placeholder that needs to be configured
-# for proper multi-package versioning and publishing.
+concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
   contents: write
-  issues: write
   pull-requests: write
   id-token: write
 
@@ -28,18 +16,14 @@ jobs:
   test-and-lint:
     uses: ./.github/workflows/test-and-lint.yml
 
-  publish:
-    name: Publish
+  release:
+    name: Release
     runs-on: ubuntu-latest
     needs: test-and-lint
-    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -59,16 +43,12 @@ jobs:
       - name: Build
         run: pnpm run build
 
-      - name: Publish (placeholder)
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          echo "TODO: Configure monorepo publishing strategy"
-          echo "See workflow comments for recommended approaches"
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            echo "Dry run mode - no packages published"
-          else
-            echo "Would publish packages here"
-          fi
+          NPM_CONFIG_PROVENANCE: true
