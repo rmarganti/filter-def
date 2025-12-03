@@ -21,7 +21,7 @@ const contactsTable = pgTable("contacts", {
 // Filter definition
 // ----------------------------------------------------------------
 
-const contactFilter = drizzleFilter(contactsTable).filterDef({
+const contactFilter = drizzleFilter(contactsTable).def({
     // Primitive filters with inferred fields
     firstName: { kind: "eq" },
     lastName: { kind: "eq" },
@@ -195,7 +195,7 @@ console.log(
 
 console.log("\n=== OR Logic with Null Checks ===\n");
 
-const contactFilterWithOr = drizzleFilter(contactsTable).filterDef({
+const contactFilterWithOr = drizzleFilter(contactsTable).def({
     // Has any contact method (email OR phone is not null)
     hasAnyContactMethod: {
         kind: "or",

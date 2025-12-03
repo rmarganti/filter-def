@@ -98,7 +98,7 @@ const noInput = userFilter(); // undefined
 Custom filters receive input and return `SQL | undefined`:
 
 ```typescript
-const filter = drizzleFilter(table).filterDef({
+const filter = drizzleFilter(table).def({
     // Return SQL expression
     ageDivisibleBy: (divisor: number) => sql`${table.age} % ${divisor} = 0`,
 
@@ -113,7 +113,7 @@ const filter = drizzleFilter(table).filterDef({
 Since filters generate WHERE clauses (not JOINs), use EXISTS for related data:
 
 ```typescript
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     hasPostWithTitle: (title: string) =>
         exists(
             db
@@ -129,7 +129,7 @@ const userFilter = drizzleFilter(usersTable).filterDef({
 });
 ```
 
-## Comparison with @filter-def/memory
+## Comparison with @filter-def/in-memory
 
 | Feature          | Memory                       | Drizzle                       |
 | ---------------- | ---------------------------- | ----------------------------- |

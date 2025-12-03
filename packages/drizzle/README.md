@@ -29,7 +29,7 @@ const usersTable = pgTable("users", {
 });
 
 // Create a filter definition
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
@@ -62,7 +62,7 @@ const results = await db.select().from(usersTable).where(where);
 Creates a filter builder for the specified Drizzle table.
 
 ```typescript
-const productFilter = drizzleFilter(productsTable).filterDef({
+const productFilter = drizzleFilter(productsTable).def({
     // Filter definitions...
 });
 ```
@@ -104,7 +104,7 @@ const noInput = userFilter();
 When the filter name matches a column name, the `field` property is inferred:
 
 ```typescript
-const filter = drizzleFilter(usersTable).filterDef({
+const filter = drizzleFilter(usersTable).def({
     name: { kind: "eq" }, // field: "name" inferred
     email: { kind: "contains" }, // field: "email" inferred
     minAge: { kind: "gte", field: "age" }, // explicit field required
@@ -116,7 +116,7 @@ const filter = drizzleFilter(usersTable).filterDef({
 Use `caseInsensitive: true` to use `ILIKE` instead of `LIKE`:
 
 ```typescript
-const filter = drizzleFilter(usersTable).filterDef({
+const filter = drizzleFilter(usersTable).def({
     nameSearch: {
         kind: "contains",
         field: "name",
@@ -130,7 +130,7 @@ const filter = drizzleFilter(usersTable).filterDef({
 Combine conditions with logical operators. All conditions must have explicit `field` properties.
 
 ```typescript
-const filter = drizzleFilter(usersTable).filterDef({
+const filter = drizzleFilter(usersTable).def({
     // OR: match any condition
     searchTerm: {
         kind: "or",
@@ -163,7 +163,7 @@ Custom filters receive the input value and return a Drizzle `SQL` expression:
 ```typescript
 import { sql, eq, exists } from "drizzle-orm";
 
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     // Raw SQL expression
     ageDivisibleBy: (divisor: number) =>
         sql`${usersTable.age} % ${divisor} = 0`,
@@ -206,7 +206,7 @@ const postsTable = pgTable("posts", {
     title: text("title").notNull(),
 });
 
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     name: { kind: "eq" },
 
     // Custom filter with EXISTS subquery
@@ -238,7 +238,7 @@ Extract the input type from a filter definition:
 ```typescript
 import type { DrizzleFilterInput } from "@filter-def/drizzle";
 
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     name: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
 });
@@ -297,7 +297,7 @@ const productsTable = pgTable("products", {
 });
 
 // Filter definition
-const productFilter = drizzleFilter(productsTable).filterDef({
+const productFilter = drizzleFilter(productsTable).def({
     // Inferred fields
     name: { kind: "eq" },
     category: { kind: "eq" },
@@ -360,4 +360,4 @@ const searchResults = await searchProducts(db, {
 ## Related Packages
 
 - [`@filter-def/core`](../core) - Core types and utilities
-- [`@filter-def/memory`](../memory) - In-memory filtering with native array methods
+- [`@filter-def/in-memory`](../memory) - In-memory filtering with native array methods

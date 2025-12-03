@@ -16,7 +16,7 @@ const users: Array<User> = [
     { id: 4, name: "Diana", age: 25, isActive: true },
 ];
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     id: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
     isActive: { kind: "eq" },

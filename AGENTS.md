@@ -5,7 +5,7 @@
 This is a **monorepo** with three packages:
 
 - `@filter-def/core` - Core types and utilities (types-only package)
-- `@filter-def/memory` - In-memory filtering with native array methods
+- `@filter-def/in-memory` - In-memory filtering with native array methods
 - `@filter-def/drizzle` - Drizzle ORM adapter for SQL databases
 
 Each package is located in `packages/{name}/` with its own `package.json`, tests, and examples.
@@ -13,11 +13,11 @@ Each package is located in `packages/{name}/` with its own `package.json`, tests
 ## Build/Test Commands
 
 - Build all: `pnpm run build`
-- Build specific: `pnpm --filter @filter-def/memory run build`
+- Build specific: `pnpm --filter @filter-def/in-memory run build`
 - Test all: `pnpm test`
-- Test specific package: `pnpm --filter @filter-def/memory test`
-- Test single file: `pnpm --filter @filter-def/memory test src/in-memory-filter.spec.ts`
-- Test pattern: `pnpm --filter @filter-def/memory test -- --run --reporter=verbose "*eq*"`
+- Test specific package: `pnpm --filter @filter-def/in-memory test`
+- Test single file: `pnpm --filter @filter-def/in-memory test src/in-memory-filter.spec.ts`
+- Test pattern: `pnpm --filter @filter-def/in-memory test -- --run --reporter=verbose "*eq*"`
 - Type check all: `pnpm run typecheck`
 - Benchmarks: `pnpm run bench`
 

@@ -1,4 +1,4 @@
-import { inMemoryFilter } from "@filter-def/memory";
+import { inMemoryFilter } from "@filter-def/in-memory";
 
 // ----------------------------------------------------------------
 // Model
@@ -64,7 +64,7 @@ const users: User[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     // Primitive filters with inferred fields
     role: { kind: "eq" },
     isActive: { kind: "eq" },

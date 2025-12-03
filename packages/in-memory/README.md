@@ -1,20 +1,20 @@
-# @filter-def/memory
+# @filter-def/in-memory
 
 In-memory filtering adapter for filter-def. Define type-safe filters once, get predicates that work with native array methods.
 
 ## Installation
 
 ```bash
-npm install @filter-def/memory
+npm install @filter-def/in-memory
 # or
-pnpm add @filter-def/memory
+pnpm add @filter-def/in-memory
 ```
 
 ## Quick Start
 
 ```typescript
-import { inMemoryFilter } from "@filter-def/memory";
-import type { InMemoryFilterInput } from "@filter-def/memory";
+import { inMemoryFilter } from "@filter-def/in-memory";
+import type { InMemoryFilterInput } from "@filter-def/in-memory";
 
 interface User {
     name: string;
@@ -22,7 +22,7 @@ interface User {
     age: number;
 }
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     olderThan: { kind: "gt", field: "age" },
@@ -59,7 +59,7 @@ const hasMatch = users.some(predicate);
 Creates a filter builder for the specified entity type.
 
 ```typescript
-const productFilter = inMemoryFilter<Product>().filterDef({
+const productFilter = inMemoryFilter<Product>().def({
     // Filter definitions...
 });
 ```
@@ -69,9 +69,9 @@ const productFilter = inMemoryFilter<Product>().filterDef({
 Creates convenience wrapper functions around native array methods.
 
 ```typescript
-import { inMemoryFilter, makeFilterHelpers } from "@filter-def/memory";
+import { inMemoryFilter, makeFilterHelpers } from "@filter-def/in-memory";
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     isActive: { kind: "eq" },
 });
@@ -110,7 +110,7 @@ const john = findUser(users, { name: "John" });
 When the filter name matches an entity field, the `field` property is inferred:
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     name: { kind: "eq" }, // field: "name" inferred
     email: { kind: "contains" }, // field: "email" inferred
     olderThan: { kind: "gt", field: "age" }, // explicit field required
@@ -122,7 +122,7 @@ const filter = inMemoryFilter<User>().filterDef({
 Combine conditions with logical operators. All conditions must have explicit `field` properties.
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     // OR: match any condition
     searchTerm: {
         kind: "or",
@@ -155,7 +155,7 @@ interface BlogPost {
     likeCount: number;
 }
 
-const postFilter = inMemoryFilter<BlogPost>().filterDef({
+const postFilter = inMemoryFilter<BlogPost>().def({
     // Check if post has a specific tag
     hasTag: (post, tag: string) => post.tags.includes(tag),
 
@@ -195,12 +195,12 @@ interface Post {
     title: string;
 }
 
-const postFilter = inMemoryFilter<Post>().filterDef({
+const postFilter = inMemoryFilter<Post>().def({
     id: { kind: "eq" },
     titleContains: { kind: "contains", field: "title" },
 });
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     wrotePostWithId: (user, postId: string) =>
         user.posts.some(postFilter({ id: postId })),
@@ -218,9 +218,9 @@ const authors = users.filter(userFilter({ hasPostWithTitle: "TypeScript" }));
 Extract the input type from a filter definition:
 
 ```typescript
-import type { InMemoryFilterInput } from "@filter-def/memory";
+import type { InMemoryFilterInput } from "@filter-def/in-memory";
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
 });
@@ -234,7 +234,7 @@ type UserFilterInput = InMemoryFilterInput<typeof userFilter>;
 Type for the compiled filter function:
 
 ```typescript
-import type { InMemoryFilter } from "@filter-def/memory";
+import type { InMemoryFilter } from "@filter-def/in-memory";
 
 // The filter is a function that takes input and returns a predicate
 type UserFilter = InMemoryFilter<User, { name?: string }>;
@@ -246,7 +246,7 @@ type UserFilter = InMemoryFilter<User, { name?: string }>;
 Type for custom filter functions:
 
 ```typescript
-import type { InMemoryCustomFilter } from "@filter-def/memory";
+import type { InMemoryCustomFilter } from "@filter-def/in-memory";
 
 // Custom filters take (entity, input) and return boolean
 type HasTagFilter = InMemoryCustomFilter<BlogPost, string>;
@@ -258,7 +258,7 @@ type HasTagFilter = InMemoryCustomFilter<BlogPost, string>;
 ### Case-Insensitive Contains
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     nameSearch: {
         kind: "contains",
         field: "name",

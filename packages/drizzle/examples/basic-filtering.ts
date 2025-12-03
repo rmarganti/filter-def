@@ -17,7 +17,7 @@ const productsTable = pgTable("products", {
 // Filter definition
 // ----------------------------------------------------------------
 
-const productFilter = drizzleFilter(productsTable).filterDef({
+const productFilter = drizzleFilter(productsTable).def({
     // Field names match column names, so `field` is inferred
     id: { kind: "eq" },
     category: { kind: "eq" },

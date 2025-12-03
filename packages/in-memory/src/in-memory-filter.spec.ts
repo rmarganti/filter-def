@@ -67,7 +67,7 @@ const exampleUsers: Array<User> = [
 ];
 
 describe("Eq Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         nameEq: { kind: "eq", field: "name" },
         ageEq: { kind: "eq", field: "age" },
     });
@@ -118,7 +118,7 @@ describe("Eq Filter", () => {
 });
 
 describe("Neq Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         nameNeq: { kind: "neq", field: "name" },
         ageNeq: { kind: "neq", field: "age" },
     });
@@ -177,7 +177,7 @@ describe("Neq Filter", () => {
 });
 
 describe("Contains Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         emailContains: { kind: "contains", field: "email" },
         iEmailContains: {
             kind: "contains",
@@ -224,7 +224,7 @@ describe("Contains Filter", () => {
 });
 
 describe("InArray Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         ageInArray: { kind: "inArray", field: "age" },
         nameInArray: { kind: "inArray", field: "name" },
     });
@@ -261,7 +261,7 @@ describe("InArray Filter", () => {
 });
 
 describe("IsNull Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         phoneIsNull: { kind: "isNull", field: "phone" },
     });
 
@@ -293,7 +293,7 @@ describe("IsNull Filter", () => {
 });
 
 describe("IsNotNull Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         phoneIsNotNull: { kind: "isNotNull", field: "phone" },
     });
 
@@ -325,7 +325,7 @@ describe("IsNotNull Filter", () => {
 });
 
 describe("Greater Than (GT) Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         ageGreaterThan: { kind: "gt", field: "age" },
         scoreGreaterThan: { kind: "gt", field: "score" },
     });
@@ -362,7 +362,7 @@ describe("Greater Than (GT) Filter", () => {
 });
 
 describe("Greater Than or Equal (GTE) Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         ageGreaterThanOrEqual: { kind: "gte", field: "age" },
         scoreGreaterThanOrEqual: { kind: "gte", field: "score" },
     });
@@ -399,7 +399,7 @@ describe("Greater Than or Equal (GTE) Filter", () => {
 });
 
 describe("Less Than (LT) Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         ageLessThan: { kind: "lt", field: "age" },
         scoreLessThan: { kind: "lt", field: "score" },
     });
@@ -443,7 +443,7 @@ describe("Less Than (LT) Filter", () => {
 });
 
 describe("Less Than or Equal (LTE) Filter", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         ageLessThanOrEqual: { kind: "lte", field: "age" },
         scoreLessThanOrEqual: { kind: "lte", field: "score" },
     });
@@ -480,7 +480,7 @@ describe("Less Than or Equal (LTE) Filter", () => {
 });
 
 describe("Combined Filters", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         nameContains: { kind: "contains", field: "name" },
         ageGreaterThan: { kind: "gt", field: "age" },
         ageLessThan: { kind: "lt", field: "age" },
@@ -546,7 +546,7 @@ describe("Combined Filters", () => {
 
 describe("Boolean AND Filter", () => {
     it("should work with age exact match using range conditions", () => {
-        const ageExactFilter = userEntity.filterDef({
+        const ageExactFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -565,7 +565,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should work with multiple numeric comparisons on same field", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageNotInRange: {
                 kind: "and",
                 conditions: [
@@ -583,7 +583,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should return all when filter value is undefined", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -600,7 +600,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -620,7 +620,7 @@ describe("Boolean AND Filter", () => {
 
 describe("Boolean OR Filter", () => {
     it("should find values outside a range", () => {
-        const ageOutsideRangeFilter = userEntity.filterDef({
+        const ageOutsideRangeFilter = userEntity.def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -645,7 +645,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should work with score threshold OR conditions", () => {
-        const scoreFilter = userEntity.filterDef({
+        const scoreFilter = userEntity.def({
             extremeScores: {
                 kind: "or",
                 conditions: [
@@ -668,7 +668,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should work with string contains on multiple fields", () => {
-        const stringFilter = userEntity.filterDef({
+        const stringFilter = userEntity.def({
             containsInNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -686,7 +686,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should return all when filter value is undefined", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -703,7 +703,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -723,7 +723,7 @@ describe("Boolean OR Filter", () => {
 
 describe("Complex Boolean Filters", () => {
     it("should support multiple boolean filters together", () => {
-        const complexFilter = userEntity.filterDef({
+        const complexFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -748,7 +748,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should combine boolean filter with primitive filters", () => {
-        const mixedFilter = userEntity.filterDef({
+        const mixedFilter = userEntity.def({
             nameContains: { kind: "contains", field: "name" },
             ageOutsideRange: {
                 kind: "or",
@@ -770,7 +770,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should handle three numeric conditions in AND on same field", () => {
-        const tripleAndFilter = userEntity.filterDef({
+        const tripleAndFilter = userEntity.def({
             scoreInRange: {
                 kind: "and",
                 conditions: [
@@ -789,7 +789,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should handle three conditions in OR on same field", () => {
-        const tripleOrFilter = userEntity.filterDef({
+        const tripleOrFilter = userEntity.def({
             ageMatch: {
                 kind: "or",
                 conditions: [
@@ -808,7 +808,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should work with string matching across multiple fields", () => {
-        const stringFilter = userEntity.filterDef({
+        const stringFilter = userEntity.def({
             matchInNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -826,7 +826,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should infer the correct input type", () => {
-        const complexFilter = userEntity.filterDef({
+        const complexFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -854,7 +854,7 @@ describe("Complex Boolean Filters", () => {
 
 describe("Boolean Filter Edge Cases", () => {
     it("should handle empty array with boolean filters", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -871,7 +871,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should handle undefined filter values for boolean filters", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -888,7 +888,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should apply both AND and OR filters together", () => {
-        const combinedFilter = userEntity.filterDef({
+        const combinedFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -916,7 +916,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should work with multiple OR conditions on same field", () => {
-        const ageFilter = userEntity.filterDef({
+        const ageFilter = userEntity.def({
             ageMatch: {
                 kind: "or",
                 conditions: [
@@ -934,7 +934,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should work with inArray in OR boolean filters", () => {
-        const arrayFilter = userEntity.filterDef({
+        const arrayFilter = userEntity.def({
             ageInArrays: {
                 kind: "or",
                 conditions: [
@@ -953,7 +953,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should infer the correct input type", () => {
-        const combinedFilter = userEntity.filterDef({
+        const combinedFilter = userEntity.def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -980,11 +980,11 @@ describe("Boolean Filter Edge Cases", () => {
 });
 
 describe("Custom Filters", () => {
-    const postFilter = postEntity.filterDef({
+    const postFilter = postEntity.def({
         id: { kind: "eq", field: "id" },
     });
 
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         wrotePostId: (user: User, postId: string) => {
             return user.posts.some(postFilter({ id: postId }));
         },
@@ -1027,7 +1027,7 @@ describe("Custom Filters", () => {
 });
 
 describe("Edge Cases", () => {
-    const userFilter = userEntity.filterDef({
+    const userFilter = userEntity.def({
         nameEq: { kind: "eq", field: "name" },
         emailContains: { kind: "contains", field: "email" },
         ageGreaterThan: { kind: "gt", field: "age" },
@@ -1089,7 +1089,7 @@ describe("Edge Cases", () => {
 describe("Boolean Filter Field Requirement Validation", () => {
     it("should allow boolean filters when all conditions have explicit fields", () => {
         // This should compile - all conditions have required field properties
-        const filter = userEntity.filterDef({
+        const filter = userEntity.def({
             eitherNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -1117,7 +1117,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
     });
 
     it("should work with AND filter across different fields", () => {
-        const filter = userEntity.filterDef({
+        const filter = userEntity.def({
             activeAndYoung: {
                 kind: "and",
                 conditions: [
@@ -1137,7 +1137,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
     });
 
     it("should work with OR filter searching across multiple string fields", () => {
-        const filter = userEntity.filterDef({
+        const filter = userEntity.def({
             searchTerm: {
                 kind: "or",
                 conditions: [
@@ -1159,7 +1159,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
     });
 
     it("should infer correct input types for boolean filters", () => {
-        const filter = userEntity.filterDef({
+        const filter = userEntity.def({
             eitherNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -1188,7 +1188,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
     // Type-level validation tests - these demonstrate the validation works
     it("should demonstrate type validation catches missing fields", () => {
         // ❌ INVALID: condition missing field property
-        userEntity.filterDef({
+        userEntity.def({
             // @ts-expect-error the second `contains` condition is missing the `field` property
             searchAnywhere: {
                 kind: "or",
@@ -1200,7 +1200,7 @@ describe("Boolean Filter Field Requirement Validation", () => {
         });
 
         // ❌ INVALID: all conditions missing field properties
-        userEntity.filterDef({
+        userEntity.def({
             // @ts-expect-error all conditions are missing the `field` property
             somethingWrong: {
                 kind: "and",

@@ -253,7 +253,7 @@ export type CoreFilterInput<
  * }
  *
  * // VALID
- * inMemoryFilter<User>().filterDef({
+ * inMemoryFilter<User>().def({
  *     // `id` field is explicitly defined. It could also be omitted, since it matches the filter name.
  *     id: { kind: 'eq', field: 'id' },
  *
@@ -275,7 +275,7 @@ export type CoreFilterInput<
  * });
  *
  * // INVALID
- * inMemoryFilter<User>().filterDef({
+ * inMemoryFilter<User>().def({
  *     // Even though `id` matches the `User.id` property, we tried
  *     // to explicitly specify a different, invalid field.
  *     id: { kind: 'eq', field: 'invalidField' },

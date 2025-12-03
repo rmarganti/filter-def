@@ -28,7 +28,7 @@ const postsTable = pgTable("posts", {
 // Filter definition with custom filters
 // ----------------------------------------------------------------
 
-const postFilter = drizzleFilter(postsTable).filterDef({
+const postFilter = drizzleFilter(postsTable).def({
     // Standard primitive filters
     id: { kind: "eq" },
     authorId: { kind: "eq" },

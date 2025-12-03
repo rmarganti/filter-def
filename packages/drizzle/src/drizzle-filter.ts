@@ -41,7 +41,7 @@ import {
  *     email: text('email').notNull(),
  * });
  *
- * const userFilter = drizzleFilter(usersTable).filterDef({
+ * const userFilter = drizzleFilter(usersTable).def({
  *     name: { kind: 'eq' },
  *     emailContains: { kind: 'contains', field: 'email' },
  * });
@@ -60,7 +60,7 @@ import {
  * ```typescript
  * import { sql, eq } from 'drizzle-orm';
  *
- * const userFilter = drizzleFilter(usersTable).filterDef({
+ * const userFilter = drizzleFilter(usersTable).def({
  *     ageDivisibleBy: (divisor: number) =>
  *         sql`${usersTable.age} % ${divisor} = 0`,
  * });
@@ -70,13 +70,13 @@ export const drizzleFilter = <TTable extends Table>(table: TTable) => {
     type Entity = TTable["$inferSelect"];
     const columns = getTableColumns(table);
 
-    const filterDef = <TFilterDef extends DrizzleFilterDef<Entity>>(
-        filtersDef: TFilterDef,
+    const def = <TFilterDef extends DrizzleFilterDef<Entity>>(
+        filterDef: TFilterDef,
     ): DrizzleFilter<Simplify<DrizzleFilterDefInput<Entity, TFilterDef>>> => {
-        return compileFilterDef<Entity, TFilterDef>(columns, filtersDef);
+        return compileFilterDef<Entity, TFilterDef>(columns, filterDef);
     };
 
-    return { filterDef };
+    return { def };
 };
 
 // ----------------------------------------------------------------
@@ -95,7 +95,7 @@ export type DrizzleFilter<TFilterInput> = (
  * The expected input for a DrizzleFilter.
  *
  * ```typescript
- * const userFilter = drizzleFilter(usersTable).filterDef({ ... });
+ * const userFilter = drizzleFilter(usersTable).def({ ... });
  * type UserFilterInput = DrizzleFilterInput<typeof userFilter>;
  * ```
  */

@@ -1,5 +1,5 @@
 {
-  "name": "@filter-def/memory",
+  "name": "@filter-def/in-memory",
   "version": "0.0.0",
   "description": "In-memory filtering for filter-def",
   "type": "module",

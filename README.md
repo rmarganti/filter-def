@@ -6,11 +6,11 @@ A TypeScript library for defining type-safe data filters. Define your filters on
 
 This is a monorepo containing the following packages:
 
-| Package                                     | Description                                   | NPM                                                                                                           |
-| ------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| [`@filter-def/core`](./packages/core)       | Core types and utilities                      | [![npm](https://img.shields.io/npm/v/@filter-def/core)](https://www.npmjs.com/package/@filter-def/core)       |
-| [`@filter-def/memory`](./packages/memory)   | In-memory filtering with native array methods | [![npm](https://img.shields.io/npm/v/@filter-def/memory)](https://www.npmjs.com/package/@filter-def/memory)   |
-| [`@filter-def/drizzle`](./packages/drizzle) | Drizzle ORM adapter for SQL databases         | [![npm](https://img.shields.io/npm/v/@filter-def/drizzle)](https://www.npmjs.com/package/@filter-def/drizzle) |
+| Package                                      | Description                                   | NPM                                                                                                               |
+| -------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [`@filter-def/core`](./packages/core)        | Core types and utilities                      | [![npm](https://img.shields.io/npm/v/@filter-def/core)](https://www.npmjs.com/package/@filter-def/core)           |
+| [`@filter-def/in-memory`](./packages/memory) | In-memory filtering with native array methods | [![npm](https://img.shields.io/npm/v/@filter-def/in-memory)](https://www.npmjs.com/package/@filter-def/in-memory) |
+| [`@filter-def/drizzle`](./packages/drizzle)  | Drizzle ORM adapter for SQL databases         | [![npm](https://img.shields.io/npm/v/@filter-def/drizzle)](https://www.npmjs.com/package/@filter-def/drizzle)     |
 
 ## Features
 
@@ -25,7 +25,7 @@ This is a monorepo containing the following packages:
 ### In-Memory Filtering
 
 ```typescript
-import { inMemoryFilter } from "@filter-def/memory";
+import { inMemoryFilter } from "@filter-def/in-memory";
 
 interface User {
     name: string;
@@ -33,7 +33,7 @@ interface User {
     age: number;
 }
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
@@ -65,7 +65,7 @@ const usersTable = pgTable("users", {
     age: integer("age").notNull(),
 });
 
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
@@ -105,7 +105,7 @@ All adapters support the same core filter types:
 Combine conditions with AND/OR logic:
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     // OR: match any condition
     searchTerm: {
         kind: "or",
@@ -133,7 +133,7 @@ Each adapter supports custom filters with adapter-specific implementations:
 **Memory** (predicate function):
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     hasRole: (user, role: string) => user.roles.includes(role),
 });
 ```
@@ -141,7 +141,7 @@ const filter = inMemoryFilter<User>().filterDef({
 **Drizzle** (SQL expression):
 
 ```typescript
-const filter = drizzleFilter(usersTable).filterDef({
+const filter = drizzleFilter(usersTable).def({
     ageDivisibleBy: (divisor: number) =>
         sql`${usersTable.age} % ${divisor} = 0`,
 });
@@ -152,7 +152,7 @@ const filter = drizzleFilter(usersTable).filterDef({
 When the filter name matches a field/column name, the `field` property is optional:
 
 ```typescript
-const filter = inMemoryFilter<User>().filterDef({
+const filter = inMemoryFilter<User>().def({
     name: { kind: "eq" }, // field: "name" inferred
     email: { kind: "contains" }, // field: "email" inferred
     minAge: { kind: "gte", field: "age" }, // explicit field required
@@ -164,11 +164,11 @@ const filter = inMemoryFilter<User>().filterDef({
 Extract the input type from any filter definition:
 
 ```typescript
-import type { InMemoryFilterInput } from "@filter-def/memory";
+import type { InMemoryFilterInput } from "@filter-def/in-memory";
 // or
 import type { DrizzleFilterInput } from "@filter-def/drizzle";
 
-const userFilter = inMemoryFilter<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
 });
@@ -181,7 +181,7 @@ type UserFilterInput = InMemoryFilterInput<typeof userFilter>;
 
 ```bash
 # For in-memory filtering
-npm install @filter-def/memory
+npm install @filter-def/in-memory
 
 # For Drizzle ORM
 npm install @filter-def/drizzle drizzle-orm
@@ -189,7 +189,7 @@ npm install @filter-def/drizzle drizzle-orm
 
 ## Documentation
 
-- [`@filter-def/memory` README](./packages/memory/README.md) - Full API docs and examples
+- [`@filter-def/in-memory` README](./packages/memory/README.md) - Full API docs and examples
 - [`@filter-def/drizzle` README](./packages/drizzle/README.md) - Full API docs and examples
 - [`@filter-def/core` README](./packages/core/README.md) - Core types for adapter authors
 

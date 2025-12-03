@@ -29,7 +29,7 @@ import type {
  * You can then use the entity definition to define our filters.
  *
  * ```typescript
- * const userFilter = user.filterDef({
+ * const userFilter = user.def({
  *     name: { kind: 'eq', field: 'name' },
  *     email: { kind: 'eq', field: 'email' },
  * });
@@ -39,7 +39,7 @@ import type {
  * filter definition separately.
  *
  * ```typescript
- * const userFilter = inMemoryFilter<User>().filterDef({ ... })
+ * const userFilter = inMemoryFilter<User>().def({ ... })
  * ```
  *
  * This resulting filter definition accepts a set of filter values, which
@@ -55,7 +55,7 @@ import type {
  * ```
  */
 export const inMemoryFilter = <Entity>() => {
-    const filterDef = <TFilterDef extends InMemoryFilterDef<Entity>>(
+    const def = <TFilterDef extends InMemoryFilterDef<Entity>>(
         filterDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
     ): InMemoryFilter<
         Entity,
@@ -64,7 +64,7 @@ export const inMemoryFilter = <Entity>() => {
         return compileFilterDef(filterDef);
     };
 
-    return { filterDef };
+    return { def };
 };
 
 // ----------------------------------------------------------------
@@ -83,7 +83,7 @@ export type InMemoryFilter<Entity, TFilterInput> = (
  * The expected input for a InMemoryFilter.
  *
  * ```typescript
- * const userFilter = inMemoryFilter<User>().filterDef({ ... });
+ * const userFilter = inMemoryFilter<User>().def({ ... });
  * type UserFilterInput = InMemoryFilterInput<typeof userFilter>;
  * ```
  */

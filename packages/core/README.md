@@ -4,7 +4,7 @@ Core types and utilities for the filter-def ecosystem.
 
 ## Overview
 
-This package provides the shared type definitions and utilities used by filter-def adapters (`@filter-def/memory`, `@filter-def/drizzle`, etc.). It is a **types-only package** with no runtime code.
+This package provides the shared type definitions and utilities used by filter-def adapters (`@filter-def/in-memory`, `@filter-def/drizzle`, etc.). It is a **types-only package** with no runtime code.
 
 ## Installation
 
@@ -12,7 +12,7 @@ This package provides the shared type definitions and utilities used by filter-d
 pnpm add @filter-def/core
 ```
 
-> **Note:** Most users should install an adapter package (`@filter-def/memory` or `@filter-def/drizzle`) which re-exports core types automatically.
+> **Note:** Most users should install an adapter package (`@filter-def/in-memory` or `@filter-def/drizzle`) which re-exports core types automatically.
 
 ## Types
 
@@ -132,17 +132,17 @@ type MyFilterDefInput<Entity, TFilterDef extends MyFilterDef<Entity>> = {
 
 // Create your adapter entry point
 export const myAdapter = <Entity>() => {
-    const filterDef = <TFilterDef extends MyFilterDef<Entity>>(
+    const def = <TFilterDef extends MyFilterDef<Entity>>(
         filtersDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
     ): MyFilter<Simplify<MyFilterDefInput<Entity, TFilterDef>>> => {
         // Implement filter compilation
     };
 
-    return { filterDef };
+    return { def };
 };
 ```
 
 ## Related Packages
 
-- [`@filter-def/memory`](../memory) - In-memory filtering with native array methods
+- [`@filter-def/in-memory`](../memory) - In-memory filtering with native array methods
 - [`@filter-def/drizzle`](../drizzle) - Drizzle ORM adapter for SQL databases

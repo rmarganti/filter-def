@@ -1,4 +1,4 @@
-import { inMemoryFilter, makeFilterHelpers } from "@filter-def/memory";
+import { inMemoryFilter, makeFilterHelpers } from "@filter-def/in-memory";
 
 // ----------------------------------------------------------------
 // Models
@@ -165,7 +165,7 @@ const products: Product[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const productFilter = inMemoryFilter<Product>().filterDef({
+const productFilter = inMemoryFilter<Product>().def({
     // Exact match filters
     id: { kind: "eq" },
     category: { kind: "eq" },

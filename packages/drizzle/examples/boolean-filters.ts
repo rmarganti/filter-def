@@ -18,7 +18,7 @@ const usersTable = pgTable("users", {
 // Filter definition
 // ----------------------------------------------------------------
 
-const userFilter = drizzleFilter(usersTable).filterDef({
+const userFilter = drizzleFilter(usersTable).def({
     // Primitive filters with inferred fields
     role: { kind: "eq" },
     isActive: { kind: "eq" },
@@ -137,7 +137,7 @@ console.log("✅ Empty filter returns:", emptyWhere);
 // Additional examples: Complex boolean combinations
 // ----------------------------------------------------------------
 
-const complexFilter = drizzleFilter(usersTable).filterDef({
+const complexFilter = drizzleFilter(usersTable).def({
     // Search in name, email, or phone
     globalSearch: {
         kind: "or",

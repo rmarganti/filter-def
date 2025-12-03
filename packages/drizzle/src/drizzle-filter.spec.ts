@@ -105,7 +105,7 @@ beforeEach(async () => {
 // ----------------------------------------------------------------
 
 describe("Eq Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         nameEq: { kind: "eq", field: "name" },
         ageEq: { kind: "eq", field: "age" },
     });
@@ -166,7 +166,7 @@ describe("Eq Filter", () => {
 });
 
 describe("Neq Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         nameNeq: { kind: "neq", field: "name" },
         ageNeq: { kind: "neq", field: "age" },
     });
@@ -216,7 +216,7 @@ describe("Neq Filter", () => {
 });
 
 describe("Contains Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         emailContains: { kind: "contains", field: "email" },
         iEmailContains: {
             kind: "contains",
@@ -266,7 +266,7 @@ describe("Contains Filter", () => {
 });
 
 describe("InArray Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         ageInArray: { kind: "inArray", field: "age" },
         nameInArray: { kind: "inArray", field: "name" },
     });
@@ -308,7 +308,7 @@ describe("InArray Filter", () => {
 });
 
 describe("IsNull Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         phoneIsNull: { kind: "isNull", field: "phone" },
     });
 
@@ -342,7 +342,7 @@ describe("IsNull Filter", () => {
 });
 
 describe("IsNotNull Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         phoneIsNotNull: { kind: "isNotNull", field: "phone" },
     });
 
@@ -376,7 +376,7 @@ describe("IsNotNull Filter", () => {
 });
 
 describe("Greater Than (GT) Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         ageGreaterThan: { kind: "gt", field: "age" },
         scoreGreaterThan: { kind: "gt", field: "score" },
     });
@@ -418,7 +418,7 @@ describe("Greater Than (GT) Filter", () => {
 });
 
 describe("Greater Than or Equal (GTE) Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         ageGreaterThanOrEqual: { kind: "gte", field: "age" },
         scoreGreaterThanOrEqual: { kind: "gte", field: "score" },
     });
@@ -463,7 +463,7 @@ describe("Greater Than or Equal (GTE) Filter", () => {
 });
 
 describe("Less Than (LT) Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         ageLessThan: { kind: "lt", field: "age" },
         scoreLessThan: { kind: "lt", field: "score" },
     });
@@ -513,7 +513,7 @@ describe("Less Than (LT) Filter", () => {
 });
 
 describe("Less Than or Equal (LTE) Filter", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         ageLessThanOrEqual: { kind: "lte", field: "age" },
         scoreLessThanOrEqual: { kind: "lte", field: "score" },
     });
@@ -555,7 +555,7 @@ describe("Less Than or Equal (LTE) Filter", () => {
 });
 
 describe("Combined Filters", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         nameContains: { kind: "contains", field: "name" },
         ageGreaterThan: { kind: "gt", field: "age" },
         ageLessThan: { kind: "lt", field: "age" },
@@ -628,7 +628,7 @@ describe("Combined Filters", () => {
 
 describe("Boolean AND Filter", () => {
     it("should work with age exact match using range conditions", async () => {
-        const ageExactFilter = drizzleFilter(usersTable).filterDef({
+        const ageExactFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -648,7 +648,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should work with multiple numeric comparisons on same field", async () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             ageNotInRange: {
                 kind: "and",
                 conditions: [
@@ -666,7 +666,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should return all when filter value is undefined", async () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -683,7 +683,7 @@ describe("Boolean AND Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -703,7 +703,7 @@ describe("Boolean AND Filter", () => {
 
 describe("Boolean OR Filter", () => {
     it("should find values outside a range", async () => {
-        const ageOutsideRangeFilter = drizzleFilter(usersTable).filterDef({
+        const ageOutsideRangeFilter = drizzleFilter(usersTable).def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -729,7 +729,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should work with score threshold OR conditions", async () => {
-        const scoreFilter = drizzleFilter(usersTable).filterDef({
+        const scoreFilter = drizzleFilter(usersTable).def({
             extremeScores: {
                 kind: "or",
                 conditions: [
@@ -753,7 +753,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should work with string contains on multiple fields", async () => {
-        const stringFilter = drizzleFilter(usersTable).filterDef({
+        const stringFilter = drizzleFilter(usersTable).def({
             containsInNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -775,7 +775,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should return all when filter value is undefined", async () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -792,7 +792,7 @@ describe("Boolean OR Filter", () => {
     });
 
     it("should infer the correct input type", () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             youngOrOld: {
                 kind: "or",
                 conditions: [
@@ -812,7 +812,7 @@ describe("Boolean OR Filter", () => {
 
 describe("Complex Boolean Filters", () => {
     it("should support multiple boolean filters together", async () => {
-        const complexFilter = drizzleFilter(usersTable).filterDef({
+        const complexFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -838,7 +838,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should combine boolean filter with primitive filters", async () => {
-        const mixedFilter = drizzleFilter(usersTable).filterDef({
+        const mixedFilter = drizzleFilter(usersTable).def({
             nameContains: { kind: "contains", field: "name" },
             ageOutsideRange: {
                 kind: "or",
@@ -864,7 +864,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should handle three numeric conditions in AND on same field", async () => {
-        const tripleAndFilter = drizzleFilter(usersTable).filterDef({
+        const tripleAndFilter = drizzleFilter(usersTable).def({
             scoreInRange: {
                 kind: "and",
                 conditions: [
@@ -884,7 +884,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should handle three conditions in OR on same field", async () => {
-        const tripleOrFilter = drizzleFilter(usersTable).filterDef({
+        const tripleOrFilter = drizzleFilter(usersTable).def({
             ageMatch: {
                 kind: "or",
                 conditions: [
@@ -903,7 +903,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should work with string matching across multiple fields", async () => {
-        const stringFilter = drizzleFilter(usersTable).filterDef({
+        const stringFilter = drizzleFilter(usersTable).def({
             matchInNameOrEmail: {
                 kind: "or",
                 conditions: [
@@ -922,7 +922,7 @@ describe("Complex Boolean Filters", () => {
     });
 
     it("should infer the correct input type", () => {
-        const complexFilter = drizzleFilter(usersTable).filterDef({
+        const complexFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -950,7 +950,7 @@ describe("Complex Boolean Filters", () => {
 
 describe("Boolean Filter Edge Cases", () => {
     it("should handle undefined filter values for boolean filters", async () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -967,7 +967,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should apply both AND and OR filters together", async () => {
-        const combinedFilter = drizzleFilter(usersTable).filterDef({
+        const combinedFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -995,7 +995,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should work with multiple OR conditions on same field", async () => {
-        const ageFilter = drizzleFilter(usersTable).filterDef({
+        const ageFilter = drizzleFilter(usersTable).def({
             ageMatch: {
                 kind: "or",
                 conditions: [
@@ -1014,7 +1014,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should work with inArray in OR boolean filters", async () => {
-        const arrayFilter = drizzleFilter(usersTable).filterDef({
+        const arrayFilter = drizzleFilter(usersTable).def({
             ageInArrays: {
                 kind: "or",
                 conditions: [
@@ -1037,7 +1037,7 @@ describe("Boolean Filter Edge Cases", () => {
     });
 
     it("should infer the correct input type", () => {
-        const combinedFilter = drizzleFilter(usersTable).filterDef({
+        const combinedFilter = drizzleFilter(usersTable).def({
             ageExact: {
                 kind: "and",
                 conditions: [
@@ -1065,7 +1065,7 @@ describe("Boolean Filter Edge Cases", () => {
 
 describe("Custom Filters", () => {
     it("should work with custom SQL filter", async () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             // Custom filter that checks if age is divisible by a number
             ageDivisibleBy: (divisor: number) =>
                 sql`${usersTable.age} % ${divisor} = 0`,
@@ -1083,7 +1083,7 @@ describe("Custom Filters", () => {
     });
 
     it("should work with custom filter returning undefined", async () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             // Custom filter that returns undefined for "all"
             optionalAgeFilter: (val: number | "all") =>
                 val === "all" ? undefined : eq(usersTable.age, val),
@@ -1096,7 +1096,7 @@ describe("Custom Filters", () => {
     });
 
     it("should infer the correct input type for custom filters", () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             ageDivisibleBy: (divisor: number) =>
                 sql`${usersTable.age} % ${divisor} = 0`,
             optionalFilter: (val: string | null) =>
@@ -1113,7 +1113,7 @@ describe("Custom Filters", () => {
 });
 
 describe("Edge Cases", () => {
-    const userFilter = drizzleFilter(usersTable).filterDef({
+    const userFilter = drizzleFilter(usersTable).def({
         nameEq: { kind: "eq", field: "name" },
         emailContains: { kind: "contains", field: "email" },
         ageGreaterThan: { kind: "gt", field: "age" },
@@ -1168,7 +1168,7 @@ describe("Edge Cases", () => {
 
 describe("Field Inference", () => {
     it("should infer field from filter key when not specified", async () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             name: { kind: "eq" }, // field inferred from key
             age: { kind: "gte" }, // field inferred from key
         });
@@ -1181,7 +1181,7 @@ describe("Field Inference", () => {
     });
 
     it("should use explicit field over key", async () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             emailContains: { kind: "contains", field: "email" },
             nameSearch: { kind: "contains", field: "name" },
         });
@@ -1202,7 +1202,7 @@ describe("Field Inference", () => {
 
 describe("SQL Output Verification", () => {
     it("should return undefined when no filters applied", () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             name: { kind: "eq" },
         });
 
@@ -1211,7 +1211,7 @@ describe("SQL Output Verification", () => {
     });
 
     it("should return undefined when filter input is undefined", () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             name: { kind: "eq" },
         });
 
@@ -1220,7 +1220,7 @@ describe("SQL Output Verification", () => {
     });
 
     it("should return SQL when filter is applied", () => {
-        const userFilter = drizzleFilter(usersTable).filterDef({
+        const userFilter = drizzleFilter(usersTable).def({
             name: { kind: "eq" },
         });
 

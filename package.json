@@ -18,7 +18,7 @@
     "build": "pnpm -r run build",
     "dev": "pnpm -r --parallel run dev",
     "test": "pnpm -r run test",
-    "bench": "pnpm --filter @filter-def/memory exec vitest bench --run",
+    "bench": "pnpm --filter @filter-def/in-memory exec vitest bench --run",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "pnpm exec biome lint",
