@@ -73,7 +73,7 @@ importers:
         specifier: ^4.0.7
         version: 4.0.8(@types/node@24.10.1)(jiti@2.6.1)(yaml@2.8.1)
 
-  packages/memory:
+  packages/in-memory:
     dependencies:
       '@filter-def/core':
         specifier: workspace:*
