@@ -1,5 +1,11 @@
 # @filter-def/core
 
+## 0.2.0
+
+### Minor Changes
+
+- f41a01b: Supply both CommonJS and ESM
+
 ## 0.1.0
 
 ### Minor Changes

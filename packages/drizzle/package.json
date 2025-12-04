@@ -1,6 +1,6 @@
 {
   "name": "@filter-def/drizzle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Drizzle ORM adapter for filter-def",
   "type": "module",
   "license": "MIT",

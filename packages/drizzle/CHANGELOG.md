@@ -1,5 +1,16 @@
 # @filter-def/drizzle
 
+## 0.2.0
+
+### Minor Changes
+
+- f41a01b: Supply both CommonJS and ESM
+
+### Patch Changes
+
+- Updated dependencies [f41a01b]
+    - @filter-def/core@0.2.0
+
 ## 0.1.0
 
 ### Minor Changes
