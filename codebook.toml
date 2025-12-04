@@ -1,1 +1,4 @@
-words = ["lte"]
+words = [
+    "lte",
+    "neq",
+]

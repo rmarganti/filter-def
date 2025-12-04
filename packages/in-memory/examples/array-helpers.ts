@@ -1,5 +1,4 @@
-import { entity } from "../src/lib/filter-def.ts";
-import { makeFilterHelpers } from "../src/lib/helpers.ts";
+import { inMemoryFilter, makeFilterHelpers } from "@filter-def/in-memory";
 
 // ----------------------------------------------------------------
 // Model
@@ -75,7 +74,7 @@ const tasks: Task[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const taskFilter = entity<Task>().filterDef({
+const taskFilter = inMemoryFilter<Task>().def({
     id: { kind: "eq" },
     priority: { kind: "eq" },
     completed: { kind: "eq" },

@@ -1,9 +1,6 @@
-name: Test and lint
+name: CI
 
 on:
-  push:
-    branches:
-      - main
   pull_request:
     branches:
       - "**"

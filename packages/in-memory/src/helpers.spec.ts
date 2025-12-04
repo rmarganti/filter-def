@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { entity } from "./filter-def.ts";
 import { makeFilterHelpers } from "./helpers.ts";
+import { inMemoryFilter } from "./in-memory-filter.ts";
 
 interface User {
     id: number;
@@ -16,7 +16,7 @@ const users: Array<User> = [
     { id: 4, name: "Diana", age: 25, isActive: true },
 ];
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     id: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
     isActive: { kind: "eq" },

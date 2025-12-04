@@ -1,4 +1,4 @@
-import { entity } from "../src/lib/filter-def.ts";
+import { inMemoryFilter } from "@filter-def/in-memory";
 
 // ----------------------------------------------------------------
 // Model
@@ -64,7 +64,7 @@ const users: User[] = [
 // Filter definition
 // ----------------------------------------------------------------
 
-const userFilter = entity<User>().filterDef({
+const userFilter = inMemoryFilter<User>().def({
     // Primitive filters with inferred fields
     role: { kind: "eq" },
     isActive: { kind: "eq" },

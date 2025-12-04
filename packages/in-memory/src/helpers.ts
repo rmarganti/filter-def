@@ -1,4 +1,4 @@
-import type { Filter } from "./filter-def.ts";
+import type { InMemoryFilter } from "./in-memory-filter.ts";
 
 export interface FilterHelpers<TEntity, TFilterInput> {
     filter: (entities: TEntity[], filterInput?: TFilterInput) => TEntity[];
@@ -22,7 +22,7 @@ export interface FilterHelpers<TEntity, TFilterInput> {
  * Creates a set of filter helpers for a given filter function.
  *
  * ```typescript
- * const userFilter = entity<User>().filterDef({
+ * const userFilter = inMemoryFilter<User>().def({
  *   id: { kind: 'eq' },
  *   olderThan: { kind: 'gt', field: 'age },
  * });
@@ -36,7 +36,7 @@ export interface FilterHelpers<TEntity, TFilterInput> {
  * ```
  */
 export const makeFilterHelpers = <TEntity, TFilterInput>(
-    filter: Filter<TEntity, TFilterInput>,
+    filter: InMemoryFilter<TEntity, TFilterInput>,
 ): FilterHelpers<TEntity, TFilterInput> => ({
     filter: (entities: TEntity[], filterInput?: TFilterInput) =>
         entities.filter(filter(filterInput)),
