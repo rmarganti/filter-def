@@ -6,11 +6,12 @@ A TypeScript library for defining type-safe data filters. Define your filters on
 
 This is a monorepo containing the following packages:
 
-| Package                                      | Description                                   | NPM                                                                                                               |
-| -------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| [`@filter-def/core`](./packages/core)        | Core types and utilities                      | [![npm](https://img.shields.io/npm/v/@filter-def/core)](https://www.npmjs.com/package/@filter-def/core)           |
-| [`@filter-def/in-memory`](./packages/memory) | In-memory filtering with native array methods | [![npm](https://img.shields.io/npm/v/@filter-def/in-memory)](https://www.npmjs.com/package/@filter-def/in-memory) |
-| [`@filter-def/drizzle`](./packages/drizzle)  | Drizzle ORM adapter for SQL databases         | [![npm](https://img.shields.io/npm/v/@filter-def/drizzle)](https://www.npmjs.com/package/@filter-def/drizzle)     |
+| Package                                       | Description                                   | NPM                                                                                                               |
+| --------------------------------------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [`@filter-def/core`](./packages/core)         | Core types and utilities                      | [![npm](https://img.shields.io/npm/v/@filter-def/core)](https://www.npmjs.com/package/@filter-def/core)           |
+| [`@filter-def/in-memory`](./packages/memory)  | In-memory filtering with native array methods | [![npm](https://img.shields.io/npm/v/@filter-def/in-memory)](https://www.npmjs.com/package/@filter-def/in-memory) |
+| [`@filter-def/drizzle`](./packages/drizzle)   | Drizzle ORM adapter for SQL databases         | [![npm](https://img.shields.io/npm/v/@filter-def/drizzle)](https://www.npmjs.com/package/@filter-def/drizzle)     |
+| [`@filter-def/bigquery`](./packages/bigquery) | BigQuery adapter for parameterized SQL        | [![npm](https://img.shields.io/npm/v/@filter-def/bigquery)](https://www.npmjs.com/package/@filter-def/bigquery)   |
 
 ## Features
 
@@ -81,6 +82,32 @@ const where = userFilter({
 const results = await db.select().from(usersTable).where(where);
 ```
 
+### BigQuery
+
+```typescript
+import { bigqueryFilter } from "@filter-def/bigquery";
+import { BigQuery } from "@google-cloud/bigquery";
+
+const userFilter = bigqueryFilter<User>("myproject.dataset.users").def({
+    name: { kind: "eq" },
+    emailContains: { kind: "contains", field: "email" },
+    minAge: { kind: "gte", field: "age" },
+});
+
+// Create parameterized SQL
+const where = userFilter({
+    name: "John",
+    emailContains: "@example.com",
+    minAge: 18,
+});
+
+const bigquery = new BigQuery();
+const [rows] = await bigquery.query({
+    query: `SELECT * FROM \`myproject.dataset.users\` WHERE ${where.sql}`,
+    params: where.params,
+});
+```
+
 ## Filter Types
 
 All adapters support the same core filter types:
@@ -147,6 +174,17 @@ const filter = drizzleFilter(usersTable).def({
 });
 ```
 
+**BigQuery** (parameterized SQL):
+
+```typescript
+const filter = bigqueryFilter<User>("dataset.users").def({
+    ageDivisibleBy: (divisor: number) => ({
+        sql: "MOD(age, @divisor) = 0",
+        params: { divisor },
+    }),
+});
+```
+
 ## Field Inference
 
 When the filter name matches a field/column name, the `field` property is optional:
@@ -167,6 +205,8 @@ Extract the input type from any filter definition:
 import type { InMemoryFilterInput } from "@filter-def/in-memory";
 // or
 import type { DrizzleFilterInput } from "@filter-def/drizzle";
+// or
+import type { BigQueryFilterInput } from "@filter-def/bigquery";
 
 const userFilter = inMemoryFilter<User>().def({
     name: { kind: "eq" },
@@ -185,20 +225,17 @@ npm install @filter-def/in-memory
 
 # For Drizzle ORM
 npm install @filter-def/drizzle drizzle-orm
+
+# For BigQuery
+npm install @filter-def/bigquery @google-cloud/bigquery
 ```
 
 ## Documentation
 
 - [`@filter-def/in-memory` README](./packages/memory/README.md) - Full API docs and examples
 - [`@filter-def/drizzle` README](./packages/drizzle/README.md) - Full API docs and examples
+- [`@filter-def/bigquery` README](./packages/bigquery/README.md) - Full API docs and examples
 - [`@filter-def/core` README](./packages/core/README.md) - Core types for adapter authors
-
-## Examples
-
-Each package includes comprehensive examples:
-
-- [Memory examples](./packages/memory/examples/)
-- [Drizzle examples](./packages/drizzle/examples/)
 
 ## License
 

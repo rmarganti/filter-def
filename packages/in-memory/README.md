@@ -283,3 +283,4 @@ See the [examples directory](./examples) for comprehensive usage examples:
 
 - [`@filter-def/core`](../core) - Core types and utilities
 - [`@filter-def/drizzle`](../drizzle) - Drizzle ORM adapter
+- [`@filter-def/bigquery`](../bigquery) - BigQuery adapter

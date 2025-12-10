@@ -360,4 +360,5 @@ const searchResults = await searchProducts(db, {
 ## Related Packages
 
 - [`@filter-def/core`](../core) - Core types and utilities
-- [`@filter-def/in-memory`](../memory) - In-memory filtering with native array methods
+- [`@filter-def/in-memory`](../in-memory) - In-memory filtering with native array methods
+- [`@filter-def/bigquery`](../bigquery) - BigQuery adapter
