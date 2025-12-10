@@ -30,7 +30,7 @@ interface User {
     age: number;
 }
 
-const userFilter = bigqueryFilter<User>("myproject.dataset.users").def({
+const userFilter = bigqueryFilter<User>().def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
