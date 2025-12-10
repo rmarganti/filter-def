@@ -1,0 +1,53 @@
+{
+  "name": "@filter-def/bigquery",
+  "version": "0.0.0",
+  "description": "BigQuery adapter for filter-def",
+  "type": "module",
+  "license": "MIT",
+  "homepage": "https://github.com/rmarganti/filter-def#readme",
+  "bugs": {
+    "url": "https://github.com/rmarganti/filter-def/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmarganti/filter-def.git",
+    "directory": "packages/bigquery"
+  },
+  "author": "Ryan Marganti <ryan.marganti@mail.com>",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@filter-def/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@google-cloud/bigquery": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@google-cloud/bigquery": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "google-auth-library": "^10.5.0",
+    "tsdown": "^0.16.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
+  }
+}

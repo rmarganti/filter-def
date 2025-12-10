@@ -12,7 +12,7 @@ This package provides the shared type definitions and utilities used by filter-d
 pnpm add @filter-def/core
 ```
 
-> **Note:** Most users should install an adapter package (`@filter-def/in-memory` or `@filter-def/drizzle`) which re-exports core types automatically.
+> **Note:** Most users should install an adapter package (`@filter-def/in-memory`, `@filter-def/drizzle`, or `@filter-def/bigquery`) which re-exports core types automatically.
 
 ## Types
 
@@ -144,5 +144,6 @@ export const myAdapter = <Entity>() => {
 
 ## Related Packages
 
-- [`@filter-def/in-memory`](../memory) - In-memory filtering with native array methods
+- [`@filter-def/in-memory`](../in-memory) - In-memory filtering with native array methods
 - [`@filter-def/drizzle`](../drizzle) - Drizzle ORM adapter for SQL databases
+- [`@filter-def/bigquery`](../bigquery) - BigQuery adapter for parameterized SQL

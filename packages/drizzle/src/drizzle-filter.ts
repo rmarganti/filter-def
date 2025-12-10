@@ -6,6 +6,7 @@ import type {
     CoreFilterInput,
     PrimitiveFilter,
     Simplify,
+    ValidateFilterDef,
 } from "@filter-def/core";
 import type { Column, SQL, Table } from "drizzle-orm";
 import {
@@ -71,7 +72,7 @@ export const drizzleFilter = <TTable extends Table>(table: TTable) => {
     const columns = getTableColumns(table);
 
     const def = <TFilterDef extends DrizzleFilterDef<Entity>>(
-        filterDef: TFilterDef,
+        filterDef: TFilterDef & ValidateFilterDef<Entity, TFilterDef>,
     ): DrizzleFilter<Simplify<DrizzleFilterDefInput<Entity, TFilterDef>>> => {
         return compileFilterDef<Entity, TFilterDef>(columns, filterDef);
     };
