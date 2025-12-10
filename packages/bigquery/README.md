@@ -36,7 +36,7 @@ const userFilter = bigqueryFilter<User>("myproject.dataset.users").def({
 });
 
 // Generate SQL and params
-const result = userFilter({
+const where = userFilter({
     name: "John",
     emailContains: "@example.com",
     minAge: 18,
@@ -46,8 +46,8 @@ const result = userFilter({
 // Use with BigQuery
 const bigquery = new BigQuery();
 const [rows] = await bigquery.query({
-    query: `SELECT * FROM \`myproject.dataset.users\` WHERE ${result.sql}`,
-    params: result.params,
+    query: `SELECT * FROM \`myproject.dataset.users\` WHERE ${where.sql}`,
+    params: where.params,
 });
 ```
 
@@ -61,7 +61,7 @@ const [rows] = await bigquery.query({
 
 ## API
 
-### `bigqueryFilter<Entity>(tableName)`
+### `bigqueryFilter<Entity>()`
 
 Creates a filter builder for the specified entity type.
 
@@ -76,8 +76,8 @@ const productFilter = bigqueryFilter<Product>("project.dataset.products").def({
 The filter function always returns `BigQueryFilterResult`:
 
 ```typescript
-const result = userFilter({ name: "John" });
-// result: { sql: 'name = @name', params: { name: 'John' } }
+const where = userFilter({ name: "John" });
+// where: { sql: 'name = @name', params: { name: 'John' } }
 
 const empty = userFilter({});
 // empty: { sql: 'true', params: {} }
@@ -154,7 +154,7 @@ const filter = bigqueryFilter<User>("dataset.users").def({
     },
 });
 
-const result = userFilter({
+const where = userFilter({
     searchTerm: "john", // (name LIKE @searchTerm_0 OR email LIKE @searchTerm_1)
     ageRange: 30, // (age >= @ageRange_0 AND age <= @ageRange_1)
 });
@@ -213,9 +213,8 @@ Type for the compiled filter function:
 ```typescript
 import type { BigQueryFilter } from "@filter-def/bigquery";
 
-// The filter is a function that takes input and returns result | undefined
 type UserFilter = BigQueryFilter<{ name?: string }>;
-// (filterInput?: { name?: string }) => BigQueryFilterResult | undefined
+// (filterInput?: { name?: string }) => BigQueryFilterResult
 ```
 
 ### `BigQueryFilterResult`
@@ -294,12 +293,12 @@ async function searchProducts(
     bigquery: BigQuery,
     input: ProductFilterInput,
 ): Promise<Product[]> {
-    const result = productFilter(input);
+    const where = productFilter(input);
 
     // Empty filters return { sql: 'true', params: {} }, which matches all rows
     const [rows] = await bigquery.query({
-        query: `SELECT * FROM \`myproject.dataset.products\` WHERE ${result.sql}`,
-        params: result.params,
+        query: `SELECT * FROM \`myproject.dataset.products\` WHERE ${where.sql}`,
+        params: where.params,
     });
     return rows as Product[];
 }
@@ -329,7 +328,7 @@ const filter = bigqueryFilter<User>("dataset.users").def({
     ageIn: { kind: "inArray", field: "age" },
 });
 
-const result = filter({ ageIn: [25, 30, 35] });
+const where = filter({ ageIn: [25, 30, 35] });
 // sql: 'age IN UNNEST(@ageIn)'
 // params: { ageIn: [25, 30, 35] }
 ```
@@ -352,7 +351,7 @@ const filter = bigqueryFilter<Event>("dataset.events").def({
 `isNull` and `isNotNull` filters don't use parameters:
 
 ```typescript
-const result = filter({ phoneIsNull: true });
+const where = filter({ phoneIsNull: true });
 // sql: 'phone IS NULL'
 // params: {}
 ```
@@ -369,10 +368,10 @@ This is valid BigQuery SQL that matches all rows, simplifying query composition:
 
 ```typescript
 // No need for conditional logic
-const result = userFilter({});
+const where = userFilter({});
 const [rows] = await bigquery.query({
-    query: `SELECT * FROM \`table\` WHERE ${result.sql}`, // WHERE true
-    params: result.params,
+    query: `SELECT * FROM \`table\` WHERE ${where.sql}`, // WHERE true
+    params: where.params,
 });
 ```
 
