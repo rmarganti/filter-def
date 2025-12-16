@@ -7,6 +7,7 @@ This is a **monorepo** with three packages:
 - `@filter-def/core` - Core types and utilities (types-only package)
 - `@filter-def/in-memory` - In-memory filtering with native array methods
 - `@filter-def/drizzle` - Drizzle ORM adapter for SQL databases
+- `@filter-def/bigquery` - Drizzle ORM adapter for SQL databases
 
 Each package is located in `packages/{name}/` with its own `package.json`, tests, and examples.
 

@@ -163,6 +163,20 @@ export type CoreFilterDef<Entity> = Record<string, CoreFilterField<Entity>>;
 // ----------------------------------------------------------------
 
 /**
+ * Helper type to get the entity field type for a specific filter.
+ * Extracts the filter type, gets its field, and looks up that field's type on the entity.
+ */
+type FieldTypeForFilter<
+    K extends PropertyKey,
+    Entity,
+    TFilterField extends CoreFilter<Entity>,
+    TFilter extends CoreFilter<Entity>,
+> = Exclude<
+    Entity[GetFieldForFilter<K, Entity, Extract<TFilterField, TFilter>>],
+    null | undefined
+>;
+
+/**
  * A map of filter types to their expected input.
  *
  * A note on the Entity[Extract<...>] pattern:
@@ -176,44 +190,21 @@ type CoreFilterInputMap<
     Entity,
     TFilterField extends CoreFilter<Entity>,
 > = {
-    eq: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, EqFilter<Entity>>
-    >];
-    neq: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, NeqFilter<Entity>>
-    >];
+    eq: FieldTypeForFilter<K, Entity, TFilterField, EqFilter<Entity>>;
+    neq: FieldTypeForFilter<K, Entity, TFilterField, NeqFilter<Entity>>;
     contains: string;
-    inArray: Entity[GetFieldForFilter<
+    inArray: FieldTypeForFilter<
         K,
         Entity,
-        Extract<TFilterField, InArrayFilter<Entity>>
-    >][];
+        TFilterField,
+        InArrayFilter<Entity>
+    >[];
     isNull: boolean;
     isNotNull: boolean;
-    gt: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, GTFilter<Entity>>
-    >];
-    gte: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, GTEFilter<Entity>>
-    >];
-    lt: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, LTFilter<Entity>>
-    >];
-    lte: Entity[GetFieldForFilter<
-        K,
-        Entity,
-        Extract<TFilterField, LTEFilter<Entity>>
-    >];
+    gt: FieldTypeForFilter<K, Entity, TFilterField, GTFilter<Entity>>;
+    gte: FieldTypeForFilter<K, Entity, TFilterField, GTEFilter<Entity>>;
+    lt: FieldTypeForFilter<K, Entity, TFilterField, LTFilter<Entity>>;
+    lte: FieldTypeForFilter<K, Entity, TFilterField, LTEFilter<Entity>>;
     and: CoreFilterInput<
         K,
         Entity,
@@ -233,7 +224,7 @@ export type CoreFilterInput<
 > = TFilterField extends {
     kind: infer Kind extends keyof CoreFilterInputMap<K, Entity, TFilterField>;
 }
-    ? CoreFilterInputMap<K, Entity, TFilterField>[Kind] | undefined
+    ? CoreFilterInputMap<K, Entity, TFilterField>[Kind]
     : never;
 
 // ----------------------------------------------------------------
