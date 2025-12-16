@@ -5,8 +5,9 @@
     },
     "references": [
         { "path": "packages/core" },
-        { "path": "packages/memory" },
-        { "path": "packages/drizzle" }
+        { "path": "packages/in-memory" },
+        { "path": "packages/drizzle" },
+        { "path": "packages/bigquery" }
     ],
     "include": []
 }

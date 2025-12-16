@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rmarganti/filter-def.git",
-    "directory": "packages/memory"
+    "directory": "packages/in-memory"
   },
   "author": "Ryan Marganti <ryan.marganti@mail.com>",
   "files": [
