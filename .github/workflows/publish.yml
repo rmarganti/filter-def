@@ -50,6 +50,7 @@ jobs:
                   version: pnpm changeset version
                   publish: pnpm changeset publish
                   commit: "chore(release): version packages"
+                  title: "chore(release): version packages"
               env:
                   GITHUB_TOKEN: ${{ secrets.GH_PAT }}
                   NPM_CONFIG_PROVENANCE: true
