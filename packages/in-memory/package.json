@@ -1,45 +1,45 @@
 {
-  "name": "@filter-def/in-memory",
-  "version": "0.2.0",
-  "description": "In-memory filtering for filter-def",
-  "type": "module",
-  "license": "MIT",
-  "homepage": "https://github.com/rmarganti/filter-def#readme",
-  "bugs": {
-    "url": "https://github.com/rmarganti/filter-def/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rmarganti/filter-def.git",
-    "directory": "packages/in-memory"
-  },
-  "author": "Ryan Marganti <ryan.marganti@mail.com>",
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.cts",
-  "exports": {
-    ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+    "name": "@filter-def/in-memory",
+    "version": "0.2.0",
+    "description": "In-memory filtering for filter-def",
+    "homepage": "https://github.com/rmarganti/filter-def#readme",
+    "bugs": {
+        "url": "https://github.com/rmarganti/filter-def/issues"
     },
-    "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "test": "vitest",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@filter-def/core": "workspace:*"
-  },
-  "devDependencies": {
-    "@faker-js/faker": "^10.1.0",
-    "tsdown": "^0.16.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.7"
-  }
+    "license": "MIT",
+    "author": "Ryan Marganti <ryan.marganti@mail.com>",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rmarganti/filter-def.git",
+        "directory": "packages/in-memory"
+    },
+    "files": [
+        "dist"
+    ],
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.cts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.cjs"
+        },
+        "./package.json": "./package.json"
+    },
+    "scripts": {
+        "build": "tsdown",
+        "dev": "tsdown --watch",
+        "test": "vitest",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "@filter-def/core": "workspace:*"
+    },
+    "devDependencies": {
+        "@faker-js/faker": "^10.1.0",
+        "tsdown": "^0.16.0",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.7"
+    }
 }

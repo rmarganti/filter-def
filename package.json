@@ -1,42 +1,42 @@
 {
-  "name": "filter-def-monorepo",
-  "version": "0.0.0",
-  "private": true,
-  "description": "Type-safe data filters for TypeScript. Define filters once, get full type inference for filter inputs and results.",
-  "type": "module",
-  "license": "MIT",
-  "homepage": "https://github.com/rmarganti/filter-def#readme",
-  "bugs": {
-    "url": "https://github.com/rmarganti/filter-def/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/rmarganti/filter-def.git"
-  },
-  "author": "Ryan Marganti <ryan.marganti@mail.com>",
-  "scripts": {
-    "build": "pnpm -r run build",
-    "dev": "pnpm -r --parallel run dev",
-    "test": "pnpm -r run test",
-    "bench": "pnpm --filter @filter-def/in-memory exec vitest bench --run",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint": "pnpm exec biome lint",
-    "typecheck": "pnpm -r run typecheck",
-    "changeset": "changeset",
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.3.5",
-    "@changesets/cli": "^2.29.8",
-    "@commitlint/cli": "^20.1.0",
-    "@commitlint/config-conventional": "^20.0.0",
-    "@faker-js/faker": "^10.1.0",
-    "@types/node": "^24.10.0",
-    "husky": "^9.1.7",
-    "prettier": "^3.6.2",
-    "tsdown": "^0.16.0",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.7"
-  }
+    "name": "filter-def-monorepo",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Type-safe data filters for TypeScript. Define filters once, get full type inference for filter inputs and results.",
+    "homepage": "https://github.com/rmarganti/filter-def#readme",
+    "bugs": {
+        "url": "https://github.com/rmarganti/filter-def/issues"
+    },
+    "license": "MIT",
+    "author": "Ryan Marganti <ryan.marganti@mail.com>",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/rmarganti/filter-def.git"
+    },
+    "type": "module",
+    "scripts": {
+        "build": "pnpm -r run build",
+        "dev": "pnpm -r --parallel run dev",
+        "test": "pnpm -r run test",
+        "bench": "pnpm --filter @filter-def/in-memory exec vitest bench --run",
+        "format": "oxfmt --write .",
+        "format:check": "oxfmt --check .",
+        "lint": "pnpm exec oxlint",
+        "typecheck": "pnpm -r run typecheck",
+        "changeset": "changeset",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "@changesets/cli": "^2.29.8",
+        "@commitlint/cli": "^20.1.0",
+        "@commitlint/config-conventional": "^20.0.0",
+        "@faker-js/faker": "^10.1.0",
+        "@types/node": "^24.10.0",
+        "husky": "^9.1.7",
+        "oxfmt": "^0.20.0",
+        "oxlint": "^1.35.0",
+        "tsdown": "^0.16.0",
+        "typescript": "^5.9.3",
+        "vitest": "^4.0.7"
+    }
 }

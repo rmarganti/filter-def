@@ -6,6 +6,11 @@
                 "!eslint",
                 "vtsls",
                 "..."
+            ],
+            "formatter": [
+                { "code_action": "source.fixAll.oxc" },
+                { "code_action": "source.organizeImports" },
+                { "language_server": { "name": "oxfmt" } }
             ]
         },
         "TSX": {
@@ -14,6 +19,11 @@
                 "!eslint",
                 "vtsls",
                 "..."
+            ],
+            "formatter": [
+                { "code_action": "source.fixAll.oxc" },
+                { "code_action": "source.organizeImports" },
+                { "language_server": { "name": "oxfmt" } }
             ]
         }
     }
