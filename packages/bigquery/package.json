@@ -1,6 +1,6 @@
 {
     "name": "@filter-def/bigquery",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "description": "BigQuery adapter for filter-def",
     "homepage": "https://github.com/rmarganti/filter-def#readme",
     "bugs": {
