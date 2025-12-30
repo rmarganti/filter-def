@@ -1,3 +1,4 @@
-dist
+**/CHANGELOG.md
 **/dist
+dist
 pnpm-lock.yaml
