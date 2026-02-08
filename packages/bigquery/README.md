@@ -57,6 +57,7 @@ const [rows] = await bigquery.query({
 - **Parameterized queries**: Generates safe SQL with `@paramName` placeholders
 - **Composable**: Combine filters with AND/OR logic
 - **Custom filters**: Write raw SQL for complex queries
+- **Nested fields**: Filter on STRUCT fields using dot-separated paths
 - **Always returns `{ sql, params }`**: Empty filters return `{ sql: "true", params: {} }` for seamless query composition
 
 ## API
@@ -114,6 +115,30 @@ const filter = bigqueryFilter<User>("dataset.users").def({
     minAge: { kind: "gte", field: "age" }, // explicit field required
 });
 ```
+
+### Nested Fields
+
+Use dot-separated paths in the `field` property to target nested STRUCT fields in BigQuery:
+
+```typescript
+interface UserWithAddress {
+    name: { first: string; last: string };
+    address: { city: string; geo: { lat: number; lng: number } };
+}
+
+const userFilter = bigqueryFilter<UserWithAddress>("dataset.users").def({
+    firstName: { kind: "eq", field: "name.first" },
+    lat: { kind: "eq", field: "address.geo.lat" },
+});
+
+const where = userFilter({ firstName: "Bob", lat: 25 });
+// {
+//     sql: 'name.first = @name_first AND address.geo.lat = @address_geo_lat',
+//     params: { name_first: 'Bob', address_geo_lat: 25 },
+// }
+```
+
+Dots in the field path are used directly as the column reference, and parameter names replace dots with underscores.
 
 ### Case-Insensitive Contains
 
