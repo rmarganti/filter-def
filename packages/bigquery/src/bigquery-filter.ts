@@ -9,8 +9,6 @@ import type {
     ValidateFilterDef,
 } from "@filter-def/core";
 
-const sanitizeParamKey = (key: string): string => key.replace(/\./g, "_");
-
 // ----------------------------------------------------------------
 // Entry Point
 // ----------------------------------------------------------------
@@ -385,3 +383,9 @@ const compilePrimitiveFilter = <Entity>(
             return () => EMPTY_FILTER_RESULT;
     }
 };
+
+/**
+ * Sanitizes a filter key to be used as a BigQuery parameter name
+ * by replacing dots with underscores.
+ */
+const sanitizeParamKey = (key: string): string => key.replace(/\./g, "_");

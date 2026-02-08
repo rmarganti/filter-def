@@ -37,14 +37,6 @@ export type PrimitiveFilter<Entity> =
     | LTFilter<Entity>
     | LTEFilter<Entity>;
 
-type DepthLimit = [never, 0, 1, 2, 3];
-
-type IsPlainObject<T> = T extends object
-    ? T extends Function | readonly any[] | Date
-        ? false
-        : true
-    : false;
-
 /**
  * Produces a union of all dot-separated paths into T.
  *
@@ -66,10 +58,26 @@ export type FieldPath<T, Depth extends number = 4> = [Depth] extends [0]
       : never;
 
 /**
+ * Helper type to limit recursion depth in FieldPath to prevent TS errors.
+ */
+type DepthLimit = [never, 0, 1, 2, 3];
+
+/**
+ * Helper type to check if a type is a plain object (not a function, array, or date).
+ */
+type IsPlainObject<T> = T extends object
+    ? T extends Function | readonly any[] | Date
+        ? false
+        : true
+    : false;
+
+/**
  * Resolves the value type at a dot-separated path.
  *
- *   PathValue<{ name: { first: string } }, "name.first">
- *   // => string
+ * ```typescript
+ * PathValue<{ name: { first: string } }, "name.first">
+ * // => string
+ * ```
  */
 export type PathValue<
     T,
