@@ -1228,3 +1228,13 @@ describe("SQL Output Verification", () => {
         expect(where).toBeDefined();
     });
 });
+
+describe("Nested field paths", () => {
+    it("should throw for nested field paths", () => {
+        expect(() =>
+            drizzleFilter(usersTable).def({
+                firstName: { kind: "eq", field: "name.first" as any },
+            }),
+        ).toThrow(/Nested field path.*not supported by drizzleFilter/);
+    });
+});

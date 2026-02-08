@@ -878,3 +878,66 @@ describe("BigQuery Integration Usage Pattern", () => {
         // });
     });
 });
+
+describe("Nested field filtering", () => {
+    interface UserWithAddress {
+        name: { first: string; last: string };
+        address: { city: string; geo: { lat: number; lng: number } };
+    }
+
+    it("eq on nested field produces dot-path SQL with sanitized param", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            firstName: { kind: "eq", field: "name.first" },
+        });
+        const result = filter({ firstName: "Alice" });
+        expect(result).toEqual({
+            sql: "name.first = @firstName",
+            params: { firstName: "Alice" },
+        });
+    });
+
+    it("eq using key-as-path sanitizes param key", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            "name.first": { kind: "eq" },
+        });
+        const result = filter({ "name.first": "Bob" });
+        expect(result).toEqual({
+            sql: "name.first = @name_first",
+            params: { name_first: "Bob" },
+        });
+    });
+
+    it("contains on nested field", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            cityContains: {
+                kind: "contains",
+                field: "address.city",
+                caseInsensitive: true,
+            },
+        });
+        const result = filter({ cityContains: "port" });
+        expect(result).toEqual({
+            sql: "LOWER(address.city) LIKE LOWER(@cityContains)",
+            params: { cityContains: "%port%" },
+        });
+    });
+
+    it("gt on deeply nested field", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            latAbove: { kind: "gt", field: "address.geo.lat" },
+        });
+        const result = filter({ latAbove: 46 });
+        expect(result).toEqual({
+            sql: "address.geo.lat > @latAbove",
+            params: { latAbove: 46 },
+        });
+    });
+
+    it("type-checks: nested field input has correct type", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            firstName: { kind: "eq", field: "name.first" },
+        });
+        type Input = BigQueryFilterInput<typeof filter>;
+        expectTypeOf<Input["firstName"]>().toEqualTypeOf<string | undefined>();
+    });
+});

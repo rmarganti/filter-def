@@ -285,6 +285,15 @@ const compilePrimitiveFilter = <Entity>(
     filterField: PrimitiveFilter<Entity>,
 ): CompiledFilterField => {
     const fieldName = (filterField.field ?? key) as string;
+
+    if (fieldName.includes(".")) {
+        throw new Error(
+            `Nested field path "${fieldName}" is not supported by drizzleFilter. ` +
+                `Drizzle operates on flat table columns. Use a custom filter with ` +
+                `JSON operators or joins for nested data.`,
+        );
+    }
+
     const column = columns[fieldName];
 
     if (!column) {
