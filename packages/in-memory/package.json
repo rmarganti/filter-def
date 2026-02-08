@@ -1,6 +1,6 @@
 {
     "name": "@filter-def/in-memory",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "In-memory filtering for filter-def",
     "homepage": "https://github.com/rmarganti/filter-def#readme",
     "bugs": {

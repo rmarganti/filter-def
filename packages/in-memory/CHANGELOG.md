@@ -1,5 +1,44 @@
 # @filter-def/in-memory
 
+## 1.1.0
+
+### Minor Changes
+
+- 0baebc1: ## Changes
+
+  - Adds support for filtering on nested fields in `@filter-def/in-memory` and `@filter-def/bigquery` packages
+  - errors for `@filter-def/drizzle`, due to driver-specific implementations. For now, we are driver agnostic.
+
+  ## Example (BigQuery):
+
+  ```typescript
+  interface UserWithAddress {
+    name: { first: string; last: string };
+    address: { city: string; geo: { lat: number; lng: number } };
+  }
+
+  interface UserWithAddress {
+    name: { first: string; last: string };
+    address: { city: string; geo: { lat: number; lng: number } };
+  }
+
+  const userFilter = bigqueryFilter<UserWithAddress>().def({
+    firstName: { kind: "eq", field: "name.first" },
+    lat: { kind: "eq", field: "address.geo.lat" },
+  });
+
+  const where = userFilter({ firstName: "Bob", lat: 25 });
+  // {
+  //     sql: 'name.first = @firstName AND address.geo.lat = @lat',
+  //     params: { firstName: 'Bob', lat: 21 },
+  // }
+  ```
+
+### Patch Changes
+
+- Updated dependencies [0baebc1]
+  - @filter-def/core@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
