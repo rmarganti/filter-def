@@ -896,6 +896,20 @@ describe("Nested field filtering", () => {
         });
     });
 
+    it("handles booleans with nested fields", () => {
+        const filter = bigqueryFilter<UserWithAddress>().def({
+            firstName: { kind: "eq", field: "name.first" },
+            lat: { kind: "eq", field: "address.geo.lat" },
+        });
+
+        const result = filter({ firstName: "Bob", lat: 21 });
+
+        expect(result).toEqual({
+            sql: "name.first = @firstName AND address.geo.lat = @lat",
+            params: { firstName: "Bob", lat: 21 },
+        });
+    });
+
     it("eq using key-as-path sanitizes param key", () => {
         const filter = bigqueryFilter<UserWithAddress>().def({
             "name.first": { kind: "eq" },
