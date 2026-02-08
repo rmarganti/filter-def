@@ -1,6 +1,6 @@
 {
     "name": "@filter-def/drizzle",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Drizzle ORM adapter for filter-def",
     "homepage": "https://github.com/rmarganti/filter-def#readme",
     "bugs": {
