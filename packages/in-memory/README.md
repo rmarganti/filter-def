@@ -50,6 +50,7 @@ const hasMatch = users.some(predicate);
 - **Composable**: Combine multiple filters with AND/OR logic
 - **Native integration**: Returns predicates for `filter()`, `find()`, `some()`, `every()`
 - **Custom filters**: Define complex business logic with custom filter functions
+- **Nested fields**: Filter on deeply nested object properties with dot-separated paths
 - **Zero dependencies**: Lightweight and framework-agnostic (only depends on `@filter-def/core`)
 
 ## API
@@ -114,6 +115,23 @@ const filter = inMemoryFilter<User>().def({
     name: { kind: "eq" }, // field: "name" inferred
     email: { kind: "contains" }, // field: "email" inferred
     olderThan: { kind: "gt", field: "age" }, // explicit field required
+});
+```
+
+### Nested Fields
+
+Use dot-separated paths in the `field` property to target nested object properties. The filter traverses each segment at runtime using a `getByPath` helper.
+
+```typescript
+interface Employee {
+    name: { first: string; last: string };
+    address: { city: string; geo: { lat: number; lng: number } };
+}
+
+const employeeFilter = inMemoryFilter<Employee>().def({
+    firstName: { kind: "eq", field: "name.first" },
+    city: { kind: "contains", field: "address.city" },
+    minLat: { kind: "gte", field: "address.geo.lat" },
 });
 ```
 
@@ -274,6 +292,7 @@ See the [examples directory](./examples) for comprehensive usage examples:
 - [Basic filtering](./examples/basic-filtering.ts)
 - [Boolean filters (AND/OR)](./examples/boolean-filters.ts)
 - [Custom filters](./examples/custom-filters.ts)
+- [Nested fields](./examples/nested-fields.ts)
 - [Nested filters](./examples/nested-filters.ts)
 - [Null handling](./examples/null-handling.ts)
 - [E-commerce search](./examples/e-commerce-search.ts)

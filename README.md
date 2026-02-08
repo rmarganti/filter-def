@@ -19,6 +19,7 @@ This is a monorepo containing the following packages:
 - **Multiple backends**: Use the same filter patterns for in-memory arrays or SQL databases
 - **Composable**: Combine filters with AND/OR logic
 - **Custom filters**: Define complex business logic with custom filter functions
+- **Nested fields**: Filter on deeply nested object properties with dot-separated paths
 - **Zero lock-in**: Each adapter works independently
 
 ## Quick Start
@@ -196,6 +197,25 @@ const filter = inMemoryFilter<User>().def({
     minAge: { kind: "gte", field: "age" }, // explicit field required
 });
 ```
+
+### Nested Fields
+
+Use dot-separated paths to filter on nested object properties:
+
+```typescript
+interface Employee {
+    name: { first: string; last: string };
+    address: { city: string; geo: { lat: number; lng: number } };
+}
+
+const employeeFilter = inMemoryFilter<Employee>().def({
+    firstName: { kind: "eq", field: "name.first" },
+    city: { kind: "contains", field: "address.city" },
+    minLat: { kind: "gte", field: "address.geo.lat" },
+});
+```
+
+Nested fields are supported by `@filter-def/in-memory` and `@filter-def/bigquery`. `@filter-def/drizzle` does not support nested fields and will throw an error, since Drizzle operates on flat table columns.
 
 ## Type Utilities
 

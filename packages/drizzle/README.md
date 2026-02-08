@@ -15,31 +15,31 @@ pnpm add @filter-def/drizzle drizzle-orm
 ## Quick Start
 
 ```typescript
-import { drizzleFilter } from "@filter-def/drizzle";
-import type { DrizzleFilterInput } from "@filter-def/drizzle";
-import { pgTable, text, integer, boolean } from "drizzle-orm/pg-core";
+import { drizzleFilter } from '@filter-def/drizzle';
+import type { DrizzleFilterInput } from '@filter-def/drizzle';
+import { pgTable, text, integer, boolean } from 'drizzle-orm/pg-core';
 
 // Define your Drizzle table
-const usersTable = pgTable("users", {
-    id: integer("id").primaryKey(),
-    name: text("name").notNull(),
-    email: text("email").notNull(),
-    age: integer("age").notNull(),
-    isActive: boolean("is_active").notNull(),
+const usersTable = pgTable('users', {
+    id: integer('id').primaryKey(),
+    name: text('name').notNull(),
+    email: text('email').notNull(),
+    age: integer('age').notNull(),
+    isActive: boolean('is_active').notNull(),
 });
 
 // Create a filter definition
 const userFilter = drizzleFilter(usersTable).def({
-    name: { kind: "eq" },
-    emailContains: { kind: "contains", field: "email" },
-    minAge: { kind: "gte", field: "age" },
-    isActive: { kind: "eq" },
+    name: { kind: 'eq' },
+    emailContains: { kind: 'contains', field: 'email' },
+    minAge: { kind: 'gte', field: 'age' },
+    isActive: { kind: 'eq' },
 });
 
 // Use in queries
 const where = userFilter({
-    name: "John",
-    emailContains: "@example.com",
+    name: 'John',
+    emailContains: '@example.com',
     minAge: 18,
     isActive: true,
 });
@@ -72,7 +72,7 @@ const productFilter = drizzleFilter(productsTable).def({
 The filter function returns `SQL | undefined`:
 
 ```typescript
-const where = userFilter({ name: "John" });
+const where = userFilter({ name: 'John' });
 // where: SQL
 
 const empty = userFilter({});
@@ -105,11 +105,18 @@ When the filter name matches a column name, the `field` property is inferred:
 
 ```typescript
 const filter = drizzleFilter(usersTable).def({
-    name: { kind: "eq" }, // field: "name" inferred
-    email: { kind: "contains" }, // field: "email" inferred
-    minAge: { kind: "gte", field: "age" }, // explicit field required
+    name: { kind: 'eq' }, // field: "name" inferred
+    email: { kind: 'contains' }, // field: "email" inferred
+    minAge: { kind: 'gte', field: 'age' }, // explicit field required
 });
 ```
+
+### Nested Fields
+
+Nested field paths (e.g., `"name.first"`) are **not supported** by the Drizzle
+adapter, since Drizzle operates on flat table columns. Using a dot-separated
+path will throw a runtime error. For nested data (e.g., JSON columns), use a
+custom filter with Drizzle's JSON operators.
 
 ### Case-Insensitive Contains
 
@@ -118,8 +125,8 @@ Use `caseInsensitive: true` to use `ILIKE` instead of `LIKE`:
 ```typescript
 const filter = drizzleFilter(usersTable).def({
     nameSearch: {
-        kind: "contains",
-        field: "name",
+        kind: 'contains',
+        field: 'name',
         caseInsensitive: true, // Uses ilike('%value%')
     },
 });
@@ -133,25 +140,25 @@ Combine conditions with logical operators. All conditions must have explicit `fi
 const filter = drizzleFilter(usersTable).def({
     // OR: match any condition
     searchTerm: {
-        kind: "or",
+        kind: 'or',
         conditions: [
-            { kind: "contains", field: "name" },
-            { kind: "contains", field: "email" },
+            { kind: 'contains', field: 'name' },
+            { kind: 'contains', field: 'email' },
         ],
     },
 
     // AND: match all conditions
     ageRange: {
-        kind: "and",
+        kind: 'and',
         conditions: [
-            { kind: "gte", field: "age" },
-            { kind: "lte", field: "age" },
+            { kind: 'gte', field: 'age' },
+            { kind: 'lte', field: 'age' },
         ],
     },
 });
 
 const where = userFilter({
-    searchTerm: "john", // name LIKE '%john%' OR email LIKE '%john%'
+    searchTerm: 'john', // name LIKE '%john%' OR email LIKE '%john%'
     ageRange: 30, // age >= 30 AND age <= 30
 });
 ```
@@ -161,7 +168,7 @@ const where = userFilter({
 Custom filters receive the input value and return a Drizzle `SQL` expression:
 
 ```typescript
-import { sql, eq, exists } from "drizzle-orm";
+import { sql, eq, exists } from 'drizzle-orm';
 
 const userFilter = drizzleFilter(usersTable).def({
     // Raw SQL expression
@@ -169,8 +176,8 @@ const userFilter = drizzleFilter(usersTable).def({
         sql`${usersTable.age} % ${divisor} = 0`,
 
     // Return undefined to skip filter
-    optionalStatus: (status: string | "all") =>
-        status === "all" ? undefined : eq(usersTable.status, status),
+    optionalStatus: (status: string | 'all') =>
+        status === 'all' ? undefined : eq(usersTable.status, status),
 
     // EXISTS subquery for related tables
     hasPostWithTitle: (title: string) =>
@@ -181,9 +188,9 @@ const userFilter = drizzleFilter(usersTable).def({
                 .where(
                     and(
                         eq(postsTable.authorId, usersTable.id),
-                        ilike(postsTable.title, `%${title}%`),
-                    ),
-                ),
+                        ilike(postsTable.title, `%${title}%`)
+                    )
+                )
         ),
 });
 ```
@@ -193,21 +200,21 @@ const userFilter = drizzleFilter(usersTable).def({
 The drizzle adapter generates WHERE clauses, not JOIN clauses. For filtering by related table data, use **EXISTS subqueries** via custom filters:
 
 ```typescript
-import { exists, and, eq, ilike } from "drizzle-orm";
+import { exists, and, eq, ilike } from 'drizzle-orm';
 
-const usersTable = pgTable("users", {
-    id: integer("id").primaryKey(),
-    name: text("name").notNull(),
+const usersTable = pgTable('users', {
+    id: integer('id').primaryKey(),
+    name: text('name').notNull(),
 });
 
-const postsTable = pgTable("posts", {
-    id: integer("id").primaryKey(),
-    authorId: integer("author_id").notNull(),
-    title: text("title").notNull(),
+const postsTable = pgTable('posts', {
+    id: integer('id').primaryKey(),
+    authorId: integer('author_id').notNull(),
+    title: text('title').notNull(),
 });
 
 const userFilter = drizzleFilter(usersTable).def({
-    name: { kind: "eq" },
+    name: { kind: 'eq' },
 
     // Custom filter with EXISTS subquery
     hasPostWithTitle: (title: string) =>
@@ -218,14 +225,14 @@ const userFilter = drizzleFilter(usersTable).def({
                 .where(
                     and(
                         eq(postsTable.authorId, usersTable.id),
-                        ilike(postsTable.title, `%${title}%`),
-                    ),
-                ),
+                        ilike(postsTable.title, `%${title}%`)
+                    )
+                )
         ),
 });
 
 // No join needed - EXISTS handles the relationship
-const where = userFilter({ hasPostWithTitle: "TypeScript" });
+const where = userFilter({ hasPostWithTitle: 'TypeScript' });
 const authors = await db.select().from(usersTable).where(where);
 ```
 
@@ -236,11 +243,11 @@ const authors = await db.select().from(usersTable).where(where);
 Extract the input type from a filter definition:
 
 ```typescript
-import type { DrizzleFilterInput } from "@filter-def/drizzle";
+import type { DrizzleFilterInput } from '@filter-def/drizzle';
 
 const userFilter = drizzleFilter(usersTable).def({
-    name: { kind: "eq" },
-    minAge: { kind: "gte", field: "age" },
+    name: { kind: 'eq' },
+    minAge: { kind: 'gte', field: 'age' },
 });
 
 type UserFilterInput = DrizzleFilterInput<typeof userFilter>;
@@ -252,7 +259,7 @@ type UserFilterInput = DrizzleFilterInput<typeof userFilter>;
 Type for the compiled filter function:
 
 ```typescript
-import type { DrizzleFilter } from "@filter-def/drizzle";
+import type { DrizzleFilter } from '@filter-def/drizzle';
 
 // The filter is a function that takes input and returns SQL | undefined
 type UserFilter = DrizzleFilter<{ name?: string }>;
@@ -264,7 +271,7 @@ type UserFilter = DrizzleFilter<{ name?: string }>;
 Type for custom filter functions:
 
 ```typescript
-import type { DrizzleCustomFilter } from "@filter-def/drizzle";
+import type { DrizzleCustomFilter } from '@filter-def/drizzle';
 
 // Custom filters take input and return SQL | undefined
 type DivisibleByFilter = DrizzleCustomFilter<number>;
@@ -274,47 +281,47 @@ type DivisibleByFilter = DrizzleCustomFilter<number>;
 ## Complete Example
 
 ```typescript
-import { drizzleFilter } from "@filter-def/drizzle";
-import type { DrizzleFilterInput } from "@filter-def/drizzle";
+import { drizzleFilter } from '@filter-def/drizzle';
+import type { DrizzleFilterInput } from '@filter-def/drizzle';
 import {
     pgTable,
     text,
     integer,
     boolean,
     timestamp,
-} from "drizzle-orm/pg-core";
-import { drizzle } from "drizzle-orm/node-postgres";
+} from 'drizzle-orm/pg-core';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 // Table definition
-const productsTable = pgTable("products", {
-    id: integer("id").primaryKey(),
-    name: text("name").notNull(),
-    description: text("description"),
-    price: integer("price").notNull(),
-    category: text("category").notNull(),
-    inStock: boolean("in_stock").notNull(),
-    createdAt: timestamp("created_at").notNull(),
+const productsTable = pgTable('products', {
+    id: integer('id').primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    price: integer('price').notNull(),
+    category: text('category').notNull(),
+    inStock: boolean('in_stock').notNull(),
+    createdAt: timestamp('created_at').notNull(),
 });
 
 // Filter definition
 const productFilter = drizzleFilter(productsTable).def({
     // Inferred fields
-    name: { kind: "eq" },
-    category: { kind: "eq" },
-    inStock: { kind: "eq" },
+    name: { kind: 'eq' },
+    category: { kind: 'eq' },
+    inStock: { kind: 'eq' },
 
     // Explicit fields
-    nameContains: { kind: "contains", field: "name", caseInsensitive: true },
-    minPrice: { kind: "gte", field: "price" },
-    maxPrice: { kind: "lte", field: "price" },
-    inCategories: { kind: "inArray", field: "category" },
+    nameContains: { kind: 'contains', field: 'name', caseInsensitive: true },
+    minPrice: { kind: 'gte', field: 'price' },
+    maxPrice: { kind: 'lte', field: 'price' },
+    inCategories: { kind: 'inArray', field: 'category' },
 
     // Boolean filter for search
     search: {
-        kind: "or",
+        kind: 'or',
         conditions: [
-            { kind: "contains", field: "name" },
-            { kind: "contains", field: "description" },
+            { kind: 'contains', field: 'name' },
+            { kind: 'contains', field: 'description' },
         ],
     },
 });
@@ -324,7 +331,7 @@ type ProductFilterInput = DrizzleFilterInput<typeof productFilter>;
 // Usage
 async function searchProducts(
     db: ReturnType<typeof drizzle>,
-    input: ProductFilterInput,
+    input: ProductFilterInput
 ) {
     const where = productFilter(input);
     return db.select().from(productsTable).where(where);
@@ -332,13 +339,13 @@ async function searchProducts(
 
 // Example queries
 const electronics = await searchProducts(db, {
-    category: "electronics",
+    category: 'electronics',
     inStock: true,
     maxPrice: 500,
 });
 
 const searchResults = await searchProducts(db, {
-    search: "laptop",
+    search: 'laptop',
     minPrice: 200,
     maxPrice: 1000,
 });
