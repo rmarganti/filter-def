@@ -1214,3 +1214,60 @@ describe("Boolean Filter Field Requirement Validation", () => {
         expect(true).toBe(true);
     });
 });
+
+describe("Nested field filtering", () => {
+    interface UserWithAddress {
+        name: { first: string; last: string };
+        address: { city: string; geo: { lat: number; lng: number } };
+    }
+
+    const testUsers: UserWithAddress[] = [
+        {
+            name: { first: "Alice", last: "Smith" },
+            address: { city: "Portland", geo: { lat: 45.5, lng: -122.7 } },
+        },
+        {
+            name: { first: "Bob", last: "Jones" },
+            address: { city: "Seattle", geo: { lat: 47.6, lng: -122.3 } },
+        },
+    ];
+
+    it("eq on nested field", () => {
+        const filter = inMemoryFilter<UserWithAddress>().def({
+            firstName: { kind: "eq", field: "name.first" },
+        });
+        const results = testUsers.filter(filter({ firstName: "Bob" }));
+        expect(results).toHaveLength(1);
+        expect(results[0].name.first).toBe("Bob");
+    });
+
+    it("contains on nested field", () => {
+        const filter = inMemoryFilter<UserWithAddress>().def({
+            cityContains: {
+                kind: "contains",
+                field: "address.city",
+                caseInsensitive: true,
+            },
+        });
+        const results = testUsers.filter(filter({ cityContains: "port" }));
+        expect(results).toHaveLength(1);
+        expect(results[0].address.city).toBe("Portland");
+    });
+
+    it("gt on deeply nested field", () => {
+        const filter = inMemoryFilter<UserWithAddress>().def({
+            latGreaterThan: { kind: "gt", field: "address.geo.lat" },
+        });
+        const results = testUsers.filter(filter({ latGreaterThan: 46 }));
+        expect(results).toHaveLength(1);
+        expect(results[0].name.first).toBe("Bob");
+    });
+
+    it("type-checks: nested field input has correct type", () => {
+        const filter = inMemoryFilter<UserWithAddress>().def({
+            firstName: { kind: "eq", field: "name.first" },
+        });
+        type Input = InMemoryFilterInput<typeof filter>;
+        expectTypeOf<Input["firstName"]>().toEqualTypeOf<string | undefined>();
+    });
+});

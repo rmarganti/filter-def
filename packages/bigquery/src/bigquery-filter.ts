@@ -195,7 +195,7 @@ const compileFilterDef = <Entity, TFilterDef extends BigQueryFilterDef<Entity>>(
                 continue;
             }
 
-            const result = compiler(filterValue, key);
+            const result = compiler(filterValue, sanitizeParamKey(key));
             sqlFragments.push(result.sql);
             Object.assign(allParams, result.params);
         }
@@ -265,7 +265,7 @@ const compileBooleanFilter = <Entity>(
                 for (let i = 0; i < compiledConditions.length; i++) {
                     const result = compiledConditions[i](
                         filterValue,
-                        `${key}_${i}`,
+                        `${sanitizeParamKey(key)}_${i}`,
                     );
                     fragments.push(result.sql);
                     Object.assign(params, result.params);
@@ -285,7 +285,7 @@ const compileBooleanFilter = <Entity>(
                 for (let i = 0; i < compiledConditions.length; i++) {
                     const result = compiledConditions[i](
                         filterValue,
-                        `${key}_${i}`,
+                        `${sanitizeParamKey(key)}_${i}`,
                     );
                     fragments.push(result.sql);
                     Object.assign(params, result.params);
@@ -383,3 +383,9 @@ const compilePrimitiveFilter = <Entity>(
             return () => EMPTY_FILTER_RESULT;
     }
 };
+
+/**
+ * Sanitizes a filter key to be used as a BigQuery parameter name
+ * by replacing dots with underscores.
+ */
+const sanitizeParamKey = (key: string): string => key.replace(/\./g, "_");

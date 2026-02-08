@@ -287,6 +287,20 @@ const compileBooleanFilter = <Entity>(
     }
 };
 
+const getByPath = (obj: unknown, path: string): unknown => {
+    if (!path.includes(".")) return (obj as Record<string, unknown>)?.[path];
+
+    const segments = path.split(".");
+    let current: unknown = obj;
+
+    for (const segment of segments) {
+        if (current == null) return undefined;
+        current = (current as Record<string, unknown>)[segment];
+    }
+
+    return current;
+};
+
 /**
  * Pre-compiles a primitive filter definition into an optimized checker function.
  */
@@ -294,24 +308,28 @@ const compilePrimitiveFilter = <Entity>(
     key: string,
     filterField: PrimitiveFilter<Entity>,
 ): CompiledFilterField<Entity> => {
-    const field = (filterField.field ?? key) as keyof Entity;
+    const fieldPath = (filterField.field ?? key) as string;
 
     switch (filterField.kind) {
         case "eq":
-            return (entity, filterValue) => entity[field] === filterValue;
+            return (entity, filterValue) =>
+                getByPath(entity, fieldPath) === filterValue;
 
         case "neq":
-            return (entity, filterValue) => entity[field] !== filterValue;
+            return (entity, filterValue) =>
+                getByPath(entity, fieldPath) !== filterValue;
 
         case "contains": {
             return (entity, filterValue) => {
                 const { entityVal, filterVal } = filterField.caseInsensitive
                     ? {
-                          entityVal: String(entity[field]).toLocaleLowerCase(),
+                          entityVal: String(
+                              getByPath(entity, fieldPath),
+                          ).toLocaleLowerCase(),
                           filterVal: String(filterValue).toLocaleLowerCase(),
                       }
                     : {
-                          entityVal: String(entity[field]),
+                          entityVal: String(getByPath(entity, fieldPath)),
                           filterVal: String(filterValue),
                       };
 
@@ -321,31 +339,37 @@ const compilePrimitiveFilter = <Entity>(
 
         case "inArray":
             return (entity, filterValue) =>
-                (filterValue as unknown[]).includes(entity[field]);
+                (filterValue as unknown[]).includes(
+                    getByPath(entity, fieldPath),
+                );
 
         case "isNull":
             return (entity, filterValue) =>
-                filterValue ? entity[field] == null : entity[field] != null;
+                filterValue
+                    ? getByPath(entity, fieldPath) == null
+                    : getByPath(entity, fieldPath) != null;
 
         case "isNotNull":
             return (entity, filterValue) =>
-                filterValue ? entity[field] != null : entity[field] == null;
+                filterValue
+                    ? getByPath(entity, fieldPath) != null
+                    : getByPath(entity, fieldPath) == null;
 
         case "gt":
             return (entity, filterValue) =>
-                Number(entity[field]) > (filterValue as number);
+                Number(getByPath(entity, fieldPath)) > (filterValue as number);
 
         case "gte":
             return (entity, filterValue) =>
-                Number(entity[field]) >= (filterValue as number);
+                Number(getByPath(entity, fieldPath)) >= (filterValue as number);
 
         case "lt":
             return (entity, filterValue) =>
-                Number(entity[field]) < (filterValue as number);
+                Number(getByPath(entity, fieldPath)) < (filterValue as number);
 
         case "lte":
             return (entity, filterValue) =>
-                Number(entity[field]) <= (filterValue as number);
+                Number(getByPath(entity, fieldPath)) <= (filterValue as number);
 
         default:
             filterField satisfies never;

@@ -37,8 +37,61 @@ export type PrimitiveFilter<Entity> =
     | LTFilter<Entity>
     | LTEFilter<Entity>;
 
+/**
+ * Produces a union of all dot-separated paths into T.
+ *
+ *   FieldPath<{ name: { first: string } }>
+ *   // => "name" | "name.first"
+ *
+ * Depth is capped to avoid TS instantiation-depth errors on large types.
+ */
+export type FieldPath<T, Depth extends number = 4> = [Depth] extends [0]
+    ? never
+    : IsPlainObject<T> extends true
+      ? {
+            [K in Extract<keyof T, string>]:
+                | K
+                | (IsPlainObject<NonNullable<T[K]>> extends true
+                      ? `${K}.${FieldPath<NonNullable<T[K]>, DepthLimit[Depth]>}`
+                      : never);
+        }[Extract<keyof T, string>]
+      : never;
+
+/**
+ * Helper type to limit recursion depth in FieldPath to prevent TS errors.
+ */
+type DepthLimit = [never, 0, 1, 2, 3];
+
+/**
+ * Helper type to check if a type is a plain object (not a function, array, or date).
+ */
+type IsPlainObject<T> = T extends object
+    ? T extends Function | readonly any[] | Date
+        ? false
+        : true
+    : false;
+
+/**
+ * Resolves the value type at a dot-separated path.
+ *
+ * ```typescript
+ * PathValue<{ name: { first: string } }, "name.first">
+ * // => string
+ * ```
+ */
+export type PathValue<
+    T,
+    P extends string,
+> = P extends `${infer K}.${infer Rest}`
+    ? K extends keyof T
+        ? PathValue<NonNullable<T[K]>, Rest>
+        : never
+    : P extends keyof T
+      ? T[P]
+      : never;
+
 export interface CommonFilterOptions<Entity> {
-    field?: keyof Entity;
+    field?: FieldPath<Entity>;
 }
 
 /**
@@ -172,7 +225,10 @@ type FieldTypeForFilter<
     TFilterField extends CoreFilter<Entity>,
     TFilter extends CoreFilter<Entity>,
 > = Exclude<
-    Entity[GetFieldForFilter<K, Entity, Extract<TFilterField, TFilter>>],
+    PathValue<
+        Entity,
+        GetFieldForFilter<K, Entity, Extract<TFilterField, TFilter>> & string
+    >,
     null | undefined
 >;
 
@@ -304,7 +360,7 @@ export type ValidateFilterDef<Entity, TFilterDef> = {
           : TFilterDef[K] extends (...args: any[]) => any
             ? // Custom filters do not rely on fields, so they are always valid.
               TFilterDef[K]
-            : K extends keyof Entity
+            : K extends FieldPath<Entity>
               ? // We otherwise require the filter key to be a valid field.
                 TFilterDef[K]
               : // Everything else is invalid
@@ -353,8 +409,8 @@ export type GetFieldForFilter<
     K extends PropertyKey,
     Entity,
     TFilterField,
-> = TFilterField extends { field: infer F extends keyof Entity }
+> = TFilterField extends { field: infer F extends FieldPath<Entity> }
     ? F
-    : K extends keyof Entity
+    : K extends FieldPath<Entity>
       ? K
       : never;

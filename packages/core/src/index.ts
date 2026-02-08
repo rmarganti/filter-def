@@ -36,4 +36,10 @@ export type { AndFilter, BooleanFilter, OrFilter } from "./types.ts";
 export type { ValidateFilterDef } from "./types.ts";
 
 // Utilities
-export type { GetFieldForFilter, Simplify, TypeError } from "./types.ts";
+export type {
+    FieldPath,
+    GetFieldForFilter,
+    PathValue,
+    Simplify,
+    TypeError,
+} from "./types.ts";
