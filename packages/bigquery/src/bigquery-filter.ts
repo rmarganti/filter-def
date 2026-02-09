@@ -24,7 +24,7 @@ import type {
  *     age: number;
  * }
  *
- * const userFilter = bigqueryFilter<User>('myproject.dataset.users').def({
+ * const userFilter = bigqueryFilter<User>().def({
  *     name: { kind: 'eq' },
  *     emailContains: { kind: 'contains', field: 'email' },
  * });
@@ -47,7 +47,7 @@ import type {
  * Custom filters can return SQL and params directly:
  *
  * ```typescript
- * const userFilter = bigqueryFilter<User>('myproject.dataset.users').def({
+ * const userFilter = bigqueryFilter<User>().def({
  *     ageDivisibleBy: (divisor: number) => ({
  *         sql: 'MOD(age, @divisor) = 0',
  *         params: { divisor },
@@ -89,7 +89,7 @@ export type BigQueryFilter<TFilterInput> = (
  * The expected input for a BigQueryFilter.
  *
  * ```typescript
- * const userFilter = bigqueryFilter<User>('table').def({ ... });
+ * const userFilter = bigqueryFilter<User>().def({ ... });
  * type UserFilterInput = BigQueryFilterInput<typeof userFilter>;
  * ```
  */

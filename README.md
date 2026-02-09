@@ -89,7 +89,7 @@ const results = await db.select().from(usersTable).where(where);
 import { bigqueryFilter } from "@filter-def/bigquery";
 import { BigQuery } from "@google-cloud/bigquery";
 
-const userFilter = bigqueryFilter<User>("myproject.dataset.users").def({
+const userFilter = bigqueryFilter<User>().def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
@@ -178,7 +178,7 @@ const filter = drizzleFilter(usersTable).def({
 **BigQuery** (parameterized SQL):
 
 ```typescript
-const filter = bigqueryFilter<User>("dataset.users").def({
+const filter = bigqueryFilter<User>().def({
     ageDivisibleBy: (divisor: number) => ({
         sql: "MOD(age, @divisor) = 0",
         params: { divisor },

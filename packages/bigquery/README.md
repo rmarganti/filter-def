@@ -28,7 +28,7 @@ interface User {
 }
 
 // Create a filter definition
-const userFilter = bigqueryFilter<User>("myproject.dataset.users").def({
+const userFilter = bigqueryFilter<User>().def({
     name: { kind: "eq" },
     emailContains: { kind: "contains", field: "email" },
     minAge: { kind: "gte", field: "age" },
@@ -67,7 +67,7 @@ const [rows] = await bigquery.query({
 Creates a filter builder for the specified entity type.
 
 ```typescript
-const productFilter = bigqueryFilter<Product>("project.dataset.products").def({
+const productFilter = bigqueryFilter<Product>().def({
     // Filter definitions...
 });
 ```
@@ -109,7 +109,7 @@ const noInput = userFilter();
 When the filter name matches a column name, the `field` property is inferred:
 
 ```typescript
-const filter = bigqueryFilter<User>("dataset.users").def({
+const filter = bigqueryFilter<User>().def({
     name: { kind: "eq" }, // field: "name" inferred
     email: { kind: "contains" }, // field: "email" inferred
     minAge: { kind: "gte", field: "age" }, // explicit field required
@@ -126,7 +126,7 @@ interface UserWithAddress {
     address: { city: string; geo: { lat: number; lng: number } };
 }
 
-const userFilter = bigqueryFilter<UserWithAddress>("dataset.users").def({
+const userFilter = bigqueryFilter<UserWithAddress>().def({
     firstName: { kind: "eq", field: "name.first" },
     lat: { kind: "eq", field: "address.geo.lat" },
 });
@@ -145,7 +145,7 @@ Dots in the field path are used directly as the column reference, and parameter 
 Use `caseInsensitive: true` to use `LOWER()` for case-insensitive matching:
 
 ```typescript
-const filter = bigqueryFilter<User>("dataset.users").def({
+const filter = bigqueryFilter<User>().def({
     nameSearch: {
         kind: "contains",
         field: "name",
@@ -159,7 +159,7 @@ const filter = bigqueryFilter<User>("dataset.users").def({
 Combine conditions with logical operators. All conditions must have explicit `field` properties.
 
 ```typescript
-const filter = bigqueryFilter<User>("dataset.users").def({
+const filter = bigqueryFilter<User>().def({
     // OR: match any condition
     searchTerm: {
         kind: "or",
@@ -192,7 +192,7 @@ Custom filters receive the input value and return a `BigQueryFilterResult`:
 ```typescript
 import type { BigQueryFilterResult } from "@filter-def/bigquery";
 
-const userFilter = bigqueryFilter<User>("dataset.users").def({
+const userFilter = bigqueryFilter<User>().def({
     // Custom SQL expression
     ageDivisibleBy: (divisor: number): BigQueryFilterResult => ({
         sql: "MOD(age, @divisor) = 0",
@@ -222,7 +222,7 @@ Extract the input type from a filter definition:
 ```typescript
 import type { BigQueryFilterInput } from "@filter-def/bigquery";
 
-const userFilter = bigqueryFilter<User>("dataset.users").def({
+const userFilter = bigqueryFilter<User>().def({
     name: { kind: "eq" },
     minAge: { kind: "gte", field: "age" },
 });
@@ -283,33 +283,31 @@ interface Product {
 }
 
 // Filter definition
-const productFilter = bigqueryFilter<Product>("myproject.dataset.products").def(
-    {
-        // Inferred fields
-        name: { kind: "eq" },
-        category: { kind: "eq" },
-        inStock: { kind: "eq" },
+const productFilter = bigqueryFilter<Product>().def({
+    // Inferred fields
+    name: { kind: "eq" },
+    category: { kind: "eq" },
+    inStock: { kind: "eq" },
 
-        // Explicit fields
-        nameContains: {
-            kind: "contains",
-            field: "name",
-            caseInsensitive: true,
-        },
-        minPrice: { kind: "gte", field: "price" },
-        maxPrice: { kind: "lte", field: "price" },
-        inCategories: { kind: "inArray", field: "category" },
-
-        // Boolean filter for search
-        search: {
-            kind: "or",
-            conditions: [
-                { kind: "contains", field: "name" },
-                { kind: "contains", field: "description" },
-            ],
-        },
+    // Explicit fields
+    nameContains: {
+        kind: "contains",
+        field: "name",
+        caseInsensitive: true,
     },
-);
+    minPrice: { kind: "gte", field: "price" },
+    maxPrice: { kind: "lte", field: "price" },
+    inCategories: { kind: "inArray", field: "category" },
+
+    // Boolean filter for search
+    search: {
+        kind: "or",
+        conditions: [
+            { kind: "contains", field: "name" },
+            { kind: "contains", field: "description" },
+        ],
+    },
+});
 
 type ProductFilterInput = BigQueryFilterInput<typeof productFilter>;
 
@@ -349,7 +347,7 @@ const searchResults = await searchProducts(bigquery, {
 BigQuery uses `UNNEST()` for array parameters in `IN` clauses:
 
 ```typescript
-const filter = bigqueryFilter<User>("dataset.users").def({
+const filter = bigqueryFilter<User>().def({
     ageIn: { kind: "inArray", field: "age" },
 });
 
@@ -363,7 +361,7 @@ const where = filter({ ageIn: [25, 30, 35] });
 BigQuery expects timestamps in ISO format. Use custom filters for date handling:
 
 ```typescript
-const filter = bigqueryFilter<Event>("dataset.events").def({
+const filter = bigqueryFilter<Event>().def({
     after: (date: Date) => ({
         sql: "timestamp > @after",
         params: { after: date.toISOString() },
