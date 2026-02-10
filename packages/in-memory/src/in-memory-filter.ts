@@ -3,7 +3,6 @@ import type {
     CoreFilter,
     CoreFilterField,
     CoreFilterInput,
-    CoreFilterKind,
     PrimitiveFilter,
     Simplify,
     ValidateFilterDef,
@@ -118,37 +117,6 @@ export type InMemoryFilterDef<Entity> = Record<
 export type InMemoryFilterField<Entity> =
     | CoreFilterField<Entity>
     | InMemoryCustomFilter<Entity, any>;
-
-// ----------------------------------------------------------------
-// Adapter utilities
-// ----------------------------------------------------------------
-
-/**
- * Extracts the filter kind from a filter field definition.
- * Returns the string literal kind for primitive/boolean filters, or 'custom' for custom filters.
- */
-export type ExtractFilterKind<TFilterField> = TFilterField extends {
-    kind: infer K extends CoreFilterKind;
-}
-    ? K
-    : TFilterField extends (...args: any[]) => any
-      ? "custom"
-      : never;
-
-/**
- * Checks if a filter field is a custom filter function.
- */
-export type IsCustomFilter<TFilterField> = TFilterField extends (
-    ...args: any[]
-) => any
-    ? true
-    : false;
-
-/**
- * Extracts the input type for a custom filter function.
- */
-export type ExtractCustomFilterInput<TFilterField> =
-    TFilterField extends InMemoryCustomFilter<any, infer Input> ? Input : never;
 
 // ----------------------------------------------------------------
 // Filter input types

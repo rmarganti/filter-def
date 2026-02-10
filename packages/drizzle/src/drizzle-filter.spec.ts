@@ -10,7 +10,8 @@ import {
     expectTypeOf,
     it,
 } from "vitest";
-import { drizzleFilter, type DrizzleFilterInput } from "./drizzle-filter.ts";
+import { drizzleFilter } from "./drizzle-filter.ts";
+import type { DrizzleFilterInput } from "./drizzle-filter.ts";
 
 // ----------------------------------------------------------------
 // Schema Definition

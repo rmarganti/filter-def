@@ -1,10 +1,10 @@
-export {
-    bigqueryFilter,
-    type BigQueryCustomFilter,
-    type BigQueryFilter,
-    type BigQueryFilterDef,
-    type BigQueryFilterInput,
-    type BigQueryFilterResult,
+export { bigqueryFilter } from "./bigquery-filter.ts";
+export type {
+    BigQueryCustomFilter,
+    BigQueryFilter,
+    BigQueryFilterDef,
+    BigQueryFilterInput,
+    BigQueryFilterResult,
 } from "./bigquery-filter.ts";
 
 // Re-export core types for convenience
