@@ -30,6 +30,7 @@
     "scripts": {
         "build": "tsdown",
         "dev": "tsdown --watch",
+        "test": "vitest",
         "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
