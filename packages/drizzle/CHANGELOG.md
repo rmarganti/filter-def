@@ -1,5 +1,16 @@
 # @filter-def/drizzle
 
+## 2.0.0
+
+### Major Changes
+
+- 0cafa5d: Remove unused utility types and re-export core types
+
+  - drizzle: Remove `DrizzleFilterDefInput` export
+  - drizzle: Re-export all core types (`CoreFilter`, `CoreFilterDef`, `EqFilter`, etc.) for convenience
+  - in-memory: Remove `ExtractFilterKind`, `IsCustomFilter`, and `ExtractCustomFilterInput` utility types
+  - in-memory: Re-export all core types (`CoreFilter`, `CoreFilterDef`, `EqFilter`, etc.) for convenience
+
 ## 1.1.0
 
 ### Minor Changes
