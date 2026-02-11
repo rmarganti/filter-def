@@ -1,5 +1,11 @@
 # @filter-def/bigquery
 
+## 1.1.1
+
+### Patch Changes
+
+- 0cafa5d: Separate value and type exports in barrel file
+
 ## 1.1.0
 
 ### Minor Changes
