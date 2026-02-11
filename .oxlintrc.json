@@ -1,8 +1,9 @@
 {
     "$schema": "./node_modules/oxlint/configuration_schema.json",
-    "plugins": ["unicorn", "typescript", "oxc"],
+    "plugins": ["import", "unicorn", "typescript", "oxc"],
     "categories": {},
     "rules": {
+        "import/consistent-type-specifier-style": ["warn", "prefer-top-level"],
         "constructor-super": "warn",
         "for-direction": "warn",
         "no-async-promise-executor": "warn",
