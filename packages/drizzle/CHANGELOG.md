@@ -1,5 +1,11 @@
 # @filter-def/drizzle
 
+## 2.0.1
+
+### Patch Changes
+
+- 99152d0: Use `InferSelectModel` to derive the entity type, fixing type errors with drizzle-orm v1.
+
 ## 2.0.0
 
 ### Major Changes
