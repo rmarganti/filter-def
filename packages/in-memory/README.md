@@ -36,9 +36,7 @@ const predicate = userFilter({
 });
 
 // Use with native array methods
-const users: User[] = [
-    /* ... */
-];
+const users: User[] = [/* ... */];
 const filteredUsers = users.filter(predicate);
 const firstUser = users.find(predicate);
 const hasMatch = users.some(predicate);

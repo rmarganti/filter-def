@@ -42,9 +42,7 @@ const userFilter = inMemoryFilter<User>().def({
 });
 
 // Create predicates for native array methods
-const users: User[] = [
-    /* ... */
-];
+const users: User[] = [/* ... */];
 const results = users.filter(
     userFilter({
         name: "John",

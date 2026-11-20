@@ -71,8 +71,8 @@ Each package is located in `packages/{name}/` with its own `package.json`, tests
 - Separate logical sections with comments (e.g., `// ----------------------------------------------------------------`)
 - Use arrow functions for functional programming patterns
 - Prefer const over let, explicit types over inferred
-- YAML (_.yaml, _.yml) files should use two-space tab widths.
-  All other files (_.ts, _.md, \*.json, etc) should use four-space tab widths.
+- YAML (`*.yaml`, `*.yml`) and `package.json` files use two-space tab widths (pnpm writes `package.json` that way).
+  All other files (`*.ts`, `*.md`, `*.json`, etc) use four-space tab widths. `oxfmt` enforces both.
 - `core` package exports types only, no runtime code
 - `memory` and `drizzle` packages re-export core types for convenience
 
