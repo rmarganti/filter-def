@@ -8,7 +8,7 @@ import type {
     Simplify,
     ValidateFilterDef,
 } from "@filter-def/core";
-import type { Column, SQL, Table } from "drizzle-orm";
+import type { Column, InferSelectModel, SQL, Table } from "drizzle-orm";
 import {
     and,
     eq,
@@ -68,7 +68,7 @@ import {
  * ```
  */
 export const drizzleFilter = <TTable extends Table>(table: TTable) => {
-    type Entity = TTable["$inferSelect"];
+    type Entity = InferSelectModel<TTable>;
     const columns = getTableColumns(table);
 
     const def = <TFilterDef extends DrizzleFilterDef<Entity>>(
