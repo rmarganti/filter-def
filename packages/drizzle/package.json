@@ -37,7 +37,7 @@
         "@filter-def/core": "workspace:*"
     },
     "devDependencies": {
-        "@electric-sql/pglite": "^0.2.17",
+        "@electric-sql/pglite": "^0.5.16",
         "drizzle-orm": "^0.44.2",
         "tsdown": "^0.16.0",
         "typescript": "^5.9.3",
