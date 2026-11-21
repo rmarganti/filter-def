@@ -47,10 +47,10 @@ importers:
       '@filter-def/core':
         specifier: workspace:*
         version: link:../core
-      '@google-cloud/bigquery':
-        specifier: '>=7.0.0'
-        version: 8.1.1
     devDependencies:
+      '@google-cloud/bigquery':
+        specifier: ^8.1.1
+        version: 8.1.1
       google-auth-library:
         specifier: ^10.5.0
         version: 10.5.0

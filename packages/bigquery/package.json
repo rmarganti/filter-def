@@ -37,6 +37,7 @@
     "@filter-def/core": "workspace:*"
   },
   "devDependencies": {
+    "@google-cloud/bigquery": "^8.1.1",
     "google-auth-library": "^10.5.0",
     "tsdown": "^0.16.0",
     "typescript": "^5.9.3",

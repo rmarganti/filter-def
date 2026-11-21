@@ -151,11 +151,14 @@ type BigQueryFilterFieldInput<K extends PropertyKey, Entity, TFilterField> =
 
 /**
  * A compiled filter field that generates SQL and params for a single filter.
+ * Param names are allocated once, at definition time.
  */
-type CompiledFilterField = (
-    filterValue: unknown,
-    paramKey: string,
-) => BigQueryFilterResult;
+type CompiledFilterField = (filterValue: unknown) => BigQueryFilterResult;
+
+/**
+ * Hands out param names that are unique within a single filter definition.
+ */
+type ParamNameAllocator = (filterKey: string) => string;
 
 const EMPTY_FILTER_RESULT: BigQueryFilterResult = {
     sql: "true",
@@ -168,13 +171,15 @@ const EMPTY_FILTER_RESULT: BigQueryFilterResult = {
 const compileFilterDef = <Entity, TFilterDef extends BigQueryFilterDef<Entity>>(
     filtersDef: TFilterDef,
 ): BigQueryFilter<BigQueryFilterDefInput<Entity, TFilterDef>> => {
+    const allocateParamName = createParamNameAllocator();
+
     // Pre-compile all filters at definition time
     const compiledFilters: Array<{
         key: string;
         compiler: CompiledFilterField;
     }> = Object.entries(filtersDef).map(([key, filterDef]) => ({
         key,
-        compiler: compileFilterField<Entity>(key, filterDef),
+        compiler: compileFilterField<Entity>(key, filterDef, allocateParamName),
     }));
 
     // Return the optimized filter function
@@ -185,6 +190,7 @@ const compileFilterDef = <Entity, TFilterDef extends BigQueryFilterDef<Entity>>(
 
         const sqlFragments: string[] = [];
         const allParams: Record<string, unknown> = {};
+        const usedParamNames = new Set<string>();
 
         for (let i = 0; i < compiledFilters.length; i++) {
             const { key, compiler } = compiledFilters[i];
@@ -195,23 +201,17 @@ const compileFilterDef = <Entity, TFilterDef extends BigQueryFilterDef<Entity>>(
                 continue;
             }
 
-            const result = compiler(filterValue, sanitizeParamKey(key));
+            const result = compiler(filterValue);
             sqlFragments.push(result.sql);
-            Object.assign(allParams, result.params);
+            mergeParams(allParams, usedParamNames, result.params, key);
         }
 
-        // Returning `undefined` means there is no WHERE clause to apply.
         if (sqlFragments.length === 0) {
             return EMPTY_FILTER_RESULT;
         }
 
-        if (sqlFragments.length === 1) {
-            return {
-                sql: sqlFragments[0],
-                params: allParams,
-            };
-        }
-
+        // Every fragment is self-contained (an atomic comparison or a
+        // parenthesized group), so joining with AND can't change its meaning.
         return {
             sql: sqlFragments.join(" AND "),
             params: allParams,
@@ -225,19 +225,33 @@ const compileFilterDef = <Entity, TFilterDef extends BigQueryFilterDef<Entity>>(
 const compileFilterField = <Entity>(
     key: string,
     filterField: BigQueryFilterField<Entity>,
+    allocateParamName: ParamNameAllocator,
 ): CompiledFilterField => {
-    // Custom filter - call the function directly with input
+    // Custom filter - call the function directly with input. The SQL is
+    // wrapped in parentheses so an `OR` inside it can't leak into the
+    // surrounding `AND`s.
     if (typeof filterField === "function") {
-        return (filterValue) => filterField(filterValue);
+        return (filterValue) => {
+            const result = filterField(filterValue);
+            return { sql: `(${result.sql})`, params: result.params };
+        };
     }
 
     switch (filterField.kind) {
         case "and":
         case "or":
-            return compileBooleanFilter<Entity>(key, filterField);
+            return compileBooleanFilter<Entity>(
+                key,
+                filterField,
+                allocateParamName,
+            );
 
         default:
-            return compilePrimitiveFilter<Entity>(key, filterField);
+            return compilePrimitiveFilter<Entity>(
+                key,
+                filterField,
+                allocateParamName,
+            );
     }
 };
 
@@ -247,56 +261,33 @@ const compileFilterField = <Entity>(
 const compileBooleanFilter = <Entity>(
     key: string,
     filterField: BooleanFilter<Entity>,
+    allocateParamName: ParamNameAllocator,
 ): CompiledFilterField => {
     const compiledConditions = filterField.conditions.map((condition, index) =>
         compilePrimitiveFilter<Entity>(
             `${key}_${index}`,
             condition,
+            allocateParamName,
             condition.field as string,
         ),
     );
 
-    switch (filterField.kind) {
-        case "and":
-            return (filterValue, _paramKey) => {
-                const fragments: string[] = [];
-                const params: Record<string, unknown> = {};
+    const joiner = filterField.kind === "and" ? " AND " : " OR ";
 
-                for (let i = 0; i < compiledConditions.length; i++) {
-                    const result = compiledConditions[i](
-                        filterValue,
-                        `${sanitizeParamKey(key)}_${i}`,
-                    );
-                    fragments.push(result.sql);
-                    Object.assign(params, result.params);
-                }
+    return (filterValue) => {
+        const fragments: string[] = [];
+        const params: Record<string, unknown> = {};
 
-                if (fragments.length === 0) return EMPTY_FILTER_RESULT;
-                if (fragments.length === 1)
-                    return { sql: fragments[0], params };
-                return { sql: `(${fragments.join(" AND ")})`, params };
-            };
+        for (let i = 0; i < compiledConditions.length; i++) {
+            const result = compiledConditions[i](filterValue);
+            fragments.push(result.sql);
+            Object.assign(params, result.params);
+        }
 
-        case "or":
-            return (filterValue, _paramKey) => {
-                const fragments: string[] = [];
-                const params: Record<string, unknown> = {};
-
-                for (let i = 0; i < compiledConditions.length; i++) {
-                    const result = compiledConditions[i](
-                        filterValue,
-                        `${sanitizeParamKey(key)}_${i}`,
-                    );
-                    fragments.push(result.sql);
-                    Object.assign(params, result.params);
-                }
-
-                if (fragments.length === 0) return EMPTY_FILTER_RESULT;
-                if (fragments.length === 1)
-                    return { sql: fragments[0], params };
-                return { sql: `(${fragments.join(" OR ")})`, params };
-            };
-    }
+        if (fragments.length === 0) return EMPTY_FILTER_RESULT;
+        if (fragments.length === 1) return { sql: fragments[0], params };
+        return { sql: `(${fragments.join(joiner)})`, params };
+    };
 };
 
 /**
@@ -305,78 +296,56 @@ const compileBooleanFilter = <Entity>(
 const compilePrimitiveFilter = <Entity>(
     key: string,
     filterField: PrimitiveFilter<Entity>,
+    allocateParamName: ParamNameAllocator,
     fieldOverride?: string,
 ): CompiledFilterField => {
-    const fieldName = fieldOverride ?? (filterField.field as string) ?? key;
+    const column = quoteFieldPath(
+        fieldOverride ?? (filterField.field as string) ?? key,
+    );
 
     switch (filterField.kind) {
-        case "eq":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} = @${paramKey}`,
-                params: { [paramKey]: filterValue },
-            });
-
-        case "neq":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} != @${paramKey}`,
-                params: { [paramKey]: filterValue },
-            });
-
-        case "contains": {
-            const containsFilter = filterField as ContainsFilter<Entity>;
-            if (containsFilter.caseInsensitive) {
-                return (filterValue, paramKey) => ({
-                    sql: `LOWER(${fieldName}) LIKE LOWER(@${paramKey})`,
-                    params: { [paramKey]: `%${String(filterValue)}%` },
-                });
-            }
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} LIKE @${paramKey}`,
-                params: { [paramKey]: `%${String(filterValue)}%` },
-            });
-        }
-
-        case "inArray":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} IN UNNEST(@${paramKey})`,
-                params: { [paramKey]: filterValue },
-            });
-
         case "isNull":
             return (filterValue) =>
                 filterValue
-                    ? { sql: `${fieldName} IS NULL`, params: {} }
-                    : { sql: `${fieldName} IS NOT NULL`, params: {} };
+                    ? { sql: `${column} IS NULL`, params: {} }
+                    : { sql: `${column} IS NOT NULL`, params: {} };
 
         case "isNotNull":
             return (filterValue) =>
                 filterValue
-                    ? { sql: `${fieldName} IS NOT NULL`, params: {} }
-                    : { sql: `${fieldName} IS NULL`, params: {} };
+                    ? { sql: `${column} IS NOT NULL`, params: {} }
+                    : { sql: `${column} IS NULL`, params: {} };
 
+        case "contains": {
+            const paramName = allocateParamName(key);
+            const containsFilter = filterField as ContainsFilter<Entity>;
+            const sql = containsFilter.caseInsensitive
+                ? `LOWER(${column}) LIKE LOWER(@${paramName})`
+                : `${column} LIKE @${paramName}`;
+
+            return (filterValue) => ({
+                sql,
+                params: {
+                    [paramName]: `%${escapeLikePattern(String(filterValue))}%`,
+                },
+            });
+        }
+
+        case "eq":
+        case "neq":
+        case "inArray":
         case "gt":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} > @${paramKey}`,
-                params: { [paramKey]: filterValue },
-            });
-
         case "gte":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} >= @${paramKey}`,
-                params: { [paramKey]: filterValue },
-            });
-
         case "lt":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} < @${paramKey}`,
-                params: { [paramKey]: filterValue },
-            });
+        case "lte": {
+            const paramName = allocateParamName(key);
+            const sql = comparisonSql(filterField.kind, column, paramName);
 
-        case "lte":
-            return (filterValue, paramKey) => ({
-                sql: `${fieldName} <= @${paramKey}`,
-                params: { [paramKey]: filterValue },
+            return (filterValue) => ({
+                sql,
+                params: { [paramName]: filterValue },
             });
+        }
 
         default:
             filterField satisfies never;
@@ -385,7 +354,110 @@ const compilePrimitiveFilter = <Entity>(
 };
 
 /**
- * Sanitizes a filter key to be used as a BigQuery parameter name
- * by replacing dots with underscores.
+ * Builds the SQL for a single-param comparison filter.
  */
-const sanitizeParamKey = (key: string): string => key.replace(/\./g, "_");
+const comparisonSql = (
+    kind: "eq" | "neq" | "inArray" | "gt" | "gte" | "lt" | "lte",
+    column: string,
+    paramName: string,
+): string => {
+    switch (kind) {
+        case "eq":
+            return `${column} = @${paramName}`;
+        case "neq":
+            return `${column} != @${paramName}`;
+        case "inArray":
+            return `${column} IN UNNEST(@${paramName})`;
+        case "gt":
+            return `${column} > @${paramName}`;
+        case "gte":
+            return `${column} >= @${paramName}`;
+        case "lt":
+            return `${column} < @${paramName}`;
+        case "lte":
+            return `${column} <= @${paramName}`;
+        default:
+            kind satisfies never;
+            return "true";
+    }
+};
+
+// ----------------------------------------------------------------
+// SQL helpers
+// ----------------------------------------------------------------
+
+/**
+ * Quotes a dot-separated field path as BigQuery identifiers, so reserved
+ * words (`order`, `group`, ...) and odd characters are safe.
+ *
+ * `address.city` -> `` `address`.`city` ``
+ */
+const quoteFieldPath = (path: string): string =>
+    path
+        .split(".")
+        .map((segment) => `\`${segment.replace(/[\\`]/g, "\\$&")}\``)
+        .join(".");
+
+/**
+ * Escapes LIKE wildcards (`%`, `_`) and the escape character (`\`) so the
+ * value is matched literally.
+ */
+const escapeLikePattern = (value: string): string =>
+    value.replace(/[\\%_]/g, "\\$&");
+
+/**
+ * Creates an allocator that turns filter keys into valid, unique BigQuery
+ * param names. BigQuery param names are case-insensitive, so uniqueness is
+ * checked case-insensitively. Collisions get a numeric suffix (`a_b_2`).
+ */
+const createParamNameAllocator = (): ParamNameAllocator => {
+    const used = new Set<string>();
+
+    return (filterKey) => {
+        const base = toParamName(filterKey);
+        let name = base;
+
+        for (let n = 2; used.has(name.toLowerCase()); n++) {
+            name = `${base}_${n}`;
+        }
+
+        used.add(name.toLowerCase());
+        return name;
+    };
+};
+
+/**
+ * Converts a filter key into a valid BigQuery param name: letters, digits and
+ * underscores, not starting with a digit.
+ */
+const toParamName = (key: string): string => {
+    const name = key.replace(/[^A-Za-z0-9_]/g, "_");
+    return /^[A-Za-z_]/.test(name) ? name : `_${name}`;
+};
+
+/**
+ * Merges a filter's params into the combined params, throwing if a param name
+ * is already taken. Built-in filters never collide with each other, so this
+ * only fires when a custom filter reuses a name.
+ */
+const mergeParams = (
+    target: Record<string, unknown>,
+    usedNames: Set<string>,
+    params: Record<string, unknown>,
+    filterKey: string,
+): void => {
+    for (const name of Object.keys(params)) {
+        const normalized = name.toLowerCase();
+
+        if (usedNames.has(normalized)) {
+            throw new Error(
+                `@filter-def/bigquery: filter "${filterKey}" uses param "@${name}", ` +
+                    "which another filter in this query already uses. " +
+                    "Give the custom filter's param a unique name.",
+            );
+        }
+
+        usedNames.add(normalized);
+        target[name] = params[name];
+    }
+};

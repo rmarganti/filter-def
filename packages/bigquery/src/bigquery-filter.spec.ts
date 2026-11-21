@@ -32,7 +32,7 @@ describe("Eq Filter", () => {
         const result = userFilter({ nameEq: "John Doe" });
 
         expect(result).toEqual({
-            sql: "name = @nameEq",
+            sql: "`name` = @nameEq",
             params: { nameEq: "John Doe" },
         });
     });
@@ -41,7 +41,7 @@ describe("Eq Filter", () => {
         const result = userFilter({ ageEq: 30 });
 
         expect(result).toEqual({
-            sql: "age = @ageEq",
+            sql: "`age` = @ageEq",
             params: { ageEq: 30 },
         });
     });
@@ -50,7 +50,7 @@ describe("Eq Filter", () => {
         const result = userFilter({ nameEq: "John Doe", ageEq: 30 });
 
         expect(result).toEqual({
-            sql: "name = @nameEq AND age = @ageEq",
+            sql: "`name` = @nameEq AND `age` = @ageEq",
             params: { nameEq: "John Doe", ageEq: 30 },
         });
     });
@@ -85,7 +85,7 @@ describe("Neq Filter", () => {
         const result = userFilter({ nameNeq: "John Doe" });
 
         expect(result).toEqual({
-            sql: "name != @nameNeq",
+            sql: "`name` != @nameNeq",
             params: { nameNeq: "John Doe" },
         });
     });
@@ -94,7 +94,7 @@ describe("Neq Filter", () => {
         const result = userFilter({ ageNeq: 30 });
 
         expect(result).toEqual({
-            sql: "age != @ageNeq",
+            sql: "`age` != @ageNeq",
             params: { ageNeq: 30 },
         });
     });
@@ -103,7 +103,7 @@ describe("Neq Filter", () => {
         const result = userFilter({ nameNeq: "John Doe", ageNeq: 25 });
 
         expect(result).toEqual({
-            sql: "name != @nameNeq AND age != @ageNeq",
+            sql: "`name` != @nameNeq AND `age` != @ageNeq",
             params: { nameNeq: "John Doe", ageNeq: 25 },
         });
     });
@@ -133,7 +133,7 @@ describe("Contains Filter", () => {
         const result = userFilter({ emailContains: "example.com" });
 
         expect(result).toEqual({
-            sql: "email LIKE @emailContains",
+            sql: "`email` LIKE @emailContains",
             params: { emailContains: "%example.com%" },
         });
     });
@@ -142,7 +142,7 @@ describe("Contains Filter", () => {
         const result = userFilter({ iEmailContains: ".OrG" });
 
         expect(result).toEqual({
-            sql: "LOWER(email) LIKE LOWER(@iEmailContains)",
+            sql: "LOWER(`email`) LIKE LOWER(@iEmailContains)",
             params: { iEmailContains: "%.OrG%" },
         });
     });
@@ -168,7 +168,7 @@ describe("InArray Filter", () => {
         const result = userFilter({ ageInArray: [25, 30] });
 
         expect(result).toEqual({
-            sql: "age IN UNNEST(@ageInArray)",
+            sql: "`age` IN UNNEST(@ageInArray)",
             params: { ageInArray: [25, 30] },
         });
     });
@@ -177,7 +177,7 @@ describe("InArray Filter", () => {
         const result = userFilter({ ageInArray: [40] });
 
         expect(result).toEqual({
-            sql: "age IN UNNEST(@ageInArray)",
+            sql: "`age` IN UNNEST(@ageInArray)",
             params: { ageInArray: [40] },
         });
     });
@@ -201,7 +201,7 @@ describe("IsNull Filter", () => {
         const result = userFilter({ phoneIsNull: true });
 
         expect(result).toEqual({
-            sql: "phone IS NULL",
+            sql: "`phone` IS NULL",
             params: {},
         });
     });
@@ -210,7 +210,7 @@ describe("IsNull Filter", () => {
         const result = userFilter({ phoneIsNull: false });
 
         expect(result).toEqual({
-            sql: "phone IS NOT NULL",
+            sql: "`phone` IS NOT NULL",
             params: {},
         });
     });
@@ -233,7 +233,7 @@ describe("IsNotNull Filter", () => {
         const result = userFilter({ phoneIsNotNull: true });
 
         expect(result).toEqual({
-            sql: "phone IS NOT NULL",
+            sql: "`phone` IS NOT NULL",
             params: {},
         });
     });
@@ -242,7 +242,7 @@ describe("IsNotNull Filter", () => {
         const result = userFilter({ phoneIsNotNull: false });
 
         expect(result).toEqual({
-            sql: "phone IS NULL",
+            sql: "`phone` IS NULL",
             params: {},
         });
     });
@@ -266,7 +266,7 @@ describe("Greater Than (GT) Filter", () => {
         const result = userFilter({ ageGreaterThan: 28 });
 
         expect(result).toEqual({
-            sql: "age > @ageGreaterThan",
+            sql: "`age` > @ageGreaterThan",
             params: { ageGreaterThan: 28 },
         });
     });
@@ -291,7 +291,7 @@ describe("Greater Than or Equal (GTE) Filter", () => {
         const result = userFilter({ ageGreaterThanOrEqual: 30 });
 
         expect(result).toEqual({
-            sql: "age >= @ageGreaterThanOrEqual",
+            sql: "`age` >= @ageGreaterThanOrEqual",
             params: { ageGreaterThanOrEqual: 30 },
         });
     });
@@ -316,7 +316,7 @@ describe("Less Than (LT) Filter", () => {
         const result = userFilter({ ageLessThan: 30 });
 
         expect(result).toEqual({
-            sql: "age < @ageLessThan",
+            sql: "`age` < @ageLessThan",
             params: { ageLessThan: 30 },
         });
     });
@@ -341,7 +341,7 @@ describe("Less Than or Equal (LTE) Filter", () => {
         const result = userFilter({ ageLessThanOrEqual: 28 });
 
         expect(result).toEqual({
-            sql: "age <= @ageLessThanOrEqual",
+            sql: "`age` <= @ageLessThanOrEqual",
             params: { ageLessThanOrEqual: 28 },
         });
     });
@@ -375,7 +375,7 @@ describe("Combined Filters", () => {
         });
 
         expect(result).toEqual({
-            sql: "name LIKE @nameContains AND age > @ageGreaterThan AND age < @ageLessThan AND isActive = @isActive AND phone IS NOT NULL",
+            sql: "`name` LIKE @nameContains AND `age` > @ageGreaterThan AND `age` < @ageLessThan AND `isActive` = @isActive AND `phone` IS NOT NULL",
             params: {
                 nameContains: "%Doe%",
                 ageGreaterThan: 24,
@@ -392,7 +392,7 @@ describe("Combined Filters", () => {
         });
 
         expect(result).toEqual({
-            sql: "name LIKE @nameContains AND isActive = @isActive",
+            sql: "`name` LIKE @nameContains AND `isActive` = @isActive",
             params: { nameContains: "%Smith%", isActive: 0 },
         });
     });
@@ -425,7 +425,7 @@ describe("Boolean AND Filter", () => {
         const result = ageExactFilter({ ageExact: 30 });
 
         expect(result).toEqual({
-            sql: "(age >= @ageExact_0 AND age <= @ageExact_1)",
+            sql: "(`age` >= @ageExact_0 AND `age` <= @ageExact_1)",
             params: { ageExact_0: 30, ageExact_1: 30 },
         });
     });
@@ -444,7 +444,7 @@ describe("Boolean AND Filter", () => {
         const result = ageFilter({ ageNotInRange: 30 });
 
         expect(result).toEqual({
-            sql: "(age > @ageNotInRange_0 AND age < @ageNotInRange_1)",
+            sql: "(`age` > @ageNotInRange_0 AND `age` < @ageNotInRange_1)",
             params: { ageNotInRange_0: 30, ageNotInRange_1: 30 },
         });
     });
@@ -498,7 +498,7 @@ describe("Boolean OR Filter", () => {
         const result = ageOutsideRangeFilter({ youngOrOld: 28 });
 
         expect(result).toEqual({
-            sql: "(age < @youngOrOld_0 OR age > @youngOrOld_1)",
+            sql: "(`age` < @youngOrOld_0 OR `age` > @youngOrOld_1)",
             params: { youngOrOld_0: 28, youngOrOld_1: 28 },
         });
     });
@@ -517,7 +517,7 @@ describe("Boolean OR Filter", () => {
         const result = stringFilter({ containsInNameOrEmail: "Doe" });
 
         expect(result).toEqual({
-            sql: "(name LIKE @containsInNameOrEmail_0 OR email LIKE @containsInNameOrEmail_1)",
+            sql: "(`name` LIKE @containsInNameOrEmail_0 OR `email` LIKE @containsInNameOrEmail_1)",
             params: {
                 containsInNameOrEmail_0: "%Doe%",
                 containsInNameOrEmail_1: "%Doe%",
@@ -581,7 +581,7 @@ describe("Complex Boolean Filters", () => {
         const result = complexFilter({ ageExact: 30, scoreExact: 85 });
 
         expect(result).toEqual({
-            sql: "(age >= @ageExact_0 AND age <= @ageExact_1) AND (score >= @scoreExact_0 AND score <= @scoreExact_1)",
+            sql: "(`age` >= @ageExact_0 AND `age` <= @ageExact_1) AND (`score` >= @scoreExact_0 AND `score` <= @scoreExact_1)",
             params: {
                 ageExact_0: 30,
                 ageExact_1: 30,
@@ -609,7 +609,7 @@ describe("Complex Boolean Filters", () => {
         });
 
         expect(result).toEqual({
-            sql: "name LIKE @nameContains AND (age < @ageOutsideRange_0 OR age > @ageOutsideRange_1)",
+            sql: "`name` LIKE @nameContains AND (`age` < @ageOutsideRange_0 OR `age` > @ageOutsideRange_1)",
             params: {
                 nameContains: "%Doe%",
                 ageOutsideRange_0: 27,
@@ -633,7 +633,7 @@ describe("Complex Boolean Filters", () => {
         const result = tripleAndFilter({ scoreInRange: 85 });
 
         expect(result).toEqual({
-            sql: "(score >= @scoreInRange_0 AND score <= @scoreInRange_1 AND score = @scoreInRange_2)",
+            sql: "(`score` >= @scoreInRange_0 AND `score` <= @scoreInRange_1 AND `score` = @scoreInRange_2)",
             params: {
                 scoreInRange_0: 85,
                 scoreInRange_1: 85,
@@ -681,7 +681,7 @@ describe("Custom Filters", () => {
         const result = userFilter({ ageDivisibleBy: 10 });
 
         expect(result).toEqual({
-            sql: "MOD(age, @divisor) = 0",
+            sql: "(MOD(age, @divisor) = 0)",
             params: { divisor: 10 },
         });
     });
@@ -695,7 +695,7 @@ describe("Custom Filters", () => {
         });
 
         const result = userFilter({ optionalAgeFilter: "all" });
-        expect(result).toEqual({ sql: "true", params: {} });
+        expect(result).toEqual({ sql: "(true)", params: {} });
     });
 
     it("should combine custom filters with primitive filters", () => {
@@ -710,7 +710,7 @@ describe("Custom Filters", () => {
         const result = userFilter({ name: "John", ageDivisibleBy: 5 });
 
         expect(result).toEqual({
-            sql: "name = @name AND MOD(age, @divisor) = 0",
+            sql: "`name` = @name AND (MOD(age, @divisor) = 0)",
             params: { name: "John", divisor: 5 },
         });
     });
@@ -757,7 +757,7 @@ describe("Edge Cases", () => {
         const result = userFilter({ nameEq: "John Doe" });
 
         expect(result).toEqual({
-            sql: "name = @nameEq",
+            sql: "`name` = @nameEq",
             params: { nameEq: "John Doe" },
         });
     });
@@ -766,7 +766,7 @@ describe("Edge Cases", () => {
         const result = userFilter({ ageGreaterThan: 0 });
 
         expect(result).toEqual({
-            sql: "age > @ageGreaterThan",
+            sql: "`age` > @ageGreaterThan",
             params: { ageGreaterThan: 0 },
         });
     });
@@ -775,7 +775,7 @@ describe("Edge Cases", () => {
         const result = userFilter({ emailContains: "" });
 
         expect(result).toEqual({
-            sql: "email LIKE @emailContains",
+            sql: "`email` LIKE @emailContains",
             params: { emailContains: "%%" },
         });
     });
@@ -801,7 +801,7 @@ describe("Field Inference", () => {
         const result = userFilter({ name: "John Doe", age: 30 });
 
         expect(result).toEqual({
-            sql: "name = @name AND age >= @age",
+            sql: "`name` = @name AND `age` >= @age",
             params: { name: "John Doe", age: 30 },
         });
     });
@@ -818,7 +818,7 @@ describe("Field Inference", () => {
         });
 
         expect(result).toEqual({
-            sql: "email LIKE @emailContains AND name LIKE @nameSearch",
+            sql: "`email` LIKE @emailContains AND `name` LIKE @nameSearch",
             params: { emailContains: "%example.com%", nameSearch: "%Doe%" },
         });
     });
@@ -850,7 +850,7 @@ describe("SQL Output Verification", () => {
 
         const result = userFilter({ name: "John" });
         expect(result).toBeDefined();
-        expect(result?.sql).toBe("name = @name");
+        expect(result?.sql).toBe("`name` = @name");
         expect(result?.params).toEqual({ name: "John" });
     });
 });
@@ -867,7 +867,7 @@ describe("BigQuery Integration Usage Pattern", () => {
 
         // This is the format @google-cloud/bigquery expects
         expect(result).toEqual({
-            sql: "name = @name AND age >= @minAge AND age <= @maxAge",
+            sql: "`name` = @name AND `age` >= @minAge AND `age` <= @maxAge",
             params: { name: "John", minAge: 18, maxAge: 65 },
         });
 
@@ -891,7 +891,7 @@ describe("Nested field filtering", () => {
         });
         const result = filter({ firstName: "Alice" });
         expect(result).toEqual({
-            sql: "name.first = @firstName",
+            sql: "`name`.`first` = @firstName",
             params: { firstName: "Alice" },
         });
     });
@@ -905,7 +905,7 @@ describe("Nested field filtering", () => {
         const result = filter({ firstName: "Bob", lat: 21 });
 
         expect(result).toEqual({
-            sql: "name.first = @firstName AND address.geo.lat = @lat",
+            sql: "`name`.`first` = @firstName AND `address`.`geo`.`lat` = @lat",
             params: { firstName: "Bob", lat: 21 },
         });
     });
@@ -916,7 +916,7 @@ describe("Nested field filtering", () => {
         });
         const result = filter({ "name.first": "Bob" });
         expect(result).toEqual({
-            sql: "name.first = @name_first",
+            sql: "`name`.`first` = @name_first",
             params: { name_first: "Bob" },
         });
     });
@@ -931,7 +931,7 @@ describe("Nested field filtering", () => {
         });
         const result = filter({ cityContains: "port" });
         expect(result).toEqual({
-            sql: "LOWER(address.city) LIKE LOWER(@cityContains)",
+            sql: "LOWER(`address`.`city`) LIKE LOWER(@cityContains)",
             params: { cityContains: "%port%" },
         });
     });
@@ -942,7 +942,7 @@ describe("Nested field filtering", () => {
         });
         const result = filter({ latAbove: 46 });
         expect(result).toEqual({
-            sql: "address.geo.lat > @latAbove",
+            sql: "`address`.`geo`.`lat` > @latAbove",
             params: { latAbove: 46 },
         });
     });
@@ -953,5 +953,223 @@ describe("Nested field filtering", () => {
         });
         type Input = BigQueryFilterInput<typeof filter>;
         expectTypeOf<Input["firstName"]>().toEqualTypeOf<string | undefined>();
+    });
+});
+
+// ----------------------------------------------------------------
+// SQL safety (GH #50)
+// ----------------------------------------------------------------
+
+describe("Custom filter SQL is parenthesized", () => {
+    interface Customer {
+        name: string;
+        tier: string;
+    }
+
+    it("keeps an OR inside a custom filter from leaking into the AND chain", () => {
+        const filter = bigqueryFilter<Customer>().def({
+            name: { kind: "eq" },
+            vip: (): BigQueryFilterResult => ({
+                sql: "tier = 'gold' OR tier = 'platinum'",
+                params: {},
+            }),
+        });
+
+        expect(filter({ vip: true, name: "Bob" })).toEqual({
+            sql: "`name` = @name AND (tier = 'gold' OR tier = 'platinum')",
+            params: { name: "Bob" },
+        });
+    });
+
+    it("wraps a lone custom filter so callers can append more conditions", () => {
+        const filter = bigqueryFilter<Customer>().def({
+            vip: (): BigQueryFilterResult => ({
+                sql: "tier = 'gold' OR tier = 'platinum'",
+                params: {},
+            }),
+        });
+
+        expect(filter({ vip: true }).sql).toBe(
+            "(tier = 'gold' OR tier = 'platinum')",
+        );
+    });
+});
+
+describe("Column names are quoted", () => {
+    interface Row {
+        order: number;
+        group: string;
+        user: { select: string };
+    }
+
+    it("quotes reserved words", () => {
+        const filter = bigqueryFilter<Row>().def({
+            order: { kind: "gt" },
+            group: { kind: "eq" },
+        });
+
+        expect(filter({ order: 1, group: "a" })).toEqual({
+            sql: "`order` > @order AND `group` = @group",
+            params: { order: 1, group: "a" },
+        });
+    });
+
+    it("quotes each segment of a nested path", () => {
+        const filter = bigqueryFilter<Row>().def({
+            userSelect: { kind: "isNull", field: "user.select" },
+        });
+
+        expect(filter({ userSelect: true }).sql).toBe(
+            "`user`.`select` IS NULL",
+        );
+    });
+
+    it("quotes columns inside boolean filters", () => {
+        const filter = bigqueryFilter<Row>().def({
+            either: {
+                kind: "or",
+                conditions: [
+                    { kind: "eq", field: "group" },
+                    { kind: "eq", field: "user.select" },
+                ],
+            },
+        });
+
+        expect(filter({ either: "x" }).sql).toBe(
+            "(`group` = @either_0 OR `user`.`select` = @either_1)",
+        );
+    });
+
+    it("escapes backticks and backslashes inside a name", () => {
+        const filter = bigqueryFilter<Record<string, string>>().def({
+            weird: { kind: "eq", field: "a`b\\c" },
+        });
+
+        expect(filter({ weird: "x" }).sql).toBe("`a\\`b\\\\c` = @weird");
+    });
+});
+
+describe("Param names never collide", () => {
+    interface Row {
+        a: { b: string };
+        a_b: string;
+        x: number;
+        x_0: number;
+        name: string;
+    }
+
+    it("gives `a.b` and `a_b` distinct params", () => {
+        const filter = bigqueryFilter<Row>().def({
+            "a.b": { kind: "eq" },
+            a_b: { kind: "eq" },
+        });
+
+        expect(filter({ "a.b": "dotted", a_b: "underscored" })).toEqual({
+            sql: "`a`.`b` = @a_b AND `a_b` = @a_b_2",
+            params: { a_b: "dotted", a_b_2: "underscored" },
+        });
+    });
+
+    it("keeps boolean sub-params apart from a filter named like them", () => {
+        const filter = bigqueryFilter<Row>().def({
+            x: {
+                kind: "and",
+                conditions: [
+                    { kind: "gte", field: "x" },
+                    { kind: "lte", field: "x" },
+                ],
+            },
+            x_0: { kind: "eq" },
+        });
+
+        expect(filter({ x: 5, x_0: 99 })).toEqual({
+            sql: "(`x` >= @x_0 AND `x` <= @x_1) AND `x_0` = @x_0_2",
+            params: { x_0: 5, x_1: 5, x_0_2: 99 },
+        });
+    });
+
+    it("treats param names case-insensitively, like BigQuery", () => {
+        const filter = bigqueryFilter<Row>().def({
+            name: { kind: "eq" },
+            NAME: { kind: "neq", field: "name" },
+        });
+
+        expect(filter({ name: "a", NAME: "b" })).toEqual({
+            sql: "`name` = @name AND `name` != @NAME_2",
+            params: { name: "a", NAME_2: "b" },
+        });
+    });
+
+    it("turns any filter key into a valid param name", () => {
+        const filter = bigqueryFilter<Row>().def({
+            "first-name": { kind: "eq", field: "name" },
+            "1st": { kind: "eq", field: "name" },
+        });
+
+        expect(filter({ "first-name": "a", "1st": "b" })).toEqual({
+            sql: "`name` = @first_name AND `name` = @_1st",
+            params: { first_name: "a", _1st: "b" },
+        });
+    });
+
+    it("throws when a custom filter reuses a param name", () => {
+        const filter = bigqueryFilter<Row>().def({
+            name: { kind: "eq" },
+            custom: (value: string): BigQueryFilterResult => ({
+                sql: "LOWER(name) = @name",
+                params: { name: value },
+            }),
+        });
+
+        // Separately, both are fine.
+        expect(filter({ name: "a" }).params).toEqual({ name: "a" });
+        expect(filter({ custom: "b" }).params).toEqual({ name: "b" });
+
+        // Together, one value would silently overwrite the other.
+        expect(() => filter({ name: "a", custom: "b" })).toThrow(
+            /filter "custom" uses param "@name"/,
+        );
+    });
+
+    it("throws when two custom filters share a param name", () => {
+        const filter = bigqueryFilter<Row>().def({
+            one: (v: number): BigQueryFilterResult => ({
+                sql: "x = @v",
+                params: { v },
+            }),
+            two: (v: number): BigQueryFilterResult => ({
+                sql: "x_0 = @V",
+                params: { V: v },
+            }),
+        });
+
+        expect(() => filter({ one: 1, two: 2 })).toThrow(
+            /filter "two" uses param "@V"/,
+        );
+    });
+});
+
+describe("Contains escapes LIKE wildcards", () => {
+    const filter = bigqueryFilter<User>().def({
+        nameContains: { kind: "contains", field: "name" },
+        nameContainsI: {
+            kind: "contains",
+            field: "name",
+            caseInsensitive: true,
+        },
+    });
+
+    it.each([
+        ["50%", "%50\\%%"],
+        ["a_b", "%a\\_b%"],
+        ["C:\\dir", "%C:\\\\dir%"],
+        ["plain", "%plain%"],
+    ])("escapes %j", (input, expected) => {
+        expect(filter({ nameContains: input }).params).toEqual({
+            nameContains: expected,
+        });
+        expect(filter({ nameContainsI: input }).params).toEqual({
+            nameContainsI: expected,
+        });
     });
 });
