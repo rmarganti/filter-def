@@ -78,7 +78,7 @@ The filter function always returns `BigQueryFilterResult`:
 
 ```typescript
 const where = userFilter({ name: "John" });
-// where: { sql: 'name = @name', params: { name: 'John' } }
+// where: { sql: '`name` = @name', params: { name: 'John' } }
 
 const empty = userFilter({});
 // empty: { sql: 'true', params: {} }
@@ -91,18 +91,39 @@ const noInput = userFilter();
 
 ### Primitive Filters
 
-| Kind        | SQL Output                 | Description                      |
-| ----------- | -------------------------- | -------------------------------- |
-| `eq`        | `column = @param`          | Exact equality                   |
-| `neq`       | `column != @param`         | Not equal                        |
-| `contains`  | `column LIKE @param`       | String contains (case-sensitive) |
-| `inArray`   | `column IN UNNEST(@param)` | Value in array                   |
-| `gt`        | `column > @param`          | Greater than                     |
-| `gte`       | `column >= @param`         | Greater than or equal            |
-| `lt`        | `column < @param`          | Less than                        |
-| `lte`       | `column <= @param`         | Less than or equal               |
-| `isNull`    | `column IS NULL`           | Check null (no param)            |
-| `isNotNull` | `column IS NOT NULL`       | Check not null (no param)        |
+| Kind        | SQL Output                    | Description                      |
+| ----------- | ----------------------------- | -------------------------------- |
+| `eq`        | `` `col` = @param ``          | Exact equality                   |
+| `neq`       | `` `col` != @param ``         | Not equal                        |
+| `contains`  | `` `col` LIKE @param ``       | String contains (case-sensitive) |
+| `inArray`   | `` `col` IN UNNEST(@param) `` | Value in array                   |
+| `gt`        | `` `col` > @param ``          | Greater than                     |
+| `gte`       | `` `col` >= @param ``         | Greater than or equal            |
+| `lt`        | `` `col` < @param ``          | Less than                        |
+| `lte`       | `` `col` <= @param ``         | Less than or equal               |
+| `isNull`    | `` `col` IS NULL ``           | Check null (no param)            |
+| `isNotNull` | `` `col` IS NOT NULL ``       | Check not null (no param)        |
+
+Column names are always quoted with backticks, so reserved words like `order` or `group` work as-is.
+
+`contains` matches its input literally: `%`, `_` and `\` are escaped, so searching for `50%` won't match `500`.
+
+#### Param names
+
+Param names come from the filter key. Characters other than letters, digits and underscores become `_`. If two filters would end up with the same param name (BigQuery param names are case-insensitive), later ones get a numeric suffix:
+
+```typescript
+const filter = bigqueryFilter<Row>().def({
+    "a.b": { kind: "eq" },
+    a_b: { kind: "eq" },
+});
+
+filter({ "a.b": "x", a_b: "y" });
+// {
+//     sql: '`a`.`b` = @a_b AND `a_b` = @a_b_2',
+//     params: { a_b: 'x', a_b_2: 'y' },
+// }
+```
 
 ### Field Inference
 
@@ -133,12 +154,12 @@ const userFilter = bigqueryFilter<UserWithAddress>().def({
 
 const where = userFilter({ firstName: "Bob", lat: 25 });
 // {
-//     sql: 'name.first = @name_first AND address.geo.lat = @address_geo_lat',
-//     params: { name_first: 'Bob', address_geo_lat: 25 },
+//     sql: '`name`.`first` = @firstName AND `address`.`geo`.`lat` = @lat',
+//     params: { firstName: 'Bob', lat: 25 },
 // }
 ```
 
-Dots in the field path are used directly as the column reference, and parameter names replace dots with underscores.
+Each segment of the field path is quoted separately. When the filter key itself is a dotted path (`"name.first": { kind: "eq" }`), the param name replaces dots with underscores (`@name_first`).
 
 ### Case-Insensitive Contains
 
@@ -180,14 +201,15 @@ const filter = bigqueryFilter<User>().def({
 });
 
 const where = userFilter({
-    searchTerm: "john", // (name LIKE @searchTerm_0 OR email LIKE @searchTerm_1)
-    ageRange: 30, // (age >= @ageRange_0 AND age <= @ageRange_1)
+    searchTerm: "john", // (`name` LIKE @searchTerm_0 OR `email` LIKE @searchTerm_1)
+    ageRange: 30, // (`age` >= @ageRange_0 AND `age` <= @ageRange_1)
 });
 ```
 
 ### Custom Filters
 
-Custom filters receive the input value and return a `BigQueryFilterResult`:
+Custom filters receive the input value and return a `BigQueryFilterResult`.
+The returned SQL is wrapped in parentheses, so an `OR` inside it stays inside it:
 
 ```typescript
 import type { BigQueryFilterResult } from "@filter-def/bigquery";
@@ -212,6 +234,8 @@ const userFilter = bigqueryFilter<User>().def({
     }),
 });
 ```
+
+Custom filter param names must not clash with any other param in the same query. If they do, the filter throws instead of silently overwriting a value. Using the filter key as the param name (as above) is the easiest way to stay unique.
 
 ## Type Utilities
 
