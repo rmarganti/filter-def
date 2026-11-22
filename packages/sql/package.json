@@ -1,0 +1,52 @@
+{
+  "name": "@filter-def/sql",
+  "version": "0.0.0",
+  "description": "Parameterized SQL adapter for filter-def (Postgres, MySQL, BigQuery)",
+  "homepage": "https://github.com/rmarganti/filter-def#readme",
+  "bugs": {
+    "url": "https://github.com/rmarganti/filter-def/issues"
+  },
+  "license": "MIT",
+  "author": "Ryan Marganti <ryan.marganti@mail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmarganti/filter-def.git",
+    "directory": "packages/sql"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    "./bigquery": {
+      "import": "./dist/bigquery.mjs",
+      "require": "./dist/bigquery.cjs"
+    },
+    "./mysql": {
+      "import": "./dist/mysql.mjs",
+      "require": "./dist/mysql.cjs"
+    },
+    "./postgres": {
+      "import": "./dist/postgres.mjs",
+      "require": "./dist/postgres.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@filter-def/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
+    "@types/node": "^24.10.1",
+    "mysql2": "^3.24.6",
+    "tsdown": "^0.16.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
+  }
+}

@@ -2,12 +2,13 @@
 
 ## Project Structure
 
-This is a **monorepo** with three packages:
+This is a **monorepo** with these packages:
 
 - `@filter-def/core` - Core types and utilities (types-only package)
 - `@filter-def/in-memory` - In-memory filtering with native array methods
 - `@filter-def/drizzle` - Drizzle ORM adapter for SQL databases
-- `@filter-def/bigquery` - Drizzle ORM adapter for SQL databases
+- `@filter-def/bigquery` - BigQuery adapter for parameterized SQL
+- `@filter-def/sql` - Parameterized SQL for Postgres, MySQL, and BigQuery (dialect per subpath import)
 
 Each package is located in `packages/{name}/` with its own `package.json`, tests, and examples.
 
@@ -18,6 +19,9 @@ Each package is located in `packages/{name}/` with its own `package.json`, tests
 - Test all: `pnpm test`
 - Test specific package: `pnpm --filter @filter-def/in-memory test`
 - Test single file: `pnpm --filter @filter-def/in-memory test src/in-memory-filter.spec.ts`
+- MySQL integration tests in `@filter-def/sql` run only when `MYSQL_URL` is set:
+  `docker run -d --rm --name filter-def-mysql -e MYSQL_ROOT_PASSWORD=test -e MYSQL_DATABASE=filter_def -p 33061:3306 mysql:8.4`
+  then `MYSQL_URL=mysql://root:test@127.0.0.1:33061/filter_def pnpm --filter @filter-def/sql test`
 - Test pattern: `pnpm --filter @filter-def/in-memory test -- --run --reporter=verbose "*eq*"`
 - Type check all: `pnpm run typecheck`
 - Benchmarks: `pnpm run bench`
