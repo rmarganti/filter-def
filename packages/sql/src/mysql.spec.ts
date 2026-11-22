@@ -3,7 +3,7 @@ import type { Connection, RowDataPacket } from "mysql2/promise";
 import { createConnection } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SqlFragment } from "./mysql.ts";
-import { sql, sqlFilter } from "./mysql.ts";
+import { sql, mysqlFilter } from "./mysql.ts";
 import type { User } from "./testing/integration-suite.ts";
 import {
     exampleUsers,
@@ -52,7 +52,7 @@ describe.skipIf(!MYSQL_URL)("mysql integration", () => {
     });
 
     runIntegrationSuite({
-        sqlFilter,
+        sqlFilter: mysqlFilter,
         // The default utf8mb4_0900_ai_ci collation makes LIKE case-insensitive.
         caseSensitiveLike: false,
         idOneOrTwo: sql`id = 1 OR id = 2`,
@@ -75,7 +75,7 @@ describe("mysql SQL output", () => {
         return { sql: text, values };
     };
 
-    const userFilter = sqlFilter<User>({
+    const userFilter = mysqlFilter<User>({
         columns: { isActive: "is_active" },
     }).def({
         name: { kind: "eq" },
@@ -113,7 +113,7 @@ describe("mysql SQL output", () => {
     });
 
     it("escapes backticks in identifiers", () => {
-        const filter = sqlFilter<User>({ columns: { name: "we`ird" } }).def({
+        const filter = mysqlFilter<User>({ columns: { name: "we`ird" } }).def({
             name: { kind: "eq" },
         });
         expect(render(filter({ name: "x" })).sql).toBe("`we``ird` = ?");
@@ -125,7 +125,7 @@ describe("mysql SQL output", () => {
         }
 
         expect(() =>
-            sqlFilter<Employee>().def({
+            mysqlFilter<Employee>().def({
                 city: { kind: "eq", field: "address.city" },
             }),
         ).toThrow(/Nested field path "address.city"/);

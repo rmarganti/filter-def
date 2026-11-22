@@ -50,7 +50,7 @@ export const sql: SqlTag<MySqlQuery> = createSqlTag(mysqlDialect);
  * Define filters for an entity.
  *
  * ```typescript
- * const userFilter = sqlFilter<User>({
+ * const userFilter = mysqlFilter<User>({
  *     columns: { isActive: "is_active" },
  * }).def({
  *     name: { kind: "eq" },
@@ -58,6 +58,6 @@ export const sql: SqlTag<MySqlQuery> = createSqlTag(mysqlDialect);
  * });
  * ```
  */
-export const sqlFilter: SqlFilterFactory = createSqlFilter(mysqlDialect);
+export const mysqlFilter: SqlFilterFactory = createSqlFilter(mysqlDialect);
 
 export type * from "./types.ts";

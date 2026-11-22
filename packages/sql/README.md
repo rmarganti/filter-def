@@ -10,11 +10,12 @@ npm install @filter-def/sql
 
 ## Quick Start
 
-Pick your database with the import path. Each path exports the same two things: `sqlFilter` to define filters, and a `sql` tag to build queries.
+Pick your database with the import path. Each path exports a filter factory named after the database (`postgresFilter`, `mysqlFilter`, or `bigqueryFilter`) and a `sql` tag to build queries.
 
 ```typescript
-import { sql, sqlFilter } from "@filter-def/sql/postgres";
-// or "@filter-def/sql/mysql", "@filter-def/sql/bigquery"
+import { sql, postgresFilter } from "@filter-def/sql/postgres";
+// or { sql, mysqlFilter } from "@filter-def/sql/mysql"
+// or { sql, bigqueryFilter } from "@filter-def/sql/bigquery"
 
 interface User {
     id: number;
@@ -24,7 +25,7 @@ interface User {
     isActive: boolean;
 }
 
-const userFilter = sqlFilter<User>({
+const userFilter = postgresFilter<User>({
     columns: { isActive: "is_active" },
 }).def({
     name: { kind: "eq" },
@@ -64,6 +65,13 @@ const { text, values } = sql`${userFilter({ name: "John" })}`;
 
 When no filters apply, the filter returns `TRUE`, so `WHERE ${where}` is always valid.
 
+Use each filter with the `sql` tag from the same import. A Postgres filter inside the MySQL tag produces Postgres quoting. If one file needs two databases, rename one tag:
+
+```typescript
+import { sql, postgresFilter } from "@filter-def/sql/postgres";
+import { sql as mysqlSql, mysqlFilter } from "@filter-def/sql/mysql";
+```
+
 ## Column names
 
 Field names are used exactly as written, and always quoted (`"name"` in Postgres, `` `name` `` in MySQL and BigQuery). Reserved words like `order` just work.
@@ -71,13 +79,13 @@ Field names are used exactly as written, and always quoted (`"name"` in Postgres
 When a column name differs from the field name, list it in `columns`. This applies to every filter in the definition:
 
 ```typescript
-sqlFilter<User>({ columns: { isActive: "is_active" } });
+postgresFilter<User>({ columns: { isActive: "is_active" } });
 ```
 
 Dots in a column name are treated as qualifiers, which helps with joins:
 
 ```typescript
-sqlFilter<User>({ columns: { name: "u.name" } }); // "u"."name"
+postgresFilter<User>({ columns: { name: "u.name" } }); // "u"."name"
 ```
 
 ### Postgres is case-sensitive with quoted names
@@ -116,7 +124,7 @@ Things to know:
 `and`/`or` conditions are grouped in parentheses:
 
 ```typescript
-const userFilter = sqlFilter<User>().def({
+const userFilter = postgresFilter<User>().def({
     search: {
         kind: "or",
         conditions: [
@@ -135,7 +143,7 @@ userFilter({ search: "john" });
 Return a fragment built with the same `sql` tag, or `undefined` to skip the filter. Custom SQL is always wrapped in parentheses, so an `OR` inside it can't leak into the rest of the query.
 
 ```typescript
-const userFilter = sqlFilter<User>().def({
+const userFilter = postgresFilter<User>().def({
     ageDivisibleBy: (divisor: number) => sql`MOD(age, ${divisor}) = 0`,
     hasPostWithTitle: (title: string) =>
         sql`EXISTS (SELECT 1 FROM posts WHERE posts.author_id = users.id AND posts.title = ${title})`,

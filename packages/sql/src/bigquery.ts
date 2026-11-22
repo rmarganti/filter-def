@@ -55,12 +55,13 @@ export const sql: SqlTag<BigQueryQuery> = createSqlTag(bigqueryDialect);
  * Define filters for an entity. Dotted field paths map to STRUCT fields.
  *
  * ```typescript
- * const userFilter = sqlFilter<User>().def({
+ * const userFilter = bigqueryFilter<User>().def({
  *     name: { kind: "eq" },
  *     city: { kind: "eq", field: "address.city" },
  * });
  * ```
  */
-export const sqlFilter: SqlFilterFactory = createSqlFilter(bigqueryDialect);
+export const bigqueryFilter: SqlFilterFactory =
+    createSqlFilter(bigqueryDialect);
 
 export type * from "./types.ts";

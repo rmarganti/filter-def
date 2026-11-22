@@ -40,7 +40,7 @@ export type SqlFilter<TFilterInput> = (
  * The expected input for a SqlFilter.
  *
  * ```typescript
- * const userFilter = sqlFilter<User>().def({ ... });
+ * const userFilter = postgresFilter<User>().def({ ... });
  * type UserFilterInput = SqlFilterInput<typeof userFilter>;
  * ```
  */
@@ -84,7 +84,7 @@ type SqlFilterFieldInput<K extends PropertyKey, Entity, TFilterField> =
           : never;
 
 /**
- * The `sqlFilter` entry point exported by each dialect.
+ * The filter entry point exported by each dialect (`postgresFilter`, `mysqlFilter`, `bigqueryFilter`).
  */
 export type SqlFilterFactory = ReturnType<typeof createSqlFilter>;
 

@@ -51,7 +51,7 @@ export const sql: SqlTag<PostgresQuery> = createSqlTag(postgresDialect);
  * Define filters for an entity.
  *
  * ```typescript
- * const userFilter = sqlFilter<User>({
+ * const userFilter = postgresFilter<User>({
  *     columns: { isActive: "is_active" },
  * }).def({
  *     name: { kind: "eq" },
@@ -59,6 +59,7 @@ export const sql: SqlTag<PostgresQuery> = createSqlTag(postgresDialect);
  * });
  * ```
  */
-export const sqlFilter: SqlFilterFactory = createSqlFilter(postgresDialect);
+export const postgresFilter: SqlFilterFactory =
+    createSqlFilter(postgresDialect);
 
 export type * from "./types.ts";

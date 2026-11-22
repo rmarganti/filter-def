@@ -1,7 +1,7 @@
 import { PGlite } from "@electric-sql/pglite";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { SqlFragment } from "./postgres.ts";
-import { sql, sqlFilter } from "./postgres.ts";
+import { sql, postgresFilter } from "./postgres.ts";
 import type { User } from "./testing/integration-suite.ts";
 import {
     exampleUsers,
@@ -42,7 +42,7 @@ beforeAll(async () => {
 
 describe("postgres integration", () => {
     runIntegrationSuite({
-        sqlFilter,
+        sqlFilter: postgresFilter,
         caseSensitiveLike: true,
         idOneOrTwo: sql`id = 1 OR id = 2`,
         selectIds: async (where) => {
@@ -66,7 +66,7 @@ describe("postgres SQL output", () => {
         return { text, values };
     };
 
-    const userFilter = sqlFilter<User>({
+    const userFilter = postgresFilter<User>({
         columns: { isActive: "is_active" },
     }).def({
         name: { kind: "eq" },
@@ -115,14 +115,18 @@ describe("postgres SQL output", () => {
     });
 
     it("escapes double quotes in identifiers", () => {
-        const filter = sqlFilter<User>({ columns: { name: 'we"ird' } }).def({
+        const filter = postgresFilter<User>({
+            columns: { name: 'we"ird' },
+        }).def({
             name: { kind: "eq" },
         });
         expect(sql`${filter({ name: "x" })}`.text).toBe('"we""ird" = $1');
     });
 
     it("treats dots in renamed columns as qualifiers", () => {
-        const filter = sqlFilter<User>({ columns: { name: "u.name" } }).def({
+        const filter = postgresFilter<User>({
+            columns: { name: "u.name" },
+        }).def({
             name: { kind: "eq" },
         });
         expect(sql`${filter({ name: "x" })}`.text).toBe('"u"."name" = $1');
@@ -134,7 +138,7 @@ describe("postgres SQL output", () => {
         }
 
         expect(() =>
-            sqlFilter<Employee>().def({
+            postgresFilter<Employee>().def({
                 city: { kind: "eq", field: "address.city" },
             }),
         ).toThrow(/Nested field path "address.city"/);

@@ -1,6 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import type { SqlFilterInput, SqlFragment } from "./bigquery.ts";
-import { sql, sqlFilter } from "./bigquery.ts";
+import { sql, bigqueryFilter } from "./bigquery.ts";
 
 interface Employee {
     name: string;
@@ -15,7 +15,7 @@ const render = (where: SqlFragment) => {
 };
 
 describe("bigquery SQL output", () => {
-    const employeeFilter = sqlFilter<Employee>().def({
+    const employeeFilter = bigqueryFilter<Employee>().def({
         name: { kind: "eq" },
         order: { kind: "eq" },
         ageIn: { kind: "inArray", field: "age" },
@@ -94,9 +94,9 @@ describe("bigquery SQL output", () => {
     });
 
     it("escapes backticks in identifiers", () => {
-        const filter = sqlFilter<Employee>({ columns: { name: "we`ird" } }).def(
-            { name: { kind: "eq" } },
-        );
+        const filter = bigqueryFilter<Employee>({
+            columns: { name: "we`ird" },
+        }).def({ name: { kind: "eq" } });
         expect(render(filter({ name: "x" })).query).toBe("`we\\`ird` = @p0");
     });
 
@@ -121,6 +121,6 @@ describe("bigquery SQL output", () => {
 
     it("rejects unknown columns in the columns option", () => {
         // @ts-expect-error `nope` is not a field of Employee
-        sqlFilter<Employee>({ columns: { nope: "x" } });
+        bigqueryFilter<Employee>({ columns: { nope: "x" } });
     });
 });
