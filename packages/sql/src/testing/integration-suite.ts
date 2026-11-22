@@ -106,6 +106,7 @@ export const runIntegrationSuite = ({
             caseInsensitive: true,
         },
         emailContains: { kind: "contains", field: "email" },
+        ageContains: { kind: "contains", field: "age" },
         ageIn: { kind: "inArray", field: "age" },
         phoneIsNull: { kind: "isNull", field: "phone" },
         phoneIsNotNull: { kind: "isNotNull", field: "phone" },
@@ -175,6 +176,10 @@ export const runIntegrationSuite = ({
 
         it("contains escapes `\\`", async () => {
             expect(await run({ emailContains: "\\" })).toEqual([]);
+        });
+
+        it("contains matches non-string columns by their text form", async () => {
+            expect(await run({ ageContains: "2" })).toEqual([2, 4]);
         });
 
         it("inArray", async () => {

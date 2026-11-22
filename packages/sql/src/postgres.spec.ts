@@ -109,7 +109,7 @@ describe("postgres SQL output", () => {
 
     it("uses ILIKE with an escape clause for caseInsensitive contains", () => {
         expect(render(userFilter({ emailContains: "50%_off" }))).toEqual({
-            text: `"email" ILIKE $1 ESCAPE '\\'`,
+            text: `CAST("email" AS TEXT) ILIKE $1 ESCAPE '\\'`,
             values: ["%50\\%\\_off%"],
         });
     });

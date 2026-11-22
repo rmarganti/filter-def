@@ -91,20 +91,21 @@ Postgres matches quoted names exactly. If your TypeScript field is `isActive` an
 
 ## Filter Types
 
-| Kind                          | Postgres                  | MySQL                      | BigQuery                     |
-| ----------------------------- | ------------------------- | -------------------------- | ---------------------------- |
-| `eq`                          | `col = $1`                | `col = ?`                  | `col = @p0`                  |
-| `neq`                         | `col <> $1`               | `col <> ?`                 | `col <> @p0`                 |
-| `contains`                    | `col LIKE $1 ESCAPE '\'`  | `col LIKE ?`               | `col LIKE @p0`               |
-| `contains`, `caseInsensitive` | `col ILIKE $1 ESCAPE '\'` | `LOWER(col) LIKE LOWER(?)` | `LOWER(col) LIKE LOWER(@p0)` |
-| `inArray`                     | `col = ANY($1)`           | `col IN (?, ?, ?)`         | `col IN UNNEST(@p0)`         |
-| `gt`, `gte`, `lt`, `lte`      | `col > $1`, etc.          | `col > ?`, etc.            | `col > @p0`, etc.            |
-| `isNull`                      | `col IS NULL`             | `col IS NULL`              | `col IS NULL`                |
-| `isNotNull`                   | `col IS NOT NULL`         | `col IS NOT NULL`          | `col IS NOT NULL`            |
+| Kind                          | Postgres                                | MySQL                      | BigQuery                                     |
+| ----------------------------- | --------------------------------------- | -------------------------- | -------------------------------------------- |
+| `eq`                          | `col = $1`                              | `col = ?`                  | `col = @p0`                                  |
+| `neq`                         | `col <> $1`                             | `col <> ?`                 | `col <> @p0`                                 |
+| `contains`                    | `CAST(col AS TEXT) LIKE $1 ESCAPE '\'`  | `col LIKE ?`               | `CAST(col AS STRING) LIKE @p0`               |
+| `contains`, `caseInsensitive` | `CAST(col AS TEXT) ILIKE $1 ESCAPE '\'` | `LOWER(col) LIKE LOWER(?)` | `LOWER(CAST(col AS STRING)) LIKE LOWER(@p0)` |
+| `inArray`                     | `col = ANY($1)`                         | `col IN (?, ?, ?)`         | `col IN UNNEST(@p0)`                         |
+| `gt`, `gte`, `lt`, `lte`      | `col > $1`, etc.                        | `col > ?`, etc.            | `col > @p0`, etc.                            |
+| `isNull`                      | `col IS NULL`                           | `col IS NULL`              | `col IS NULL`                                |
+| `isNotNull`                   | `col IS NOT NULL`                       | `col IS NOT NULL`          | `col IS NOT NULL`                            |
 
 Things to know:
 
 - **`contains` escapes `%`, `_`, and `\`** in the input, so searching for `50%` matches the literal text.
+- **`contains` works on non-text columns** (e.g. integers) by matching their text form. The database decides that form, so dates and floats may not match JavaScript's `String()`.
 - **An empty `inArray` list** produces `FALSE` and matches nothing.
 - **`neq` follows SQL rules:** rows where the column is `NULL` don't match. This differs from `@filter-def/in-memory`.
 - **MySQL `contains` is case-insensitive** with the default collation, even without `caseInsensitive`.
@@ -126,7 +127,7 @@ const userFilter = sqlFilter<User>().def({
 });
 
 userFilter({ search: "john" });
-// ("name" LIKE $1 ESCAPE '\' OR "email" LIKE $2 ESCAPE '\')
+// (CAST("name" AS TEXT) LIKE $1 ESCAPE '\' OR CAST("email" AS TEXT) LIKE $2 ESCAPE '\')
 ```
 
 ## Custom Filters

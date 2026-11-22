@@ -20,10 +20,11 @@ const postgresDialect: Dialect<PostgresQuery> = {
     // One array parameter, regardless of list length.
     inArray: (column, values) => fragment`${column} = ANY(${values})`,
 
+    // Cast so non-text columns (e.g. integers) can be matched.
     like: (column, pattern, caseInsensitive) =>
         caseInsensitive
-            ? fragment`${column} ILIKE ${pattern} ESCAPE '\\'`
-            : fragment`${column} LIKE ${pattern} ESCAPE '\\'`,
+            ? fragment`CAST(${column} AS TEXT) ILIKE ${pattern} ESCAPE '\\'`
+            : fragment`CAST(${column} AS TEXT) LIKE ${pattern} ESCAPE '\\'`,
 
     render: (query) => {
         const { strings, args } = getFragmentParts(query);

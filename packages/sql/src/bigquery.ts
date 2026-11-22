@@ -19,11 +19,12 @@ const bigqueryDialect: Dialect<BigQueryQuery> = {
 
     inArray: (column, values) => fragment`${column} IN UNNEST(${values})`,
 
-    // BigQuery's LIKE treats `\` as the escape character.
+    // BigQuery's LIKE treats `\` as the escape character. Cast so non-STRING
+    // columns (e.g. INT64) can be matched.
     like: (column, pattern, caseInsensitive) =>
         caseInsensitive
-            ? fragment`LOWER(${column}) LIKE LOWER(${pattern})`
-            : fragment`${column} LIKE ${pattern}`,
+            ? fragment`LOWER(CAST(${column} AS STRING)) LIKE LOWER(${pattern})`
+            : fragment`CAST(${column} AS STRING) LIKE ${pattern}`,
 
     render: (query) => {
         const { strings, args } = getFragmentParts(query);

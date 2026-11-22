@@ -65,20 +65,20 @@ describe("bigquery SQL output", () => {
 
     it("escapes LIKE wildcards in contains", () => {
         expect(render(employeeFilter({ city: "a_b%c\\" }))).toEqual({
-            query: "`address`.`city` LIKE @p0",
+            query: "CAST(`address`.`city` AS STRING) LIKE @p0",
             params: { p0: "%a\\_b\\%c\\\\%" },
         });
     });
 
     it("lowercases both sides for caseInsensitive contains", () => {
         expect(render(employeeFilter({ cityCi: "NYC" })).query).toBe(
-            "LOWER(`address`.`city`) LIKE LOWER(@p0)",
+            "LOWER(CAST(`address`.`city` AS STRING)) LIKE LOWER(@p0)",
         );
     });
 
     it("groups or conditions", () => {
         expect(render(employeeFilter({ search: "x", order: 1 })).query).toBe(
-            "(`order` = @p0 AND (`name` LIKE @p1 OR `address`.`city` LIKE @p2))",
+            "(`order` = @p0 AND (CAST(`name` AS STRING) LIKE @p1 OR CAST(`address`.`city` AS STRING) LIKE @p2))",
         );
     });
 
